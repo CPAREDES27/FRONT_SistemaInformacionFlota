@@ -33,11 +33,35 @@ modules:
         existing_destinations_policy: update
   build-parameters:
     no-source: true
+- name: sistinfoflota-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: sistinfoflota-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - comtasainfoflotas.zip
+      name: comtasainfoflotas
+      target-path: resources/
+- name: comtasainfoflotas
+  type: html5
+  path: infoflotas
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
 resources:
 - name: sistinfoflota-uaa
   type: org.cloudfoundry.managed-service
   parameters:
-    path: ./xs-security.json  
+    path: ./xs-security.json
     service: xsuaa
     service-name: sistinfoflota-xsuaa-srv
     service-plan: application
@@ -46,16 +70,16 @@ resources:
   parameters:
     config:
       HTML5Runtime_enabled: true
-      version: 1.0.0
       init_data:
         instance:
-          existing_destinations_policy: update
           destinations:
-          - Name: ui5
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
             Type: HTTP
             URL: https://ui5.sap.com
-            ProxyType: Internet
-            Authentication: NoAuthentication
+          existing_destinations_policy: update
+      version: 1.0.0
     service: destination
     service-name: sistinfoflota-dest-srv
     service-plan: lite
