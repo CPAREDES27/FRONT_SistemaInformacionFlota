@@ -2,8 +2,9 @@ sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
-	"sap/m/library"
-], function (BaseController, JSONModel, formatter, mobileLibrary) {
+	"sap/m/library",
+	"./Fragments"
+], function (BaseController, JSONModel, formatter, mobileLibrary,Fragments) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
@@ -31,27 +32,12 @@ sap.ui.define([
 
 			this.setModel(oViewModel, "detailView");
 
-			this.getOwnerComponent().getModel().metadataLoaded().then(this._onMetadataLoaded.bind(this));
+			this.getOwnerComponent().getModel().dataLoaded().then(this._onMetadataLoaded.bind(this));
 		},
 
 		/* =========================================================== */
 		/* event handlers                                              */
 		/* =========================================================== */
-
-		/**
-		 * Event handler when the share by E-Mail button has been clicked
-		 * @public
-		 */
-		onSendEmailPress : function () {
-			var oViewModel = this.getModel("detailView");
-
-			URLHelper.triggerEmail(
-				null,
-				oViewModel.getProperty("/shareSendEmailSubject"),
-				oViewModel.getProperty("/shareSendEmailMessage")
-			);
-		},
-
 
 		/**
 		 * Updates the item count within the line item table's header
@@ -88,11 +74,11 @@ sap.ui.define([
 		_onObjectMatched : function (oEvent) {
 			var sObjectId =  oEvent.getParameter("arguments").objectId;
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
-			this.getModel().metadataLoaded().then( function() {
-				var sObjectPath = this.getModel().createKey("Employees", {
-					EmployeeID :  sObjectId
-				});
-				this._bindView("/" + sObjectPath);
+			this.getModel().dataLoaded().then( function() {
+				/* var sObjectPath = this.getModel().createKey("Lista", {
+					AppId :  sObjectId
+				}); */
+				this._bindView("/listaApps/" + sObjectId);
 			}.bind(this));
 		},
 
@@ -122,6 +108,11 @@ sap.ui.define([
 					}
 				}
 			});
+			
+			let oObject = this.getView().getBindingContext().getObject();
+			this.buildHeader(oObject);
+			this.buidlContent(oObject);
+			this._crearFragments(oObject.IDAPP);
 		},
 
 		_onBindingChange : function () {
@@ -140,23 +131,23 @@ sap.ui.define([
 			var sPath = oElementBinding.getPath(),
 				oResourceBundle = this.getResourceBundle(),
 				oObject = oView.getModel().getObject(sPath),
-				sObjectId = oObject.EmployeeID,
-				sObjectName = oObject.LastName,
+				sObjectId = oObject.IDAPP,
+				// sObjectName = oObject.LastName,
 				oViewModel = this.getModel("detailView");
 
 			this.getOwnerComponent().oListSelector.selectAListItem(sPath);
 
-			oViewModel.setProperty("/shareSendEmailSubject",
-				oResourceBundle.getText("shareSendEmailObjectSubject", [sObjectId]));
-			oViewModel.setProperty("/shareSendEmailMessage",
-				oResourceBundle.getText("shareSendEmailObjectMessage", [sObjectName, sObjectId, location.href]));
+			// oViewModel.setProperty("/shareSendEmailSubject",
+			// 	oResourceBundle.getText("shareSendEmailObjectSubject", [sObjectId]));
+			// oViewModel.setProperty("/shareSendEmailMessage",
+			// 	oResourceBundle.getText("shareSendEmailObjectMessage", [sObjectName, sObjectId, location.href]));
 		},
 
 		_onMetadataLoaded : function () {
 			// Store original busy indicator delay for the detail view
 			var iOriginalViewBusyDelay = this.getView().getBusyIndicatorDelay(),
 				oViewModel = this.getModel("detailView"),
-				oLineItemTable = this.byId("lineItemsList"),
+				oLineItemTable = this.byId("idUiTable"),
 				iOriginalLineItemTableBusyDelay = oLineItemTable.getBusyIndicatorDelay();
 
 			// Make sure busy indicator is displayed immediately when
@@ -199,6 +190,25 @@ sap.ui.define([
 				// reset to previous layout
 				this.getModel("appView").setProperty("/layout",  this.getModel("appView").getProperty("/previousLayout"));
 			}
+		},
+
+		_buidlHeader:function(oObject){
+			
+		},
+
+		_buildContent:function(oObject){
+
+		},
+
+		_crearFragments:function(sIdFrag){
+			this.mFragments = this.mFragments || {};
+			let oView = this.getView(),
+			oFragment=this.mFragments[sNameFrag];
+			if(!oFragment){
+				oFragment = new Fragments (this.getView(),sIdFrag),
+				this.mFragments[sNameFrag]=oFragment;
+			}
+			return oFragment.getControl();
 		}
 	});
 

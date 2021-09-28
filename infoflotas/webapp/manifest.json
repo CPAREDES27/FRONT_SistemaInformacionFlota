@@ -79,7 +79,7 @@
                 }
             },
             "": {
-                "dataSource": "mainService",
+                "type": "sap.ui.model.json.JSONModel",
                 "preload": true
             }
         },
@@ -102,7 +102,7 @@
                     "target": "master"
                 },
                 {
-                    "pattern": "Employees/{objectId}",
+                    "pattern": "info/{objectId}",
                     "name": "object",
                     "target": [
                         "master",

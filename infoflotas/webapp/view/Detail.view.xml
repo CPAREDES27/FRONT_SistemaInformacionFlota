@@ -2,7 +2,8 @@
 	controllerName="com.tasa.infoflotas.controller.Detail"
 	xmlns="sap.m"
 	xmlns:semantic="sap.f.semantic"
-	xmlns:mvc="sap.ui.core.mvc">
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:chart="sap.suite.ui.microchart">
 
 	<semantic:SemanticPage
 		id="detailPage"
@@ -10,61 +11,22 @@
 		busyIndicatorDelay="{detailView>/delay}">
 		<semantic:titleHeading>
 			<Title
-				text="{LastName}"
+				text="{NAMEAPP}"
 				level="H2"/>
 		</semantic:titleHeading>
 		<semantic:headerContent>
-			<ObjectAttribute title="{i18n>priceTitle}"/>
+			<ObjectAttribute title="{i18n>priceTitle}" text="{NAMEAPP}"/>
 
 		</semantic:headerContent>
 		<semantic:content>
-			<Table
-				id="lineItemsList"
-				width="auto"
-				items="{Employees1}"
-				updateFinished=".onListUpdateFinished"
-				noDataText="{i18n>detailLineItemTableNoDataText}"
-				busyIndicatorDelay="{detailView>/lineItemTableDelay}">
-				<headerToolbar>
-					<Toolbar>
-						<Title
-							id="lineItemsTitle"
-							text="{detailView>/lineItemListTitle}"
-							titleStyle="H3"
-							level="H3"/>
-					</Toolbar>
-				</headerToolbar>
-				<columns>
-					<Column>
-						<Text text="{i18n>detailLineItemTableIDColumn}"/>
-					</Column>
-					<Column
-						minScreenWidth="Tablet"
-						demandPopin="true"
-						hAlign="End">
-						<Text text="{i18n>detailLineItemTableUnitNumberColumn}"/>
-					</Column>
-				</columns>
+			<FlexBox id="idContentView" direction="Column"
+			>
 				<items>
-					<ColumnListItem>
-						<cells>
-							<ObjectIdentifier
-								title="{EmployeeID}"
-								text="{EmployeeID}"/>
-							<ObjectNumber
-/>
-						</cells>
-					</ColumnListItem>
+					
 				</items>
-			</Table>
+			</FlexBox>
 		</semantic:content>
 		<!--Semantic ShareMenu Buttons-->
-		<semantic:sendEmailAction>
-			<semantic:SendEmailAction
-				id="shareEmail"
-				press=".onSendEmailPress"/>
-		</semantic:sendEmailAction>
-
 		<semantic:closeAction>
 			<semantic:CloseAction
 					id="closeColumn"

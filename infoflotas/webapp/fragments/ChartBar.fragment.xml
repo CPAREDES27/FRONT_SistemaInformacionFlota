@@ -1,0 +1,12 @@
+<core:FragmentDefinition
+    xmlns:core="sap.ui.core"
+    xmlns="sap.m"
+    xmlns:chart="sap.suite.ui.microchart">
+    <chart:InteractiveBarChart labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
+        <chart:bars>
+            <chart:InteractiveBarChartBar label="Product 1" value="10" color="Critical"/>
+            <chart:InteractiveBarChartBar label="Product 2" value="50" color="Good" selected="true"/>
+            <chart:InteractiveBarChartBar label="Product 3" value="-10" color="Error"/>
+        </chart:bars>
+    </chart:InteractiveBarChart>
+</core:FragmentDefinition>

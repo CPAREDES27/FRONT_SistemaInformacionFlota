@@ -1,7 +1,8 @@
 sap.ui.define([
 	"./BaseController",
-	"sap/ui/model/json/JSONModel"
-], function (BaseController, JSONModel) {
+	"sap/ui/model/json/JSONModel",
+	"../data/sistemas"
+], function (BaseController, JSONModel,sistemas) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.infoflotas.controller.App", {
@@ -30,11 +31,17 @@ sap.ui.define([
 			};
 
 			// since then() has no "reject"-path attach to the MetadataFailed-Event to disable the busy indicator in case of an error
-			this.getOwnerComponent().getModel().metadataLoaded().then(fnSetAppNotBusy);
-			this.getOwnerComponent().getModel().attachMetadataFailed(fnSetAppNotBusy);
+			// this.getOwnerComponent().getModel().metadataLoaded().then(fnSetAppNotBusy);
+			// this.getOwnerComponent().getModel().attachMetadataFailed(fnSetAppNotBusy);
+
+			fnSetAppNotBusy();
 
 			// apply content density mode to root view
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+			// Agregamos data al modelo 
+			let oModel = this.getModel();
+			oModel.setProperty("/listaApps", sistemas)
 		}
 
 	});

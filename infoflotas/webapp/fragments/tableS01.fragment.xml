@@ -1,0 +1,194 @@
+<c:FragmentDefinition
+    controllerName="com.tasa.infoflotas.controller.Fragments"
+	xmlns="sap.m"
+	xmlns:c="sap.ui.core"
+    xmlns:table="sap.ui.table"
+    xmlns:chart="sap.suite.ui.microchart">
+    <HBox
+    >
+        <items>
+
+            <table:Table    id="idUiTable" 
+                            rows="{data}"
+                            visibleRowCount="5">
+                <table:columns>
+                    <table:Column width="8rem">
+                        <Label text="Planta" />
+                        <table:template>
+                            <Text text="{planta}"/>     
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4" hAlign="Center">
+                        <table:multiLabels>
+                            <Label text="Flota propia" textAlign="Center" />
+                            <Label text="Asig" textAlign="Center" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="{asig}"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4" hAlign="End">
+                        <table:multiLabels>
+                            <Label text="Flota propia" />
+                            <Label text="Pesc" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="{pesc}"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4" hAlign="End">
+                        <table:multiLabels>
+                            <Label text="Flota propia" />
+                            <Label text="Inop" textAlign="Center" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="{inop}"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4" hAlign="End">
+                        <table:multiLabels>
+                            <Label text="Flota propia" />
+                            <Label text="Otro" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="{otro}"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="2" hAlign="Center" >
+                        <table:multiLabels >
+                            <Label text="% CBOD" />
+                            <Label text="Asig" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="2">
+                        <table:multiLabels>
+                            <Label text="% CBOD" />
+                            <Label text="Oper" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4" hAlign="Center">
+                        <table:multiLabels>
+                            <Label text="Total Pesca" />
+                            <Label text="Desc" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4">
+                        <table:multiLabels>
+                            <Label text="Total Pesca" />
+                            <Label text="Decl" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4">
+                        <table:multiLabels>
+                            <Label text="Total Pesca" />
+                            <Label text="E/P" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4">
+                        <table:multiLabels>
+                            <Label text="Total Pesca" />
+                            <Label text="%" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="2" hAlign="Center">
+                        <table:multiLabels>
+                            <Label text="Pesca Propios" />
+                            <Label text="TN" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="2">
+                        <table:multiLabels>
+                            <Label text="Pesca Propios" />
+                            <Label text="E/P" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4" hAlign="Center">
+                        <table:multiLabels>
+                            <Label text="Pesca Terceros" />
+                            <Label text="TN" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="4">
+                        <table:multiLabels>
+                            <Label text="Pesca Terceros" />
+                            <Label text="E/P" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="2" hAlign="Center">
+                        <table:multiLabels>
+                            <Label text="Promedio" />
+                            <Label text="Prop" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column headerSpan="2">
+                        <table:multiLabels>
+                            <Label text="Promedio" />
+                            <Label text="Terc" />
+                        </table:multiLabels>
+                        <table:template>
+                            <Text text="empty string"/>
+                        </table:template>
+                    </table:Column>
+                    <table:Column >
+                        <Label text="Ver detalle" />
+                        <table:template>
+                            <Button icon="sap-icon://show" />
+                        </table:template>
+                    </table:Column>
+                </table:columns>
+            </table:Table>
+        </items>
+    </HBox>
+    <HBox width="auto"
+					>
+						<items>
+							<chart:InteractiveBarChart labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
+								<chart:bars>
+									<chart:InteractiveBarChartBar label="Product 1" value="10" color="Critical"/>
+									<chart:InteractiveBarChartBar label="Product 2" value="50" color="Good" selected="true"/>
+									<chart:InteractiveBarChartBar label="Product 3" value="-10" color="Error"/>
+								</chart:bars>
+							</chart:InteractiveBarChart>
+							<chart:InteractiveDonutChart selectionChanged="onSelectionChanged">
+								<chart:segments>
+									<chart:InteractiveDonutChartSegment label="Implementation Phase" value="40.0" displayedValue="40.0%" color="Error"/>
+									<chart:InteractiveDonutChartSegment label="Design Phase" value="21.5" displayedValue="21.5%" color="Critical"/>
+									<chart:InteractiveDonutChartSegment label="Test Phase" value="38.5" displayedValue="38.5%" color="Good"/>
+								</chart:segments>
+							</chart:InteractiveDonutChart>
+						</items>
+					</HBox>
+</c:FragmentDefinition>

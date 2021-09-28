@@ -20,7 +20,7 @@ sap.ui.define([
 			this._bMessageOpen = false;
 			this._sErrorText = this._oResourceBundle.getText("errorText");
 
-			this._oModel.attachMetadataFailed(function (oEvent) {
+			/* this._oModel.attachMetadataFailed(function (oEvent) {
 				var oParams = oEvent.getParameters();
 				this._showServiceError(oParams.response);
 			}, this);
@@ -33,7 +33,7 @@ sap.ui.define([
 				if (oParams.response.statusCode !== "404" || (oParams.response.statusCode === 404 && oParams.response.responseText.indexOf("Cannot POST") === 0)) {
 					this._showServiceError(oParams.response);
 				}
-			}, this);
+			}, this); */
 		},
 
 		/**

@@ -21,7 +21,7 @@
 				width="auto"
 				class="sapFDynamicPageAlignContent"
 				items="{
-					path: '/Employees',
+					path: '/listaApps',
 					sorter: {
 						path: 'LastName',
 						descending: false
@@ -63,7 +63,7 @@
 					<ObjectListItem
 						type="Navigation"
 						press=".onSelectionChange"
-						title="{LastName}"
+						title="{NAMEAPP}"
 >
 					</ObjectListItem>
 				</items>
