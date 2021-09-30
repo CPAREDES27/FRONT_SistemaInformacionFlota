@@ -2,13 +2,12 @@ sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
-	"sap/m/library",
-	"./Fragments"
-], function (BaseController, JSONModel, formatter, mobileLibrary,Fragments) {
+	"./Utilities"
+], function (BaseController,
+	JSONModel,
+	formatter,
+	Utilities) {
 	"use strict";
-
-	// shortcut for sap.m.URLHelper
-	var URLHelper = mobileLibrary.URLHelper;
 
 	return BaseController.extend("com.tasa.infoflotas.controller.Detail", {
 
@@ -72,6 +71,7 @@ sap.ui.define([
 		 * @private
 		 */
 		_onObjectMatched : function (oEvent) {
+			this.removeControls();
 			var sObjectId =  oEvent.getParameter("arguments").objectId;
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
 			this.getModel().dataLoaded().then( function() {
@@ -111,8 +111,8 @@ sap.ui.define([
 			
 			let oObject = this.getView().getBindingContext().getObject();
 			this.buildHeader(oObject);
-			this.buidlContent(oObject);
-			this._crearFragments(oObject.IDAPP);
+			this.buildContent(oObject);
+			// this._crearFragments(oObject.IDAPP);
 		},
 
 		_onBindingChange : function () {
@@ -192,23 +192,27 @@ sap.ui.define([
 			}
 		},
 
-		_buidlHeader:function(oObject){
-			
+		buildHeader:function(oObject){
+			let oForm = this.getView().byId("idFormHeader"),
+			oView = this.getView(),
+			oControl = new Utilities(oObject.IDAPP);
+			oForm.addFormContainer(oControl);
+			// this.getView().byId("detailPage").addHeaderContent(oControl)
 		},
 
-		_buildContent:function(oObject){
-
+		buildContent:function(oObject){
+			let otable = this.setFragments(oObject.IDAPP),
+			oVBox = this.getView().byId("idContentpage");
+			oVBox.addItem(otable)
+			// this.getView().byId("detailPage").setContent(otable)
 		},
 
-		_crearFragments:function(sIdFrag){
-			this.mFragments = this.mFragments || {};
+		removeControls:function(){
 			let oView = this.getView(),
-			oFragment=this.mFragments[sNameFrag];
-			if(!oFragment){
-				oFragment = new Fragments (this.getView(),sIdFrag),
-				this.mFragments[sNameFrag]=oFragment;
-			}
-			return oFragment.getControl();
+			oFormHeader = oView.byId("idFormHeader"),
+			oFlex=oView.byId("idContentpage");
+			oFormHeader.removeAllFormContainers();
+			oFlex.removeAllItems();
 		}
 	});
 

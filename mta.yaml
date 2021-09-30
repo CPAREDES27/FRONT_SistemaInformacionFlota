@@ -44,12 +44,12 @@ modules:
     build-result: resources
     requires:
     - artifacts:
-      - comtasainfoflotas.zip
-      name: comtasainfoflotas
+      - comtasapdeclarada.zip
+      name: comtasapdeclarada
       target-path: resources/
-- name: comtasainfoflotas
+- name: comtasapdeclarada
   type: html5
-  path: infoflotas
+  path: pdeclarada
   build-parameters:
     build-result: dist
     builder: custom

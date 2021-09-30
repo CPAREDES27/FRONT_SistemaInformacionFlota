@@ -1,7 +1,8 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
-	"sap/ui/core/routing/History"
-], function (Controller, History) {
+	"sap/ui/core/routing/History",
+	"./Fragments"
+], function (Controller, History,Fragments) {
 	"use strict";
 
 	return Controller.extend("com.tasa.infoflotas.controller.BaseController", {
@@ -59,6 +60,22 @@ sap.ui.define([
 			} else {
 				this.getRouter().navTo("master", {}, true);
 			}
+		},
+
+		setFragments:function(sIdFrag){
+			this.mFragments = this.mFragments || {};
+			let oView = this.getView(),
+			oFragment=this.mFragments[sIdFrag];
+			if(!oFragment){
+				oFragment = new Fragments (this.getView(),sIdFrag),
+				this.mFragments[sIdFrag]=oFragment;
+			}
+			return oFragment.getControl();
+		},
+
+		getPage(){
+			let oPage = this.byId("detailPage");
+			return oPage;
 		}
 
 	});

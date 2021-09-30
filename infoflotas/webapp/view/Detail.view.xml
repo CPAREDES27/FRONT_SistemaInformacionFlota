@@ -2,6 +2,7 @@
 	controllerName="com.tasa.infoflotas.controller.Detail"
 	xmlns="sap.m"
 	xmlns:semantic="sap.f.semantic"
+	xmlns:f="sap.ui.layout.form"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:chart="sap.suite.ui.microchart">
 
@@ -15,16 +16,32 @@
 				level="H2"/>
 		</semantic:titleHeading>
 		<semantic:headerContent>
-			<ObjectAttribute title="{i18n>priceTitle}" text="{NAMEAPP}"/>
-
-		</semantic:headerContent>
-		<semantic:content>
-			<FlexBox id="idContentView" direction="Column"
-			>
+			<f:Form id="idFormHeader" >
+				<f:layout>
+					<f:ResponsiveGridLayout
+						labelSpanXL="2"
+						labelSpanL="3"
+						labelSpanM="4"
+						labelSpanS="12"
+						adjustLabelSpan="false"
+						emptySpanXL="0"
+						emptySpanL="4"
+						emptySpanM="0"
+						emptySpanS="0"
+						columnsXL="2"
+						columnsL="2"
+						columnsM="1"
+						singleContainerFullSize="false" />
+				</f:layout>
+			</f:Form>
+			<FlexBox justifyContent="End" >
 				<items>
-					
+					<Button text="Buscar" type="Emphasized"/>
 				</items>
 			</FlexBox>
+		</semantic:headerContent>
+		<semantic:content>
+			<FlexBox id="idContentpage"></FlexBox>
 		</semantic:content>
 		<!--Semantic ShareMenu Buttons-->
 		<semantic:closeAction>
