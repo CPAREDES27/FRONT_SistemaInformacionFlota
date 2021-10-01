@@ -1,0 +1,267 @@
+<mvc:View
+	controllerName="com.tasa.pdeclaradadiaria.controller.Worklist"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:semantic="sap.f.semantic"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:table="sap.ui.table"
+    xmlns:chart="sap.suite.ui.microchart"
+	xmlns:layout="sap.ui.layout">
+
+	<semantic:SemanticPage
+		id="page"
+		headerPinnable="false"
+		toggleHeaderOnTitleClick="false">
+
+		<semantic:titleHeading>
+			<Title
+				text="{i18n>worklistTitle}"
+				level="H2"/>
+		</semantic:titleHeading>
+
+		<!-- Header Content -->
+		<semantic:headerContent>
+			<f:Form id="idFormHeader" >
+				<f:formContainers>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Fecha">
+								<f:fields>
+									<DateRangeSelection  />
+								</f:fields>
+							</f:FormElement>
+
+							<f:FormElement >
+								<f:fields>
+									<Button text="Buscar" type="Emphasized"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+				<f:layout>
+					<f:ResponsiveGridLayout
+						labelSpanXL="2"
+						labelSpanL="3"
+						labelSpanM="4"
+						labelSpanS="12"
+						adjustLabelSpan="false"
+						emptySpanXL="0"
+						emptySpanL="0"
+						emptySpanM="0"
+						emptySpanS="0"
+						columnsXL="2"
+						columnsL="2"
+						columnsM="1"
+						singleContainerFullSize="false" />
+				</f:layout>
+			</f:Form>
+		</semantic:headerContent>
+
+		<semantic:content>
+			<layout:Grid defaultSpan="XL12 L12 M12 S12" >
+				<table:Table id="table" 
+					rows="{/lista}"
+					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+					rowsUpdated=".onUpdateFinished"
+					visibleRowCount="5">
+					<table:columns>
+						<table:Column width="6rem">
+							<table:multiLabels>
+								<Label text="" />
+								<Label text="" />
+								<Label text="Fecha" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{planta}"/>     
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Total Pesca" />
+								<Label text="Harina" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Total Pesca" />
+								<Label text="C.H.D." />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						
+						<table:Column headerSpan="2" hAlign="Center">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Propios" />
+								<Label text="TN" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Propios" />
+								<Label text="%" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="Center">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Terceros" />
+								<Label text="TN" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Terceros" />
+								<Label text="%" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Prop" textAlign="Center" />
+								<Label text="Tn/Ep" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{asig}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Terc" />
+								<Label text="Tn/Ep" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{pesc}"/>
+							</table:template>
+						</table:Column>
+
+
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca descargada" />
+								<Label text="Planta propia" />
+								<Label text="Pesc prop" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{inop}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca descargada" />
+								<Label text="Planta propia" />
+								<Label text="Pesc terc" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{otro}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca descargada" />
+								<Label text="Planta propia" />
+								<Label text="Total pesca" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{inop}"/>
+							</table:template>
+						</table:Column>
+
+
+						<table:Column headerSpan="2" hAlign="Center">
+							<table:multiLabels>
+								<Label text="Pesca descargada" />	
+								<Label text="" />
+								<Label text="Planta terceros" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2">
+							<table:multiLabels>
+								<Label text="Pesca descargada" />
+								<Label text="" />
+								<Label text="CHD" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column >
+							<table:multiLabels>
+								<Label text="" />
+								<Label text="" />
+								<Label text="%" />
+							</table:multiLabels>
+							<table:template>
+								<Button icon="sap-icon://show" />
+							</table:template>
+						</table:Column>
+					</table:columns>
+				</table:Table>
+
+				<layout:HorizontalLayout>
+					<layout:layoutData>
+						<layout:GridData span="XL12 L12 M12 S12"/>
+					</layout:layoutData>
+					<!-- Graficos -->
+					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<chart:InteractiveBarChart labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
+								<chart:bars>
+									<chart:InteractiveBarChartBar label="Product 1" value="10" color="Critical"/>
+									<chart:InteractiveBarChartBar label="Product 2" value="50" color="Good" selected="true"/>
+									<chart:InteractiveBarChartBar label="Product 3" value="-10" color="Error"/>
+								</chart:bars>
+							</chart:InteractiveBarChart>
+						</items>
+					</FlexBox>
+
+					<FlexBox width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<chart:InteractiveLineChart selectionChanged="selectionChanged" press="press" precedingPoint="20">
+								<chart:points>
+									<chart:InteractiveLineChartPoint value="23.1" label="May" color="Normal"/>
+									<chart:InteractiveLineChartPoint value="2.2" label="June" color="Critical"/>
+									<chart:InteractiveLineChartPoint value="41.4" label="July" color="Good"/>
+									<chart:InteractiveLineChartPoint value="5.8" label="Aug" color="Critical"/>
+									<chart:InteractiveLineChartPoint value="49.9" label="Sep" color="Good" selected="true"/>
+									<chart:InteractiveLineChartPoint value="-10.2" label="Oct" color="Error"/>
+								</chart:points>
+							</chart:InteractiveLineChart>
+						</items>
+					</FlexBox>
+				</layout:HorizontalLayout>
+			</layout:Grid>
+		</semantic:content>
+
+
+	</semantic:SemanticPage>
+
+</mvc:View>
