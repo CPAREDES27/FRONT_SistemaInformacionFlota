@@ -1,12 +1,15 @@
-<mvc:View
+<mvc:View xmlns:core="sap.ui.core"
 	controllerName="com.tasa.pdeclarada.controller.Worklist"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
-	xmlns:semantic="sap.f.semantic">
+	xmlns:semantic="sap.f.semantic"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:table="sap.ui.table"
+    xmlns:chart="sap.suite.ui.microchart"
+	xmlns:layout="sap.ui.layout">
 
 	<semantic:SemanticPage
 		id="page"
-		headerPinnable="false"
 		toggleHeaderOnTitleClick="false">
 
 		<semantic:titleHeading>
@@ -15,75 +18,268 @@
 				level="H2"/>
 		</semantic:titleHeading>
 
-		<semantic:content>
-			<Table
-				id="table"
-				width="auto"
-				items="{
-					path: '/Products',
-					sorter: {
-						path: 'ProductID',
-						descending: false
-					}
-				}"
-				noDataText="{worklistView>/tableNoDataText}"
-				busyIndicatorDelay="{worklistView>/tableBusyDelay}"
-				growing="true"
-				growingScrollToLoad="true"
-				updateFinished=".onUpdateFinished">
-
-				<headerToolbar>
-					<OverflowToolbar>
-						<Title
-							id="tableHeader"
-							text="{worklistView>/worklistTableTitle}"
-							level="H3"/>
-						<ToolbarSpacer />
-						<SearchField
-							id="searchField"
-							tooltip="{i18n>worklistSearchTooltip}"
-							search=".onSearch">
-							<layoutData>
-								<OverflowToolbarLayoutData
-									maxWidth="200px"
-									priority="NeverOverflow"/>
-							</layoutData>
-						</SearchField>
-					</OverflowToolbar>
-				</headerToolbar>
-
-				<columns>
-					<Column id="nameColumn">
-						<Text text="{i18n>tableNameColumnTitle}" id="nameColumnTitle"/>
-					</Column>
-					<Column id="unitNumberColumn" hAlign="End">
-						<Text text="{i18n>tableUnitNumberColumnTitle}" id="unitNumberColumnTitle"/>
-					</Column>
-				</columns>
-
+		<!-- Header Content -->
+		<semantic:headerContent>
+			<f:Form id="idFormHeader" >
+				<f:formContainers>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Fecha">
+								<f:fields>
+									<DatePicker  />
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+						<f:formElements>
+							<f:FormElement label="MotivoMarea">
+								<f:fields>
+									<Select  />
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement >
+							<f:fields>
+								<Button text="Buscar" type="Emphasized"/>
+							</f:fields>
+						</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+				<f:FormContainer >
+					<f:formElements>
+						<f:FormElement label="Pesca declarada">
+							<f:fields>
+								<Text text="0/0" />
+							</f:fields>
+						</f:FormElement>
+						<f:FormElement label="Pesca descargada">
+							<f:fields>
+								<Text text="000/0" />
+							</f:fields>
+						</f:FormElement>
+					</f:formElements>
+				</f:FormContainer>
+				<f:layout>
+					<f:ResponsiveGridLayout
+						labelSpanXL="2"
+						labelSpanL="3"
+						labelSpanM="4"
+						labelSpanS="12"
+						adjustLabelSpan="false"
+						emptySpanXL="0"
+						emptySpanL="4"
+						emptySpanM="0"
+						emptySpanS="0"
+						columnsXL="2"
+						columnsL="2"
+						columnsM="1"
+						singleContainerFullSize="false" />
+				</f:layout>
+			</f:Form>
+			<FlexBox justifyContent="End" >
 				<items>
-					<ColumnListItem
-						type="Navigation"
-						press=".onPress">
-						<cells>
-							<ObjectIdentifier
-								title="{ProductID}"/>
-							<ObjectNumber
-								number="{
-									path: 'UnitPrice',
-									formatter: '.formatter.numberUnit'
-								}"
-								unit="{QuantityPerUnit}"/>
-						</cells>
-					</ColumnListItem>
+					
 				</items>
-			</Table>
+			</FlexBox>
+		</semantic:headerContent>
+
+		<semantic:content>
+			<layout:Grid defaultSpan="XL12 L12 M12 S12" >
+				<table:Table id="table" 
+					rows="{/lista}"
+					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+					rowsUpdated=".onUpdateFinished"
+					visibleRowCount="5">
+					<table:columns>
+						<table:Column width="8rem">
+							<Label text="Planta" />
+							<table:template>
+								<Text text="{planta}"/>     
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+							<table:multiLabels>
+								<Label text="Flota propia" textAlign="Center" />
+								<Label text="Asig" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{asig}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Flota propia" />
+								<Label text="Pesc" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{pesc}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Flota propia" />
+								<Label text="Inop" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{inop}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Flota propia" />
+								<Label text="Otro" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{otro}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2" hAlign="Center" width="4rem">
+							<table:multiLabels >
+								<Label text="% CBOD" />
+								<Label text="Asig" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2" width="4rem">
+							<table:multiLabels>
+								<Label text="% CBOD" />
+								<Label text="Oper" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+							<table:multiLabels>
+								<Label text="Total Pesca" />
+								<Label text="Desc" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" width="4rem">
+							<table:multiLabels>
+								<Label text="Total Pesca" />
+								<Label text="Decl" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" width="4rem">
+							<table:multiLabels>
+								<Label text="Total Pesca" />
+								<Label text="E/P" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" width="4rem">
+							<table:multiLabels>
+								<Label text="Total Pesca" />
+								<Label text="%" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2" hAlign="Center">
+							<table:multiLabels>
+								<Label text="Pesca Propios" />
+								<Label text="TN" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2">
+							<table:multiLabels>
+								<Label text="Pesca Propios" />
+								<Label text="E/P" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="Center">
+							<table:multiLabels>
+								<Label text="Pesca Terceros" />
+								<Label text="TN" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4">
+							<table:multiLabels>
+								<Label text="Pesca Terceros" />
+								<Label text="E/P" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2" hAlign="Center">
+							<table:multiLabels>
+								<Label text="Promedio" />
+								<Label text="Prop" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2">
+							<table:multiLabels>
+								<Label text="Promedio" />
+								<Label text="Terc" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+						<table:Column >
+							<Label text="Ver detalle" />
+							<table:template>
+								<Button icon="sap-icon://show" />
+							</table:template>
+						</table:Column>
+					</table:columns>
+				</table:Table>
+
+				<layout:HorizontalLayout>
+					<layout:layoutData>
+						<layout:GridData span="XL12 L12 M12 S12"/>
+					</layout:layoutData>
+					<!-- Graficos -->
+					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<chart:InteractiveBarChart labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
+								<chart:bars>
+									<chart:InteractiveBarChartBar label="Product 1" value="10" color="Critical"/>
+									<chart:InteractiveBarChartBar label="Product 2" value="50" color="Good" selected="true"/>
+									<chart:InteractiveBarChartBar label="Product 3" value="-10" color="Error"/>
+								</chart:bars>
+							</chart:InteractiveBarChart>
+						</items>
+					</FlexBox>
+
+					<FlexBox width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<chart:InteractiveDonutChart selectionChanged="onSelectionChanged">
+								<chart:segments>
+									<chart:InteractiveDonutChartSegment label="Implementation Phase" value="40.0" displayedValue="40.0%" color="Error"/>
+									<chart:InteractiveDonutChartSegment label="Design Phase" value="21.5" displayedValue="21.5%" color="Critical"/>
+									<chart:InteractiveDonutChartSegment label="Test Phase" value="38.5" displayedValue="38.5%" color="Good"/>
+								</chart:segments>
+							</chart:InteractiveDonutChart>
+						</items>
+					</FlexBox>
+				</layout:HorizontalLayout>
+			</layout:Grid>
 		</semantic:content>
-
-		<semantic:sendEmailAction>
-			<semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
-		</semantic:sendEmailAction>
-
 
 	</semantic:SemanticPage>
 

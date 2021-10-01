@@ -23,12 +23,29 @@ sap.ui.define([
 			};
 
 			// disable busy indication when the metadata is loaded and in case of errors
-			this.getOwnerComponent().getModel().metadataLoaded().
+			this.getOwnerComponent().getModel().dataLoaded().
 				then(fnSetAppNotBusy);
-			this.getOwnerComponent().getModel().attachMetadataFailed(fnSetAppNotBusy);
+			this.getOwnerComponent().getModel().attachRequestFailed(fnSetAppNotBusy);
 
 			// apply content density mode to root view
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+			let data=[
+                {
+                    planta:"MALABRIGO",
+                    asig:"0",
+                    pesc:"0",
+                    inop:"0",
+                    otro:"0"
+                },
+                {
+                    planta:"CHIMBOTE",
+                    asig:"60",
+                    pesc:"8",
+                    otro:"0"
+                }
+            ];
+			this.getModel().setProperty("/lista", data)
 		}
 	});
 
