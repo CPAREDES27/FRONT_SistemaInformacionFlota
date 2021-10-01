@@ -1,15 +1,14 @@
-<mvc:View xmlns:core="sap.ui.core"
-	controllerName="com.tasa.pdeclarada.controller.Worklist"
+<mvc:View
+	controllerName="com.tasa.pembarcacion.controller.Worklist"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:semantic="sap.f.semantic"
 	xmlns:f="sap.ui.layout.form"
-	xmlns:table="sap.ui.table"
-    xmlns:chart="sap.suite.ui.microchart"
-	xmlns:layout="sap.ui.layout">
+	xmlns:table="sap.ui.table">
 
 	<semantic:SemanticPage
 		id="page"
+		headerPinnable="false"
 		toggleHeaderOnTitleClick="false">
 
 		<semantic:titleHeading>
@@ -26,14 +25,33 @@
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DatePicker  />
+									<DateRangeSelection width="100%" />
 								</f:fields>
 							</f:FormElement>
-							<f:FormElement label="MotivoMarea">
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Temporadas">
+								<f:fields>
+									<Input 
+										showValueHelp="true"
+										valueHelpOnly="true" />
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Tipo embarcación">
 								<f:fields>
 									<Select  />
 								</f:fields>
 							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer >
+						<f:formElements>
 							<f:FormElement >
 								<f:fields>
 									<Button text="Buscar" type="Emphasized"/>
@@ -41,25 +59,11 @@
 							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>
-					<f:FormContainer >
-						<f:formElements>
-							<f:FormElement label="Pesca declarada">
-								<f:fields>
-									<Text text="0/0" />
-								</f:fields>
-							</f:FormElement>
-							<f:FormElement label="Pesca descargada">
-								<f:fields>
-									<Text text="000/0" />
-								</f:fields>
-							</f:FormElement>
-						</f:formElements>
-					</f:FormContainer>
 				</f:formContainers>
 				<f:layout>
 					<f:ResponsiveGridLayout
-						labelSpanXL="2"
-						labelSpanL="3"
+						labelSpanXL="3"
+						labelSpanL="4"
 						labelSpanM="4"
 						labelSpanS="12"
 						adjustLabelSpan="false"
@@ -67,8 +71,8 @@
 						emptySpanL="0"
 						emptySpanM="0"
 						emptySpanS="0"
-						columnsXL="2"
-						columnsL="2"
+						columnsXL="3"
+						columnsL="3"
 						columnsM="1"
 						singleContainerFullSize="false" />
 				</f:layout>
@@ -81,41 +85,76 @@
 		</semantic:headerContent>
 
 		<semantic:content>
-			<layout:Grid defaultSpan="XL12 L12 M12 S12" >
-				<table:Table id="table" 
+			<table:Table id="table" 
 					rows="{/lista}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					rowsUpdated=".onUpdateFinished"
-					visibleRowCount="5">
+					visibleRowCount="7">
+					<table:extension>
+						<OverflowToolbar style="Clear">
+							<ToolbarSpacer />
+							<Button type="Emphasized" icon="sap-icon://excel-attachment" press="buttonPress"/>
+						</OverflowToolbar>
+					</table:extension>
 					<table:columns>
 						<table:Column width="8rem">
-							<Label text="Planta" />
+							<table:multiLabels>
+								<Label text="" />
+								<Label text="Embarcación" />
+							</table:multiLabels>
 							<table:template>
 								<Text text="{planta}"/>     
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+						<table:Column width="4rem">
 							<table:multiLabels>
-								<Label text="Flota propia" textAlign="Center" />
-								<Label text="Asig" textAlign="Center" />
+								<Label text="" />
+								<Label text="CBOD" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{planta}"/>     
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="Center" width="5rem">
+							<table:multiLabels>
+								<Label text="CUOTA" textAlign="Center" />
+								<Label text="Periodo" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="{asig}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column headerSpan="4" hAlign="End" width="5rem">
 							<table:multiLabels>
-								<Label text="Flota propia" />
-								<Label text="Pesc" />
+								<Label text="CUOTA" />
+								<Label text="Avance(%)" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="{pesc}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column headerSpan="4" hAlign="Center" width="5rem">
 							<table:multiLabels>
-								<Label text="Flota propia" />
-								<Label text="Inop" textAlign="Center" />
+								<Label text="CUOTA" textAlign="Center" />
+								<Label text="Periodo" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{asig}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="5rem">
+							<table:multiLabels>
+								<Label text="CUOTA" />
+								<Label text="Avance(%)" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{pesc}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="End" width="5rem">
+							<table:multiLabels>
+								<Label text="Pesca TM" />
+								<Label text="Centro Norte" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="{inop}"/>
@@ -123,8 +162,8 @@
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
 							<table:multiLabels>
-								<Label text="Flota propia" />
-								<Label text="Otro" />
+								<Label text="Pesca TM" />
+								<Label text="Sur" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="{otro}"/>
@@ -132,17 +171,17 @@
 						</table:Column>
 						<table:Column headerSpan="2" hAlign="Center" width="4rem">
 							<table:multiLabels >
-								<Label text="% CBOD" />
-								<Label text="Asig" />
+								<Label text="Pesca TM" />
+								<Label text="CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2" width="4rem">
 							<table:multiLabels>
-								<Label text="% CBOD" />
-								<Label text="Oper" />
+								<Label text="Pesca TM" />
+								<Label text="Total" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -150,8 +189,8 @@
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="Center" width="4rem">
 							<table:multiLabels>
-								<Label text="Total Pesca" />
-								<Label text="Desc" />
+								<Label text="Días de Pesca" />
+								<Label text="Centro Norte" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -159,8 +198,8 @@
 						</table:Column>
 						<table:Column headerSpan="4" width="4rem">
 							<table:multiLabels>
-								<Label text="Total Pesca" />
-								<Label text="Decl" />
+								<Label text="Días de Pesca" />
+								<Label text="Sur" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -168,8 +207,8 @@
 						</table:Column>
 						<table:Column headerSpan="4" width="4rem">
 							<table:multiLabels>
-								<Label text="Total Pesca" />
-								<Label text="E/P" />
+								<Label text="Días de Pesca" />
+								<Label text="CHD" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -177,8 +216,8 @@
 						</table:Column>
 						<table:Column headerSpan="4" width="4rem">
 							<table:multiLabels>
-								<Label text="Total Pesca" />
-								<Label text="%" />
+								<Label text="Días de Pesca" />
+								<Label text="Sin Pesca Sur" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -186,8 +225,8 @@
 						</table:Column>
 						<table:Column headerSpan="2" hAlign="Center">
 							<table:multiLabels>
-								<Label text="Pesca Propios" />
-								<Label text="TN" />
+								<Label text="Días de Pesca" />
+								<Label text="Sin Pesca CHD" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -195,8 +234,8 @@
 						</table:Column>
 						<table:Column headerSpan="2">
 							<table:multiLabels>
-								<Label text="Pesca Propios" />
-								<Label text="E/P" />
+								<Label text="Días de Pesca" />
+								<Label text="Veda" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -204,8 +243,8 @@
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="Center">
 							<table:multiLabels>
-								<Label text="Pesca Terceros" />
-								<Label text="TN" />
+								<Label text="Días de Pesca" />
+								<Label text="Total" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -213,8 +252,8 @@
 						</table:Column>
 						<table:Column headerSpan="4">
 							<table:multiLabels>
-								<Label text="Pesca Terceros" />
-								<Label text="E/P" />
+								<Label text="Dias" />
+								<Label text="Faltantes" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -222,17 +261,8 @@
 						</table:Column>
 						<table:Column headerSpan="2" hAlign="Center">
 							<table:multiLabels>
-								<Label text="Promedio" />
-								<Label text="Prop" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="empty string"/>
-							</table:template>
-						</table:Column>
-						<table:Column headerSpan="2">
-							<table:multiLabels>
-								<Label text="Promedio" />
-								<Label text="Terc" />
+								<Label text="Días" />
+								<Label text="Rend(%)" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="empty string"/>
@@ -246,37 +276,6 @@
 						</table:Column>
 					</table:columns>
 				</table:Table>
-
-				<layout:HorizontalLayout>
-					<layout:layoutData>
-						<layout:GridData span="XL12 L12 M12 S12"/>
-					</layout:layoutData>
-					<!-- Graficos -->
-					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
-						<items>
-							<chart:InteractiveBarChart labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
-								<chart:bars>
-									<chart:InteractiveBarChartBar label="Product 1" value="10" color="Critical"/>
-									<chart:InteractiveBarChartBar label="Product 2" value="50" color="Good" selected="true"/>
-									<chart:InteractiveBarChartBar label="Product 3" value="-10" color="Error"/>
-								</chart:bars>
-							</chart:InteractiveBarChart>
-						</items>
-					</FlexBox>
-
-					<FlexBox width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
-						<items>
-							<chart:InteractiveDonutChart selectionChanged="onSelectionChanged">
-								<chart:segments>
-									<chart:InteractiveDonutChartSegment label="Implementation Phase" value="40.0" displayedValue="40.0%" color="Error"/>
-									<chart:InteractiveDonutChartSegment label="Design Phase" value="21.5" displayedValue="21.5%" color="Critical"/>
-									<chart:InteractiveDonutChartSegment label="Test Phase" value="38.5" displayedValue="38.5%" color="Good"/>
-								</chart:segments>
-							</chart:InteractiveDonutChart>
-						</items>
-					</FlexBox>
-				</layout:HorizontalLayout>
-			</layout:Grid>
 		</semantic:content>
 
 	</semantic:SemanticPage>

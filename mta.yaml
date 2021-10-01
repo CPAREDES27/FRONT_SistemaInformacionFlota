@@ -47,9 +47,23 @@ modules:
       - comtasapdeclarada.zip
       name: comtasapdeclarada
       target-path: resources/
+    - artifacts:
+      - comtasapembarcacion.zip
+      name: comtasapembarcacion
+      target-path: resources/
 - name: comtasapdeclarada
   type: html5
   path: pdeclarada
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comtasapembarcacion
+  type: html5
+  path: pembarcacion
   build-parameters:
     build-result: dist
     builder: custom
