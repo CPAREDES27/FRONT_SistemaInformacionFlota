@@ -11,14 +11,14 @@
 			data-sap-ui-resourceroots='{
 				"com.tasa.pdeclarada": "../"
 			}'
-			data-sap-ui-oninit="module:com/tasa/pdeclarada/test/initFlpSandbox"
+			data-sap-ui-oninit="module:com/tasa/pdeclarada/test/initMockServer"
 			data-sap-ui-compatVersion="edge"
 			data-sap-ui-async="true"
 			data-sap-ui-preload="async"
-			data-sap-ui-frameOptions="allow">
+			data-sap-ui-frameOptions="trusted">
 	</script>
-
 </head>
-<body class="sapUiBody" id="content">
+<body class="sapUiBody">
+	<div data-sap-ui-component data-name="com.tasa.pdeclarada" data-id="container" data-settings='{"id" : "pdeclarada"}'></div>
 </body>
 </html>
