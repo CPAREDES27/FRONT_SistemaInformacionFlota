@@ -1,0 +1,147 @@
+<mvc:View
+	controllerName="com.tasa.pcptradingreso.controller.Worklist"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:semantic="sap.f.semantic"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:table="sap.ui.table">
+
+	<semantic:SemanticPage
+		id="page"
+		headerPinnable="false"
+		toggleHeaderOnTitleClick="false"
+		showFooter="true">
+
+		<semantic:titleHeading>
+			<Title
+				text="{i18n>worklistTitle}"
+				level="H2"/>
+		</semantic:titleHeading>
+
+		<!-- Header Content -->
+		<semantic:headerContent>
+			<f:Form id="idFormHeader" >
+				<f:formContainers>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Fecha">
+								<f:fields>
+									<DatePicker  />
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Tipo de marea">
+								<f:fields>
+									<Select  />
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement >
+								<f:fields>
+									<Button text="Buscar" type="Emphasized"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<!-- <f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Pesca declarada">
+								<f:fields>
+									<Text text="0/0" />
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Pesca descargada">
+								<f:fields>
+									<Text text="000/0" />
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer> -->
+				</f:formContainers>
+				<f:layout>
+					<f:ResponsiveGridLayout
+						labelSpanXL="2"
+						labelSpanL="3"
+						labelSpanM="4"
+						labelSpanS="12"
+						adjustLabelSpan="false"
+						emptySpanXL="0"
+						emptySpanL="0"
+						emptySpanM="0"
+						emptySpanS="0"
+						columnsXL="2"
+						columnsL="2"
+						columnsM="1"
+						singleContainerFullSize="false" />
+				</f:layout>
+			</f:Form>
+		</semantic:headerContent>
+
+		<semantic:content>
+			<table:Table id="table" 
+				rows="{/lista}"
+				busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+				rowsUpdated=".onUpdateFinished"
+				visibleRowCount="5">
+				<table:columns>
+					<table:Column width="8rem">
+						<Label text="Fecha" />
+						<table:template>
+							<Text text="{planta}"/>     
+						</table:template>
+					</table:Column>
+
+					<table:Column >
+							<Label text="Código" />
+						<table:template>
+							<Text text="{asig}"/>
+						</table:template>
+					</table:Column>
+
+					<table:Column >
+						<Label text="Razón Social" />
+						<table:template>
+							<Text text="{pesc}"/>
+						</table:template>
+					</table:Column>
+
+					<table:Column >
+							<Label text="Planta" />
+						<table:template>
+							<Text text="{inop}"/>
+						</table:template>
+					</table:Column>
+
+					<table:Column >
+							<Label text="Pesca declarada" />
+						<table:template>
+							<Text text="{otro}"/>
+						</table:template>
+					</table:Column>
+
+					<table:Column >
+							<Label text="Cant emba" />
+						<table:template>
+							<Text text="empty string"/>
+						</table:template>
+					</table:Column>
+
+					<table:Column >
+							<Label text="Especie" />
+						<table:template>
+							<Select />
+						</table:template>
+					</table:Column>
+					
+				</table:columns>
+			</table:Table>
+		</semantic:content>
+		<semantic:positiveAction>
+			<semantic:PositiveAction text="Grabar" />
+		</semantic:positiveAction>
+
+		<semantic:negativeAction>
+			<semantic:NegativeAction text="Cerrar" />
+		</semantic:negativeAction>
+
+	</semantic:SemanticPage>
+
+</mvc:View>

@@ -73,11 +73,6 @@
 						singleContainerFullSize="false" />
 				</f:layout>
 			</f:Form>
-			<FlexBox justifyContent="End" >
-				<items>
-					
-				</items>
-			</FlexBox>
 		</semantic:headerContent>
 
 		<semantic:content>

@@ -1,0 +1,154 @@
+<mvc:View
+	controllerName="com.tasa.pdescargada.controller.Worklist"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:semantic="sap.f.semantic"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:table="sap.ui.table"
+    xmlns:chart="sap.suite.ui.microchart"
+	xmlns:layout="sap.ui.layout">
+
+	<semantic:SemanticPage
+		id="page"
+		headerPinnable="false"
+		toggleHeaderOnTitleClick="false">
+
+		<semantic:titleHeading>
+			<Title
+				text="{i18n>worklistTitle}"
+				level="H2"/>
+		</semantic:titleHeading>
+
+		<!-- Header Content -->
+		<semantic:headerContent>
+			<f:Form id="idFormHeader" >
+				<f:formContainers>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Fecha">
+								<f:fields>
+									<DateRangeSelection  />
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement >
+								<f:fields>
+									<Button text="Buscar" type="Emphasized"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+				<f:layout>
+					<f:ResponsiveGridLayout
+						labelSpanXL="2"
+						labelSpanL="3"
+						labelSpanM="4"
+						labelSpanS="12"
+						adjustLabelSpan="false"
+						emptySpanXL="0"
+						emptySpanL="0"
+						emptySpanM="0"
+						emptySpanS="0"
+						columnsXL="2"
+						columnsL="2"
+						columnsM="1"
+						singleContainerFullSize="false" />
+				</f:layout>
+			</f:Form>
+		</semantic:headerContent>
+
+		<semantic:content>
+			<layout:Grid defaultSpan="XL12 L12 M12 S12" >
+				<table:Table id="table" 
+					rows="{/lista}"
+					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+					rowsUpdated=".onUpdateFinished"
+					visibleRowCount="5">
+					<table:columns>
+						<table:Column width="8rem">
+							<Label text="Fecha" />
+							<table:template>
+								<Text text="{planta}"/>     
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+								<Label text="Pesca" textAlign="End" />
+							<table:template>
+								<Text text="{asig}"/>
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+								<Label text="Días" />
+							<table:template>
+								<Text text="{pesc}"/>
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+								<Label text="Promedio" />
+							<table:template>
+								<Text text="{inop}"/>
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="4" hAlign="End" width="4rem">
+								<Label text="CHMB" />
+							<table:template>
+								<Text text="{otro}"/>
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="2" hAlign="Center" width="4rem">
+								<Label text="Vegueta" />
+							<table:template>
+								<Text text="empty string"/>
+							</table:template>
+						</table:Column>
+					</table:columns>
+				</table:Table>
+
+				<layout:HorizontalLayout>
+					<layout:layoutData>
+						<layout:GridData span="XL12 L12 M12 S12"/>
+					</layout:layoutData>
+					<!-- Graficos -->
+					<Text text="Pesca descargada por día" />
+					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<chart:InteractiveBarChart labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
+								<chart:bars>
+									<chart:InteractiveBarChartBar label="Product 1" value="10" color="Critical"/>
+									<chart:InteractiveBarChartBar label="Product 2" value="50" color="Good" selected="true"/>
+									<chart:InteractiveBarChartBar label="Product 3" value="-10" color="Error"/>
+								</chart:bars>
+							</chart:InteractiveBarChart>
+						</items>
+					</FlexBox>
+
+					<Text text="Pesca descargada por planta" />
+					<FlexBox width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<!-- <chart:InteractiveDonutChart selectionChanged="onSelectionChanged">
+								<chart:segments>
+									<chart:InteractiveDonutChartSegment label="Implementation Phase" value="40.0" displayedValue="40.0%" color="Error"/>
+									<chart:InteractiveDonutChartSegment label="Design Phase" value="21.5" displayedValue="21.5%" color="Critical"/>
+									<chart:InteractiveDonutChartSegment label="Test Phase" value="38.5" displayedValue="38.5%" color="Good"/>
+								</chart:segments>
+							</chart:InteractiveDonutChart> -->
+							<chart:ColumnMicroChart size="M" press="press" class="sapUiSmallMargin">
+								<chart:columns>
+									<chart:ColumnMicroChartData	value="100" color="Error"/>
+									<chart:ColumnMicroChartData	value="60" color="Neutral"/>
+								</chart:columns>
+							</chart:ColumnMicroChart>
+						</items>
+					</FlexBox>
+				</layout:HorizontalLayout>
+			</layout:Grid>
+		</semantic:content>
+
+	</semantic:SemanticPage>
+
+</mvc:View>

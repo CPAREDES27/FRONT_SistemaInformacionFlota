@@ -55,6 +55,18 @@ modules:
       - comtasapdeclaradadiaria.zip
       name: comtasapdeclaradadiaria
       target-path: resources/
+    - artifacts:
+      - comtasapdescargada.zip
+      name: comtasapdescargada
+      target-path: resources/
+    - artifacts:
+      - comtasapcptradingreso.zip
+      name: comtasapcptradingreso
+      target-path: resources/
+    - artifacts:
+      - comtasapcptradreporte.zip
+      name: comtasapcptradreporte
+      target-path: resources/
 - name: comtasapdeclarada
   type: html5
   path: pdeclarada
@@ -78,6 +90,36 @@ modules:
 - name: comtasapdeclaradadiaria
   type: html5
   path: pdeclaradadiaria
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comtasapdescargada
+  type: html5
+  path: pdescargada
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comtasapcptradingreso
+  type: html5
+  path: pcptradingreso
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comtasapcptradreporte
+  type: html5
+  path: pcptradreporte
   build-parameters:
     build-result: dist
     builder: custom
