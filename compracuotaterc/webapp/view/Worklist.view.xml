@@ -1,0 +1,205 @@
+<mvc:View xmlns:core="sap.ui.core"
+	controllerName="com.tasa.compracuotaterc.controller.Worklist"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:semantic="sap.f.semantic"
+	xmlns:table="sap.ui.table">
+
+	<semantic:SemanticPage
+		id="page"
+		headerPinnable="false"
+		toggleHeaderOnTitleClick="false">
+
+		<semantic:titleHeading>
+			<Title
+				text="{i18n>worklistTitle}"
+				level="H2"/>
+		</semantic:titleHeading>
+
+		<!-- Header Content -->
+		<semantic:headerContent>
+			<f:Form id="idFormHeader" >
+				<f:title>
+					<core:Title text="Datos de Selección"/>
+				</f:title>
+				<f:formContainers>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Temporada">
+								<f:fields>
+									<Input
+										placeholder="Ingrese la temporada" 
+										showValueHelp="true"
+										valueHelpOnly="true" />
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Fecha">
+								<f:fields>
+									<DateRangeSelection width="100%" />
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement >
+								<f:fields>
+									<Button text="Buscar" type="Emphasized" press="onSearchSelected"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+				<f:layout>
+					<f:ResponsiveGridLayout
+						labelSpanXL="3"
+						labelSpanL="4"
+						labelSpanM="4"
+						labelSpanS="12"
+						adjustLabelSpan="false"
+						emptySpanXL="0"
+						emptySpanL="0"
+						emptySpanM="0"
+						emptySpanS="0"
+						columnsXL="3"
+						columnsL="3"
+						columnsM="1"
+						singleContainerFullSize="false" />
+				</f:layout>
+			</f:Form>
+		</semantic:headerContent>
+
+		<semantic:content>
+			<table:Table id="table" 
+					rows="{/data}"
+					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+					rowsUpdated=".onUpdateFinished"
+					visibleRowCount="7">
+					<table:extension>
+						<OverflowToolbar style="Clear">
+							<ToolbarSpacer />
+							<Button type="Ghost" icon="sap-icon://add" text="Nuevo" press="onNuevo('nuevo')"/>
+							<!-- <Button type="Emphasized" icon="sap-icon://excel-attachment" press="buttonPress"/> -->
+						</OverflowToolbar>
+					</table:extension>
+					<table:columns>
+						<table:Column width="8rem" headerSpan="2" hAlign="Center">
+							<table:multiLabels>
+								<Label text="Embarcación" />
+								<Label text="Matrícula" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{matricula}"/>     
+							</table:template>
+						</table:Column>
+						<table:Column width="8rem">
+							<table:multiLabels>
+								<Label text="Embarcación" />
+								<Label text="Nombre" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{nombre}"/>     
+							</table:template>
+						</table:Column>
+
+						<table:Column  width="15rem">
+							<table:multiLabels>
+								<Label text="" textAlign="Center" />
+								<Label text="Empresa comprador"  />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{empresa}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2" hAlign="Center" width="8rem">
+							<table:multiLabels>
+								<Label text="Vigencia" />
+								<Label text="Inicio" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" width="8rem">
+							<table:multiLabels>
+								<Label text="Vigencia" textAlign="Center" />
+								<Label text="Fin" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{asig}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="3" hAlign="Center" width="8rem">
+							<table:multiLabels>
+								<Label text="Cuotas" />
+								<Label text="Asignada" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{pesc}"/>
+							</table:template>
+						</table:Column>
+						<table:Column  width="8rem">
+							<table:multiLabels>
+								<Label text="Cuotas" />
+								<Label text="Consumida" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{}"/>
+							</table:template>
+						</table:Column>
+						<table:Column width="8rem">
+							<table:multiLabels>
+								<Label text="Cuotas" />
+								<Label text="Comprada" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="2" hAlign="Center" width="4rem">
+							<table:multiLabels >
+								<Label text="Temporada" />
+								<Label text="Inicio" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{}"/>
+							</table:template>
+						</table:Column>
+						<table:Column  width="4rem">
+							<table:multiLabels>
+								<Label text="Temporada" />
+								<Label text="Fin" />
+							</table:multiLabels>
+							<table:template>
+								<Text text=""/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+							<table:multiLabels>
+								<Label text="" />
+								<Label text="Estado" />
+							</table:multiLabels>
+							<table:template>
+								<Text text=""/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="4" width="4rem">
+							<table:multiLabels>
+								<Label text="" />
+								<Label text="" />
+							</table:multiLabels>
+							<table:template>
+								<Button text="Editar" press="onPress" type="Ghost"/>
+							</table:template>
+						</table:Column>
+					</table:columns>
+				</table:Table>
+		</semantic:content>
+	</semantic:SemanticPage>
+
+</mvc:View>
