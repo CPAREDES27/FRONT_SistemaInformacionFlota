@@ -7,6 +7,8 @@ sap.ui.define([
 ], function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
 	"use strict";
 
+	var mainUrlRest = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com/api/';
+
 	return BaseController.extend("com.tasa.pdeclarada.controller.Worklist", {
 
 		formatter: formatter,
@@ -19,7 +21,7 @@ sap.ui.define([
 		 * Called when the worklist controller is instantiated.
 		 * @public
 		 */
-		onInit : function () {
+		onInit: function () {
 			var oViewModel,
 				iOriginalBusyDelay,
 				oTable = this.byId("table");
@@ -33,22 +35,39 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle : this.getResourceBundle().getText("worklistTableTitle"),
+				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
 				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
 				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
 				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
-				tableNoDataText : this.getResourceBundle().getText("tableNoDataText"),
-				tableBusyDelay : 0
+				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
+				tableBusyDelay: 0
 			});
 			this.setModel(oViewModel, "worklistView");
 
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
-			oTable.attachEventOnce("updateFinished", function(){
+			oTable.attachEventOnce("updateFinished", function () {
 				// Restore original busy indicator delay for worklist's table
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
+
+			//Obtener los motivos de marea
+			fetch(`${mainUrlRest}dominios/Listar`, {
+				method: 'POST',
+				body: JSON.stringify({
+					dominios: [
+						{
+							domname: "MOTIVOMAREA_RPDC",
+							status: "A"
+						}
+					]
+				})
+			}).then(resp => resp.json()).then(data => {
+				this.getModel("worklistView").setProperty("/motivos", data.data[0].data);
+			});
+
+			this.getDataTable(new Date, undefined);
 		},
 
 		/* =========================================================== */
@@ -64,7 +83,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the update finished event
 		 * @public
 		 */
-		onUpdateFinished : function (oEvent) {
+		onUpdateFinished: function (oEvent) {
 			// update the worklist's object counter after the table update
 			var sTitle,
 				oTable = oEvent.getSource(),
@@ -84,7 +103,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
 		 * @public
 		 */
-		onPress : function (oEvent) {
+		onPress: function (oEvent) {
 			// The source is the list item that got pressed
 			this._showObject(oEvent.getSource());
 		},
@@ -94,13 +113,13 @@ sap.ui.define([
 		 * We navigate back in the browser history
 		 * @public
 		 */
-		onNavBack : function() {
+		onNavBack: function () {
 			// eslint-disable-next-line sap-no-history-manipulation
 			history.go(-1);
 		},
 
 
-		onSearch : function (oEvent) {
+		onSearch: function (oEvent) {
 			if (oEvent.getParameters().refreshButtonPressed) {
 				// Search field's 'refresh' button has been pressed.
 				// This is visible if you select any master list item.
@@ -124,7 +143,7 @@ sap.ui.define([
 		 * and group settings and refreshes the list binding.
 		 * @public
 		 */
-		onRefresh : function () {
+		onRefresh: function () {
 			var oTable = this.byId("table");
 			oTable.getBinding("items").refresh();
 		},
@@ -139,7 +158,7 @@ sap.ui.define([
 		 * @param {sap.m.ObjectListItem} oItem selected Item
 		 * @private
 		 */
-		_showObject : function (oItem) {
+		_showObject: function (oItem) {
 			this.getRouter().navTo("object", {
 				objectId: oItem.getBindingContext().getProperty("ProductID")
 			});
@@ -150,7 +169,7 @@ sap.ui.define([
 		 * @param {sap.ui.model.Filter[]} aTableSearchState An array of filters for the search
 		 * @private
 		 */
-		_applySearch: function(aTableSearchState) {
+		_applySearch: function (aTableSearchState) {
 			var oTable = this.byId("table"),
 				oViewModel = this.getModel("worklistView");
 			oTable.getBinding("items").filter(aTableSearchState, "Application");
@@ -158,7 +177,101 @@ sap.ui.define([
 			if (aTableSearchState.length !== 0) {
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 			}
-		}
+		},
+		getDataTable: async function (fecha, motivoMarea) {
+			const listPescaDeclarada = await this.getListPescaDeclarada(fecha, motivoMarea);
+			const listPescaDeclaradaForGraphs = JSON.parse(JSON.stringify(listPescaDeclarada));
 
+			if (listPescaDeclarada) {
+				this.getModel().setProperty("/STR_TP", listPescaDeclarada.str_tp);
+				this.getModel().setProperty("/STR_TE", listPescaDeclarada.str_te);
+				this.calcularTotales();
+
+				//Modelo para los gráficos
+				const str_tp_graph = listPescaDeclaradaForGraphs.str_tp.map(s => {
+					return {
+						descripcion: s.DESCR,
+						value: s.PORC_PESC_DECL
+					};
+				});
+
+				this.getModel().setProperty("/STR_TP_GRAPHICS", str_tp_graph);
+			}
+		},
+		calcularTotales: function () {
+			let oModel = this.getModel();
+			let listPescaDeclarada = oModel.getProperty("/STR_TP");
+
+			/**
+			 * Copia del primer elemento para obtener su modelo
+			 */
+			let pescaDeclaradaTotal = { ...listPescaDeclarada[0] };
+
+			/**
+			 * Cálculos de totales de algunos campos
+			 */
+			let total_CEMBA = 0;
+			let total_CEMBP = 0;
+			let total_CEMBI = 0;
+			let total_CEMBO = 0;
+			let total_CNPDS = 0;
+			let total_TOT_PESC_DECL = 0;
+			let total_TOT_NUM_EMBA = 0;
+			let total_CNPEP = 0;
+			let total_NEMBP = 0;
+			let total_CNPET = 0;
+			let total_NEMBT = 0;
+			let total_PROM_PESC_PROP = 0;
+			let total_PROM_PESC_TERC = 0;
+			listPescaDeclarada.forEach(p => {
+				total_CEMBA += p.CEMBA;
+				total_CEMBP += p.CEMBP;
+				total_CEMBI += p.CEMBI;
+				total_CEMBO += p.CEMBO;
+				total_CNPDS += p.CNPDS;
+				total_TOT_PESC_DECL += p.TOT_PESC_DECL;
+				total_TOT_NUM_EMBA += p.TOT_NUM_EMBA;
+				total_CNPEP += p.CNPEP;
+				total_NEMBP += p.NEMBP;
+				total_CNPET += p.CNPET;
+				total_NEMBT += p.NEMBT;
+				total_PROM_PESC_PROP += p.PROM_PESC_PROP;
+				total_PROM_PESC_TERC += p.PROM_PESC_TERC;
+			});
+
+			/**
+			 * Limpieza y asignación de totales
+			 */
+			Object.keys(pescaDeclaradaTotal).forEach(k => {
+				pescaDeclaradaTotal[k] = null;
+			});
+
+			pescaDeclaradaTotal.CEMBA = total_CEMBA;
+			pescaDeclaradaTotal.CEMBP = total_CEMBP;
+			pescaDeclaradaTotal.CEMBI = total_CEMBI;
+			pescaDeclaradaTotal.CEMBO = total_CEMBO;
+			pescaDeclaradaTotal.CNPDS = total_CNPDS;
+			pescaDeclaradaTotal.TOT_PESC_DECL = total_TOT_PESC_DECL;
+			pescaDeclaradaTotal.TOT_NUM_EMBA = total_TOT_NUM_EMBA;
+			pescaDeclaradaTotal.CNPEP = total_CNPEP;
+			pescaDeclaradaTotal.NEMBP = total_NEMBP;
+			pescaDeclaradaTotal.CNPET = total_CNPET;
+			pescaDeclaradaTotal.NEMBT = total_NEMBT;
+			pescaDeclaradaTotal.PROM_PESC_PROP = total_PROM_PESC_PROP;
+			pescaDeclaradaTotal.PROM_PESC_TERC = total_PROM_PESC_TERC;
+
+			listPescaDeclarada.push(pescaDeclaradaTotal)
+
+		},
+		buscarPescaDescargada: function () {
+			let fechaValue = this.byId("fechaPescaDeclarada").getValue();
+			let motivoMarea = this.byId("motivoPescaDeclarada").getSelectedKey();
+
+			if (motivoMarea === 'A') {
+				motivoMarea = "";
+			}
+			const fecha = fechaValue ? new Date(`${fechaValue}T00:00:00`) : new Date();
+			this.getDataTable(fecha, motivoMarea);
+		}
 	});
 });

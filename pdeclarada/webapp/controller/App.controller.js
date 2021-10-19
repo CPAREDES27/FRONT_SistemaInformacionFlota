@@ -6,18 +6,18 @@ sap.ui.define([
 
 	return BaseController.extend("com.tasa.pdeclarada.controller.App", {
 
-		onInit : function () {
+		onInit: function () {
 			var oViewModel,
 				fnSetAppNotBusy,
 				iOriginalBusyDelay = this.getView().getBusyIndicatorDelay();
 
 			oViewModel = new JSONModel({
-				busy : true,
-				delay : 0
+				busy: true,
+				delay: 0
 			});
 			this.setModel(oViewModel, "appView");
 
-			fnSetAppNotBusy = function() {
+			fnSetAppNotBusy = function () {
 				oViewModel.setProperty("/busy", false);
 				oViewModel.setProperty("/delay", iOriginalBusyDelay);
 			};
@@ -30,21 +30,21 @@ sap.ui.define([
 			// apply content density mode to root view
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-			let data=[
-                {
-                    planta:"MALABRIGO",
-                    asig:"0",
-                    pesc:"0",
-                    inop:"0",
-                    otro:"0"
-                },
-                {
-                    planta:"CHIMBOTE",
-                    asig:"60",
-                    pesc:"8",
-                    otro:"0"
-                }
-            ];
+			let data = [
+				{
+					planta: "MALABRIGO",
+					asig: "0",
+					pesc: "0",
+					inop: "0",
+					otro: "0"
+				},
+				{
+					planta: "CHIMBOTE",
+					asig: "60",
+					pesc: "8",
+					otro: "0"
+				}
+			];
 			this.getModel().setProperty("/lista", data)
 		}
 	});
