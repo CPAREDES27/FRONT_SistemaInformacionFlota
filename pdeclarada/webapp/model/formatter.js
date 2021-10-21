@@ -21,6 +21,9 @@ sap.ui.define([], function () {
 			const day = date.getDate();
 
 			return `${year}${month >= 10 ? month : `0${month}`}${day >= 10 ? day : `0${day}`}`;
+		},
+		setColorsFields:function(field){
+			console.log(field)
 		}
 
 	};

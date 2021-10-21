@@ -1,12 +1,14 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",
-	"sap/m/library"
-], function (Controller, UIComponent, mobileLibrary) {
+	"sap/m/library",
+	"../model/formatter"
+], function (Controller, UIComponent, mobileLibrary, formatter) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
 	var URLHelper = mobileLibrary.URLHelper;
+	var mainUrlRest = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com/api/';
 
 	return Controller.extend("com.tasa.pdeclaradadiaria.controller.BaseController", {
 		/**
@@ -14,7 +16,7 @@ sap.ui.define([
 		 * @public
 		 * @returns {sap.ui.core.routing.Router} the router for this component
 		 */
-		getRouter : function () {
+		getRouter: function () {
 			return UIComponent.getRouterFor(this);
 		},
 
@@ -24,7 +26,7 @@ sap.ui.define([
 		 * @param {string} [sName] the model name
 		 * @returns {sap.ui.model.Model} the model instance
 		 */
-		getModel : function (sName) {
+		getModel: function (sName) {
 			return this.getView().getModel(sName);
 		},
 
@@ -35,7 +37,7 @@ sap.ui.define([
 		 * @param {string} sName the model name
 		 * @returns {sap.ui.mvc.View} the view instance
 		 */
-		setModel : function (oModel, sName) {
+		setModel: function (oModel, sName) {
 			return this.getView().setModel(oModel, sName);
 		},
 
@@ -44,7 +46,7 @@ sap.ui.define([
 		 * @public
 		 * @returns {sap.ui.model.resource.ResourceModel} the resourceModel of the component
 		 */
-		getResourceBundle : function () {
+		getResourceBundle: function () {
 			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
 		},
 
@@ -52,13 +54,33 @@ sap.ui.define([
 		 * Event handler when the share by E-Mail button has been clicked
 		 * @public
 		 */
-		onShareEmailPress : function () {
+		onShareEmailPress: function () {
 			var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));
 			URLHelper.triggerEmail(
 				null,
 				oViewModel.getProperty("/shareSendEmailSubject"),
 				oViewModel.getProperty("/shareSendEmailMessage")
 			);
-		}	});
+		},
+		getListPescaDeclaradaDiaria: async function (fechaInicio, fechaFin) {
+			const fechaInicioFormat = formatter.formatDateYYYYMMDD(fechaInicio);
+			const fechaFinFormat = formatter.formatDateYYYYMMDD(fechaFin);
+
+			let listPescaDeclaradaDiaria = await fetch(`${mainUrlRest}sistemainformacionflota/PescaDeclaradaDiara`, {
+				method: 'POST',
+				body: JSON.stringify({
+					fieldstr_dl: [],
+					p_fefin: fechaFinFormat,
+					p_feini: fechaInicioFormat,
+					p_user: ""
+				})
+			})
+				.then(resp => resp.json())
+				.then(data => data)
+				.catch(error => console.log("Error de llamado al servicio"));
+
+			return listPescaDeclaradaDiaria;
+		}
+	});
 
 });

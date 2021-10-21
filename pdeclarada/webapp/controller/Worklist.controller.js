@@ -24,7 +24,7 @@ sap.ui.define([
 		onInit: function () {
 			var oViewModel,
 				iOriginalBusyDelay,
-				oTable = this.byId("table");
+				oTable = this.byId("tablePescaDeclarada");
 
 			// Put down worklist table's original value for busy indicator delay,
 			// so it can be restored later on. Busy handling on the table is
@@ -144,7 +144,7 @@ sap.ui.define([
 		 * @public
 		 */
 		onRefresh: function () {
-			var oTable = this.byId("table");
+			var oTable = this.byId("tablePescaDeclarada");
 			oTable.getBinding("items").refresh();
 		},
 
@@ -195,7 +195,16 @@ sap.ui.define([
 					};
 				});
 
+				const currentDate = new Date();
+				const hours = currentDate.getHours();
+				const minutes = currentDate.getMinutes();
+				const seconds = currentDate.getSeconds();
+				const horaActual = `${hours >= 10 ? hours : `0${hours}`}:${minutes >= 10 ? minutes : `0${minutes}`}:${seconds >= 10 ? seconds : `0${seconds}`}`;
+
 				this.getModel().setProperty("/STR_TP_GRAPHICS", str_tp_graph);
+				this.getModel().setProperty("/Hora", horaActual);
+
+				this.setTableClass();
 			}
 		},
 		calcularTotales: function () {
@@ -223,6 +232,8 @@ sap.ui.define([
 			let total_NEMBT = 0;
 			let total_PROM_PESC_PROP = 0;
 			let total_PROM_PESC_TERC = 0;
+			let total_TOTED = 0;
+
 			listPescaDeclarada.forEach(p => {
 				total_CEMBA += p.CEMBA;
 				total_CEMBP += p.CEMBP;
@@ -237,6 +248,7 @@ sap.ui.define([
 				total_NEMBT += p.NEMBT;
 				total_PROM_PESC_PROP += p.PROM_PESC_PROP;
 				total_PROM_PESC_TERC += p.PROM_PESC_TERC;
+				total_TOTED += p.TOTED;
 			});
 
 			/**
@@ -259,9 +271,15 @@ sap.ui.define([
 			pescaDeclaradaTotal.NEMBT = total_NEMBT;
 			pescaDeclaradaTotal.PROM_PESC_PROP = total_PROM_PESC_PROP;
 			pescaDeclaradaTotal.PROM_PESC_TERC = total_PROM_PESC_TERC;
+			pescaDeclaradaTotal.TOTED = total_TOTED;
 
-			listPescaDeclarada.push(pescaDeclaradaTotal)
+			listPescaDeclarada.push(pescaDeclaradaTotal);
 
+			//Totales genéricos
+			this.getModel().setProperty("/totalGenPescDecl", pescaDeclaradaTotal.TOT_PESC_DECL);
+			this.getModel().setProperty("/totalGenNumEmba", pescaDeclaradaTotal.TOT_NUM_EMBA);
+			this.getModel().setProperty("/totalGenPescDesc", pescaDeclaradaTotal.CNPDS);
+			this.getModel().setProperty("/totalGenNumEmbaDesc", pescaDeclaradaTotal.TOTED);
 		},
 		buscarPescaDescargada: function () {
 			let fechaValue = this.byId("fechaPescaDeclarada").getValue();
@@ -272,6 +290,28 @@ sap.ui.define([
 			}
 			const fecha = fechaValue ? new Date(`${fechaValue}T00:00:00`) : new Date();
 			this.getDataTable(fecha, motivoMarea);
+		},
+		setTableClass: function () {
+			let oTable = this.byId("tablePescaDeclarada");
+			let aColumns = oTable.getColumns();
+			let aItems = oTable.getRows();
+			const COLORS = {
+				BADVALUE_MEDIUM: "BADVALUE_MEDIUM",
+				CRITICALVALUE_LIGHT: "CRITICALVALUE_LIGHT",
+				KEY_MEDIUM: "KEY_MEDIUM",
+				POSITIVE: "POSITIVE",
+			}
+			const COLOR_DEFAULT = "SinColor";
+			/* let sColor, Path;
+			aItems.forEach(oItem => {
+				Path = this.getView().getModel().getProperty("/STR_TP");
+				sColor = Path.color;
+				oItem.getAg
+				oItem.getParent().addStyleClass(COLORS[sColor] || COLOR_DEFAULT);
+			}); */
+			aColumns.flatMap(column => {
+				column.getTemplate().addStyleClass('BADVALUE_MEDIUM')
+			})
 		}
 	});
 });

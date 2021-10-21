@@ -47,12 +47,17 @@
 						<f:formElements>
 							<f:FormElement label="Pesca declarada">
 								<f:fields>
-									<Text text="0/0" />
+									<Text text="{/totalGenPescDecl}/{/totalGenNumEmba}" />
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement label="Pesca descargada">
 								<f:fields>
-									<Text text="000/0" />
+									<Text text="{/totalGenPescDesc}/{/totalGenNumEmbaDesc}" />
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Hora">
+								<f:fields>
+									<Text text="{/Hora}" />
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -79,8 +84,8 @@
 
 		<semantic:content>
 			<layout:Grid defaultSpan="XL12 L12 M12 S12" >		
-				<table:Table id="table" 
-					rows="{/STR_TP}"
+				<table:Table id="tablePescaDeclarada" 
+					rows="{ path: '/STR_TP', formatter: '.formatter.setColorsFields' }"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					fixedBottomRowCount="1"
 					selectionMode="None"
@@ -244,6 +249,18 @@
 						</table:Column>
 					</table:columns>
 				</table:Table>
+
+				<layout:HorizontalLayout>
+					<layout:layoutData>
+						<layout:GridData span="XL12 L12 M12 S12"/>
+					</layout:layoutData>
+					<!-- Graficos -->
+					<VBox>
+						<Text text="Porc Pesca por Puerto 00%" />
+						<Text text="Porc Cap Bod por Puerto (99%)" />
+					</VBox>
+					
+				</layout:HorizontalLayout>
 
 				<layout:HorizontalLayout>
 					<layout:layoutData>

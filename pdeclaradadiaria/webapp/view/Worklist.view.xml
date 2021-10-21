@@ -1,12 +1,15 @@
 <mvc:View
 	controllerName="com.tasa.pdeclaradadiaria.controller.Worklist"
 	xmlns="sap.m"
+	xmlns:viz="sap.viz.ui5.controls"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:semantic="sap.f.semantic"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:table="sap.ui.table"
     xmlns:chart="sap.suite.ui.microchart"
-	xmlns:layout="sap.ui.layout">
+	xmlns:layout="sap.ui.layout"
+	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+	xmlns:viz.data="sap.viz.ui5.data">
 
 	<semantic:SemanticPage
 		id="page"
@@ -27,13 +30,13 @@
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DateRangeSelection  />
+									<DateRangeSelection id="dateRangePescaDeclaradaDiaria" />
 								</f:fields>
 							</f:FormElement>
 
 							<f:FormElement >
 								<f:fields>
-									<Button text="Buscar" type="Emphasized"/>
+									<Button text="Buscar" type="Emphasized" press="buscarPescaDescargadaDiaria"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -61,8 +64,9 @@
 		<semantic:content>
 			<layout:Grid defaultSpan="XL12 L12 M12 S12" >
 				<table:Table id="table" 
-					rows="{/lista}"
+					rows="{/STR_DL}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+					fixedBottomRowCount="1"
 					rowsUpdated=".onUpdateFinished"
 					visibleRowCount="5">
 					<table:columns>
@@ -73,7 +77,7 @@
 								<Label text="Fecha" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{planta}"/>     
+								<Text text="{FECCONMOV}"/>     
 							</table:template>
 						</table:Column>
 
@@ -84,7 +88,7 @@
 								<Label text="Harina" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PESC_DECL_CHI}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" width="4rem">
@@ -94,7 +98,7 @@
 								<Label text="C.H.D." />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PDECH}"/>
 							</table:template>
 						</table:Column>
 						
@@ -105,7 +109,7 @@
 								<Label text="TN" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PPCHI}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2">
@@ -115,7 +119,7 @@
 								<Label text="%" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PORC_DECL_CHI_PROP}%"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="Center">
@@ -125,7 +129,7 @@
 								<Label text="TN" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PTCHI}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4">
@@ -135,7 +139,7 @@
 								<Label text="%" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PORC_DECL_CHI_TERC}%"/>
 							</table:template>
 						</table:Column>
 
@@ -146,7 +150,7 @@
 								<Label text="Tn/Ep" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{asig}"/>
+								<Text text="{EFIC_PROP}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
@@ -156,7 +160,7 @@
 								<Label text="Tn/Ep" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{pesc}"/>
+								<Text text="{EFIC_TERC}"/>
 							</table:template>
 						</table:Column>
 
@@ -168,7 +172,7 @@
 								<Label text="Pesc prop" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{inop}"/>
+								<Text text="{CNEMP}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
@@ -178,7 +182,7 @@
 								<Label text="Pesc terc" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{otro}"/>
+								<Text text="{CNEMT}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
@@ -188,7 +192,7 @@
 								<Label text="Total pesca" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{inop}"/>
+								<Text text="{PSPRO}"/>
 							</table:template>
 						</table:Column>
 
@@ -200,7 +204,7 @@
 								<Label text="Planta terceros" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PSTER}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2">
@@ -210,7 +214,7 @@
 								<Label text="CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{PSPRO}"/>
 							</table:template>
 						</table:Column>
 						<table:Column >
@@ -233,28 +237,60 @@
 					<!-- Graficos -->
 					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
-							<chart:InteractiveBarChart labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
+							<chart:InteractiveBarChart bars="{/PORC_PESC_DECL}" labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
 								<chart:bars>
-									<chart:InteractiveBarChartBar label="Product 1" value="10" color="Critical"/>
-									<chart:InteractiveBarChartBar label="Product 2" value="50" color="Good" selected="true"/>
-									<chart:InteractiveBarChartBar label="Product 3" value="-10" color="Error"/>
+									<chart:InteractiveBarChartBar label="{descripcion}" value="{value}" color="Critical"/>
 								</chart:bars>
 							</chart:InteractiveBarChart>
 						</items>
 					</FlexBox>
+<!-- 
+					<layout:flexContent>
+						<viz:Popover id="idPopOver"></viz:Popover>
+						<viz:VizFrame id="idVizFrameTnEp" uiConfig="{applicationSet:'fiori'}"
+							height='100%' width="100%" vizType='line'>
+							<viz:dataset>
+								<viz.data:FlattenedDataset data="{/TN_EP}">
+									<viz.data:dimensions>
+										<viz.data:DimensionDefinition name="Week"
+											value="{fecha}" />
+									</viz.data:dimensions>
+									<viz.data:measures>
+										<viz.data:MeasureDefinition name="Revenue"
+											value="{prop}" />
+										<viz.data:MeasureDefinition name="Cost"
+											value="{terc}" />
+									</viz.data:measures>
+								</viz.data:FlattenedDataset>
+							</viz:dataset>
 
-					<FlexBox width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+							<viz:feeds>
+								<viz.feeds:FeedItem id='valueAxisFeed' uid="valueAxis" type="Measure"
+									values="Revenue" />
+								<viz.feeds:FeedItem id='categoryAxisFeed' uid="categoryAxis" type="Dimension"
+									values="Week" />
+							</viz:feeds>
+						</viz:VizFrame>
+					</layout:flexContent> -->
+
+					<FlexBox items="{/PESCA_TN_EP}" width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
-							<chart:InteractiveLineChart selectionChanged="selectionChanged" press="press" precedingPoint="20">
+							<chart:LineMicroChart color="Good"
+							leftTopLabel=""
+							showPoints="true" lines="{lines}">
+								<chart:lines>
+									<chart:LineMicroChartLine color="Critical" type="Solid" showPoints="true" points="{points}">
+										<chart:LineMicroChartPoint
+											x="{min}"
+											y="{max}"
+										>
+											
+										</chart:LineMicroChartPoint>
+									</chart:LineMicroChartLine>
+								</chart:lines>
 								<chart:points>
-									<chart:InteractiveLineChartPoint value="23.1" label="May" color="Normal"/>
-									<chart:InteractiveLineChartPoint value="2.2" label="June" color="Critical"/>
-									<chart:InteractiveLineChartPoint value="41.4" label="July" color="Good"/>
-									<chart:InteractiveLineChartPoint value="5.8" label="Aug" color="Critical"/>
-									<chart:InteractiveLineChartPoint value="49.9" label="Sep" color="Good" selected="true"/>
-									<chart:InteractiveLineChartPoint value="-10.2" label="Oct" color="Error"/>
 								</chart:points>
-							</chart:InteractiveLineChart>
+							</chart:LineMicroChart>
 						</items>
 					</FlexBox>
 				</layout:HorizontalLayout>
