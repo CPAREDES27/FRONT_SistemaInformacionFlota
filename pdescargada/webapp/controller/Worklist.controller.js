@@ -19,7 +19,7 @@ sap.ui.define([
 		 * Called when the worklist controller is instantiated.
 		 * @public
 		 */
-		onInit : function () {
+		onInit: function () {
 			var oViewModel,
 				iOriginalBusyDelay,
 				oTable = this.byId("table");
@@ -33,22 +33,28 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle : this.getResourceBundle().getText("worklistTableTitle"),
+				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
 				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
 				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
 				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
-				tableNoDataText : this.getResourceBundle().getText("tableNoDataText"),
-				tableBusyDelay : 0
+				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
+				tableBusyDelay: 0
 			});
 			this.setModel(oViewModel, "worklistView");
 
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
-			oTable.attachEventOnce("updateFinished", function(){
+			oTable.attachEventOnce("updateFinished", function () {
 				// Restore original busy indicator delay for worklist's table
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
+
+			let currentDate = new Date();
+			let firstDateOfMonth = new Date();
+			firstDateOfMonth.setDate(1);
+
+			this.getDataTable(firstDateOfMonth, currentDate);
 		},
 
 		/* =========================================================== */
@@ -64,7 +70,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the update finished event
 		 * @public
 		 */
-		onUpdateFinished : function (oEvent) {
+		onUpdateFinished: function (oEvent) {
 			// update the worklist's object counter after the table update
 			var sTitle,
 				oTable = oEvent.getSource(),
@@ -84,7 +90,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
 		 * @public
 		 */
-		onPress : function (oEvent) {
+		onPress: function (oEvent) {
 			// The source is the list item that got pressed
 			this._showObject(oEvent.getSource());
 		},
@@ -94,13 +100,13 @@ sap.ui.define([
 		 * We navigate back in the browser history
 		 * @public
 		 */
-		onNavBack : function() {
+		onNavBack: function () {
 			// eslint-disable-next-line sap-no-history-manipulation
 			history.go(-1);
 		},
 
 
-		onSearch : function (oEvent) {
+		onSearch: function (oEvent) {
 			if (oEvent.getParameters().refreshButtonPressed) {
 				// Search field's 'refresh' button has been pressed.
 				// This is visible if you select any master list item.
@@ -124,7 +130,7 @@ sap.ui.define([
 		 * and group settings and refreshes the list binding.
 		 * @public
 		 */
-		onRefresh : function () {
+		onRefresh: function () {
 			var oTable = this.byId("table");
 			oTable.getBinding("items").refresh();
 		},
@@ -139,7 +145,7 @@ sap.ui.define([
 		 * @param {sap.m.ObjectListItem} oItem selected Item
 		 * @private
 		 */
-		_showObject : function (oItem) {
+		_showObject: function (oItem) {
 			this.getRouter().navTo("object", {
 				objectId: oItem.getBindingContext().getProperty("ProductID")
 			});
@@ -150,13 +156,60 @@ sap.ui.define([
 		 * @param {sap.ui.model.Filter[]} aTableSearchState An array of filters for the search
 		 * @private
 		 */
-		_applySearch: function(aTableSearchState) {
+		_applySearch: function (aTableSearchState) {
 			var oTable = this.byId("table"),
 				oViewModel = this.getModel("worklistView");
 			oTable.getBinding("items").filter(aTableSearchState, "Application");
 			// changes the noDataText of the list in case there are no filter results
 			if (aTableSearchState.length !== 0) {
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
+			}
+		},
+		buscarPescaDescargada: function () {
+			let fechaInicio = this.byId("dateRangePescaDescargada").getDateValue();
+			let fechaFin = this.byId("dateRangePescaDescargada").getSecondDateValue();
+			this.getDataTable(fechaInicio, fechaFin);
+		},
+		getDataTable: async function (fechaInicio, fechaFin) {
+			let listPescaDescargada = await this.getListPescaDescargada(fechaInicio, fechaFin);
+
+			if (listPescaDescargada) {
+				/* let totalGenPescDesc = 0;
+				let listDescDiaSum = [];
+
+				//Agrupar items por fecha y suma de cantidades de pesca descargadas por fecha (2 decimales) y total general
+				listPescaDescargada.str_dsd.forEach(dsd => {
+					totalGenPescDesc += dsd.CNPDS;
+					let descDiaSum = listDescDiaSum.find(dsdSum => dsdSum.FIDES === dsd.FIDES);
+					if (!descDiaSum) {
+						descDiaSum = listPescaDescargada.str_dsd.filter(dsdFilter => dsdFilter.FIDES === dsd.FIDES).reduce((dsdPrev, dsdCurr) => {
+							let cndpsSum = Math.round(((dsdCurr.CNPDS + dsdPrev.CNPDS) + Number.EPSILON) * 100) / 100;
+							return {
+								CNPDS: cndpsSum,
+								FIDES: dsdCurr.FIDES
+							}
+						});
+						listDescDiaSum.push(descDiaSum);
+					}
+				});
+
+				//Adicionar días, promedios y asignar las cantidades de pesca descargada por planta, redondearlas a 2 decimales
+				let listPescaDescargadaSum = listDescDiaSum.map((desc, index) => {
+					listPescaDescargada.str_dsd.filter(d => d.FIDES === desc.FIDES).forEach(d => {
+						let planta = listPescaDescargada.str_pta.find(pta => pta.CDPTA === d.CDPTA);
+						if (planta) {
+							let cndps = Math.round((d.CNPDS + Number.EPSILON) * 100) / 100;
+							desc[`Planta${planta.CDPTA}`] = cndps;
+						}
+					});
+
+					const days = index + 1;
+					const promedio = Math.round((totalGenPescDesc / days + Number.EPSILON) * 100) / 100;
+
+					return { ...desc, DAYS: days, PROM: promedio };
+				}); */
+
+				this.getModel().setProperty("/STR_DSD", listPescaDescargada.str_dsd);
 			}
 		}
 

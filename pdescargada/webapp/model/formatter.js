@@ -9,13 +9,25 @@ sap.ui.define([], function () {
 		 * @param {string} sValue the number string to be rounded
 		 * @returns {string} sValue with 2 digits rounded
 		 */
-		numberUnit : function (sValue) {
+		numberUnit: function (sValue) {
 			if (!sValue) {
 				return "";
 			}
 			return parseFloat(sValue).toFixed(2);
-		}
+		},
+		formatDateYYYYMMDD: function (date) {
+			const year = date.getFullYear();
+			const month = date.getMonth() + 1;
+			const day = date.getDate();
 
+			return `${year}${month >= 10 ? month : `0${month}`}${day >= 10 ? day : `0${day}`}`;
+		},
+		formatRowNumber: function (val) {
+			if (!this.getBindingContext()) return null;
+			var index = this.getBindingContext().getPath().split("/")[2];
+			// (an example of path value here is "/modelData/0")
+			return parseInt(index) + 1;
+		}
 	};
 
 });
