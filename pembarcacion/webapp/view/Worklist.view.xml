@@ -1,4 +1,4 @@
-<mvc:View
+<mvc:View xmlns:core="sap.ui.core"
 	controllerName="com.tasa.pembarcacion.controller.Worklist"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -25,7 +25,9 @@
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DateRangeSelection width="100%" />
+									<Select id="opcionFecha" items="{ path: '/OPCIONES_FECHA' }" >
+										<core:Item key="{id}" text="{descripcion}" />
+									</Select>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -34,9 +36,59 @@
 						<f:formElements>
 							<f:FormElement label="Temporadas">
 								<f:fields>
-									<Input 
-										showValueHelp="true"
-										valueHelpOnly="true" />
+									<Input id="txtTemporadas"
+										showSuggestion="true"
+										showTableSuggestionValueHelp="false"
+										suggestionRows="{/SUGGESTION_TEMPORADAS}"
+										change="updateDateRange"
+										value="{/temporada}"
+										>
+										<suggestionColumns>
+											<Column width="10rem">
+												<Label text="Código" />
+											</Column>
+											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
+												hAlign="Center">
+												<Label text="Descripción" />
+											</Column>
+											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
+												hAlign="Center">
+												<Label text="Fecha inicio" />
+											</Column>
+											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
+												hAlign="Center">
+												<Label text="Fecha fin" />
+											</Column>
+											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
+												hAlign="Center">
+												<Label text="Cuota" />
+											</Column>
+											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
+												hAlign="End">
+												<Label text="Zona" />
+											</Column>
+										</suggestionColumns>
+
+										<suggestionRows>
+											<ColumnListItem>
+												<Label text="{CDPCN}" />
+												<Label text="{DSPCN}" />
+												<Label text="{ path: 'FHITM', formatter: '.formatter.formatDateDDMMYYYY' }" />
+												<Label text="{ path: 'FHFTM', formatter: '.formatter.formatDateDDMMYYYY' }" />
+												<Label text="{CTNAC}" />
+												<Label text="{ZDSZAR}" />
+											</ColumnListItem>
+										</suggestionRows>
+									</Input>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Fecha">
+								<f:fields>
+									<DateRangeSelection id="dateRangePescaEmbarcacion" width="100%" />
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -45,7 +97,9 @@
 						<f:formElements>
 							<f:FormElement label="Tipo embarcación">
 								<f:fields>
-									<Select  />
+									<Select id="tipoEmbarcacion" items="{ path: '/TIPOS_EMBARCACION' }" >
+										<core:Item key="{id}" text="{descripcion}" />
+									</Select>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -54,7 +108,7 @@
 						<f:formElements>
 							<f:FormElement >
 								<f:fields>
-									<Button text="Buscar" type="Emphasized"/>
+									<Button text="Buscar" type="Emphasized" press="buscarPescasPorEmbarcacion"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -86,14 +140,15 @@
 
 		<semantic:content>
 			<table:Table id="table" 
-					rows="{/lista}"
+					rows="{/PESCAS_EMBARCACION}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					rowsUpdated=".onUpdateFinished"
+					fixedBottomRowCount="1"
 					visibleRowCount="7">
 					<table:extension>
 						<OverflowToolbar style="Clear">
 							<ToolbarSpacer />
-							<Button type="Emphasized" icon="sap-icon://excel-attachment" press="buttonPress"/>
+							<Button type="Emphasized" icon="sap-icon://excel-attachment" press="onExport"/>
 						</OverflowToolbar>
 					</table:extension>
 					<table:columns>
@@ -103,7 +158,7 @@
 								<Label text="Embarcación" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{planta}"/>     
+								<Text text="{NMEMB}"/>     
 							</table:template>
 						</table:Column>
 						<table:Column width="4rem">
@@ -112,7 +167,7 @@
 								<Label text="CBOD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{planta}"/>     
+								<Text text="{CPPMS}"/>     
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="Center" width="5rem">
@@ -121,7 +176,7 @@
 								<Label text="Periodo" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{asig}"/>
+								<Text text="{CPRNC}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="5rem">
@@ -130,7 +185,7 @@
 								<Label text="Avance(%)" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{pesc}"/>
+								<Text text="{= ${CAVNC} * 100}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="Center" width="5rem">
@@ -139,7 +194,7 @@
 								<Label text="Periodo" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{asig}"/>
+								<Text text="{CPRSU}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="5rem">
@@ -148,7 +203,7 @@
 								<Label text="Avance(%)" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{pesc}"/>
+								<Text text="{= ${CAVSU} * 100}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="5rem">
@@ -157,7 +212,7 @@
 								<Label text="Centro Norte" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{inop}"/>
+								<Text text="{CNDCN}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
@@ -166,7 +221,7 @@
 								<Label text="Sur" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{otro}"/>
+								<Text text="{CNDSU}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2" hAlign="Center" width="4rem">
@@ -175,7 +230,7 @@
 								<Label text="CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{}"/>
+								<Text text="{CNDHD}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2" width="4rem">
@@ -184,7 +239,7 @@
 								<Label text="Total" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{CNDTO}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="Center" width="4rem">
@@ -193,7 +248,7 @@
 								<Label text="Centro Norte" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{DIPCN}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" width="4rem">
@@ -202,7 +257,7 @@
 								<Label text="Sur" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{DIPSU}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" width="4rem">
@@ -211,7 +266,7 @@
 								<Label text="CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{DIPHD}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" width="4rem">
@@ -220,7 +275,7 @@
 								<Label text="Sin Pesca Sur" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{DSPSU}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2" hAlign="Center">
@@ -229,7 +284,7 @@
 								<Label text="Sin Pesca CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{DSPHD}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2">
@@ -238,7 +293,7 @@
 								<Label text="Veda" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{DIVED}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4" hAlign="Center">
@@ -247,7 +302,7 @@
 								<Label text="Total" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{TOTDI}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="4">
@@ -256,7 +311,7 @@
 								<Label text="Faltantes" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
+								<Text text="{DIFAL}"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="2" hAlign="Center">
@@ -265,13 +320,7 @@
 								<Label text="Rend(%)" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="empty string"/>
-							</table:template>
-						</table:Column>
-						<table:Column >
-							<Label text="Ver detalle" />
-							<table:template>
-								<Button icon="sap-icon://show" />
+								<Text text="{= ${RENEM} * 100}"/>
 							</table:template>
 						</table:Column>
 					</table:columns>

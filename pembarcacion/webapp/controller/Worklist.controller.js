@@ -3,13 +3,17 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
-], function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
+	"sap/ui/model/FilterOperator",
+	'sap/ui/export/library',
+	'sap/ui/export/Spreadsheet'
+], function (BaseController, JSONModel, formatter, Filter, FilterOperator, exportLibrary, Spreadsheet) {
 	"use strict";
+	var EdmType = exportLibrary.EdmType;
 
 	return BaseController.extend("com.tasa.pembarcacion.controller.Worklist", {
 
 		formatter: formatter,
+		dataTableKeys: ['NMEMB', 'CPPMS', 'CPRNC', 'CAVNC', 'CPRSU', 'CAVSU', 'CNDCN', 'CNDSU', 'CNDHD', 'CNDTO', 'DIPCN', 'DIPSU', 'DIPHD', 'DSPSU', 'DSPHD', 'DIVED', 'TOTDI', 'DIFAL', 'RENEM'],
 
 		/* =========================================================== */
 		/* lifecycle methods                                           */
@@ -19,7 +23,7 @@ sap.ui.define([
 		 * Called when the worklist controller is instantiated.
 		 * @public
 		 */
-		onInit : function () {
+		onInit: function () {
 			var oViewModel,
 				iOriginalBusyDelay,
 				oTable = this.byId("table");
@@ -33,22 +37,25 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle : this.getResourceBundle().getText("worklistTableTitle"),
+				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
 				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
 				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
 				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
-				tableNoDataText : this.getResourceBundle().getText("tableNoDataText"),
-				tableBusyDelay : 0
+				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
+				tableBusyDelay: 0
 			});
 			this.setModel(oViewModel, "worklistView");
 
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
-			oTable.attachEventOnce("updateFinished", function(){
+			oTable.attachEventOnce("updateFinished", function () {
 				// Restore original busy indicator delay for worklist's table
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
+
+			//Llenado de selectores
+			this.loadData();
 		},
 
 		/* =========================================================== */
@@ -64,7 +71,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the update finished event
 		 * @public
 		 */
-		onUpdateFinished : function (oEvent) {
+		onUpdateFinished: function (oEvent) {
 			// update the worklist's object counter after the table update
 			var sTitle,
 				oTable = oEvent.getSource(),
@@ -84,7 +91,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
 		 * @public
 		 */
-		onPress : function (oEvent) {
+		onPress: function (oEvent) {
 			// The source is the list item that got pressed
 			this._showObject(oEvent.getSource());
 		},
@@ -94,13 +101,13 @@ sap.ui.define([
 		 * We navigate back in the browser history
 		 * @public
 		 */
-		onNavBack : function() {
+		onNavBack: function () {
 			// eslint-disable-next-line sap-no-history-manipulation
 			history.go(-1);
 		},
 
 
-		onSearch : function (oEvent) {
+		onSearch: function (oEvent) {
 			if (oEvent.getParameters().refreshButtonPressed) {
 				// Search field's 'refresh' button has been pressed.
 				// This is visible if you select any master list item.
@@ -124,7 +131,7 @@ sap.ui.define([
 		 * and group settings and refreshes the list binding.
 		 * @public
 		 */
-		onRefresh : function () {
+		onRefresh: function () {
 			var oTable = this.byId("table");
 			oTable.getBinding("items").refresh();
 		},
@@ -139,7 +146,7 @@ sap.ui.define([
 		 * @param {sap.m.ObjectListItem} oItem selected Item
 		 * @private
 		 */
-		_showObject : function (oItem) {
+		_showObject: function (oItem) {
 			this.getRouter().navTo("object", {
 				objectId: oItem.getBindingContext().getProperty("ProductID")
 			});
@@ -150,7 +157,7 @@ sap.ui.define([
 		 * @param {sap.ui.model.Filter[]} aTableSearchState An array of filters for the search
 		 * @private
 		 */
-		_applySearch: function(aTableSearchState) {
+		_applySearch: function (aTableSearchState) {
 			var oTable = this.byId("table"),
 				oViewModel = this.getModel("worklistView");
 			oTable.getBinding("items").filter(aTableSearchState, "Application");
@@ -158,7 +165,256 @@ sap.ui.define([
 			if (aTableSearchState.length !== 0) {
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 			}
-		}
+		},
+		loadData: async function () {
+			const listDomNames = ["TIPOEMBARCACION", "OPCIONFECHA_RPEB"];
+			let listDominios = await this.getDominios(listDomNames);
+			let listTemporadas = await this.getTemporadas();
 
+			//Llenado de selectores
+			if (listDominios) {
+				const listTiposEmbarcacion = listDominios.data.find(dom => dom.dominio === "TIPOEMBARCACION").data;
+				const listOpcionFecha = listDominios.data.find(dom => dom.dominio === "OPCIONFECHA_RPEB").data;
+
+				this.getModel().setProperty("/TIPOS_EMBARCACION", listTiposEmbarcacion);
+				this.getModel().setProperty("/OPCIONES_FECHA", listOpcionFecha);
+			}
+
+			//Llenado de sugerencia de temporadas
+			if (listTemporadas) {
+				//Ordenar temporadas por fecha fin
+				listTemporadas.data.sort((a, b) => {
+					return -(this.formatter.getDateFromString(a.FHFTM) - this.formatter.getDateFromString(b.FHFTM));
+				});
+				//Establecer la primera temporada como seleccionada
+				const mostRecentTemporada = listTemporadas.data[0];
+				this.byId("txtTemporadas").setValue(mostRecentTemporada.CDPCN);
+				this.byId("dateRangePescaEmbarcacion").setDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHITM));
+				this.byId("dateRangePescaEmbarcacion").setSecondDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHFTM));
+
+				this.getModel().setProperty("/SUGGESTION_TEMPORADAS", listTemporadas.data);
+			}
+
+			//Establecer la primera temporada como seleccionada
+
+		},
+		updateDateRange: function (oEvent) {
+			const codTemporada = oEvent.getParameter('value');
+
+			let temporada = this.getModel().getProperty("/SUGGESTION_TEMPORADAS").find(temp => temp.CDPCN === codTemporada);
+
+			if (temporada) {
+				const fechaInicio = this.formatter.getDateFromString(temporada.FHITM);
+				const fechaFin = this.formatter.getDateFromString(temporada.FHFTM);
+
+				this.byId("dateRangePescaEmbarcacion").setDateValue(fechaInicio);
+				this.byId("dateRangePescaEmbarcacion").setSecondDateValue(fechaFin);
+			}
+
+			/* this.byId("dateRangePescaEmbarcacion").setDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHITM));
+			this.byId("dateRangePescaEmbarcacion").setSecondDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHFTM)); */
+		},
+		buscarPescasPorEmbarcacion: async function () {
+			const opcionFecha = this.byId("opcionFecha").getSelectedKey();
+			const fechaInicial = this.byId("dateRangePescaEmbarcacion").getDateValue();
+			const fechaFinal = this.byId("dateRangePescaEmbarcacion").getSecondDateValue();
+			const temporada = opcionFecha === 'T' ? this.byId("txtTemporadas").getValue() : undefined;
+			const tipoEmbarcacion = this.byId("tipoEmbarcacion").getSelectedKey();
+
+			let result = await this.getListPescasEmbarcacion(temporada, tipoEmbarcacion, fechaInicial, fechaFinal);
+
+			let listPescasEmbarcacion = result.str_pem;
+			/**
+			 * Calcular totales
+			 */
+			let totales = listPescasEmbarcacion.reduce((pemAcum, pem) => {
+				return {
+					CPRNC: pem.CPRNC + pemAcum.CPRNC,
+					CAVNC: pem.CAVNC + pemAcum.CAVNC,
+					CPRSU: pem.CPRSU + pemAcum.CPRSU,
+					CAVSU: pem.CAVSU + pemAcum.CAVSU,
+				}
+			});
+
+			listPescasEmbarcacion.push(totales);
+
+
+			this.getModel().setProperty("/PESCAS_EMBARCACION", listPescasEmbarcacion);
+		},
+		createColumnConfig: function () {
+			var aCols = [];
+
+			aCols.push({
+				label: 'Embarcación',
+				property: 'NMEMB',
+				type: EdmType.String
+			});
+
+			aCols.push({
+				label: 'CBOD',
+				type: EdmType.Number,
+				property: 'CPPMS',
+				scale: 2
+			});
+
+			/**
+			 * CUOTA
+			 */
+			aCols.push({
+				label: 'Periodo',
+				type: EdmType.Number,
+				property: 'CPRNC',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Avance(%)',
+				type: EdmType.Number,
+				property: 'CAVNC',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Periodo',
+				type: EdmType.Number,
+				property: 'CPRSU',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Avance(%)',
+				type: EdmType.Number,
+				property: 'CAVSU',
+				scale: 2
+			});
+
+			/**
+			 * Pesca TM
+			 */
+			aCols.push({
+				label: 'Centro Norte',
+				type: EdmType.Number,
+				property: 'CNDCN',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Sur',
+				type: EdmType.Number,
+				property: 'CNDSU',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'CHD',
+				type: EdmType.Number,
+				property: 'CNDHD',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Total',
+				type: EdmType.Number,
+				property: 'CNDTO',
+				scale: 2
+			});
+
+			/**
+			 * Días de Pesca
+			 */
+			aCols.push({
+				label: 'Centro Norte',
+				type: EdmType.Number,
+				property: 'DIPCN',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Sur',
+				type: EdmType.Number,
+				property: 'DIPSU',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'CHD',
+				type: EdmType.Number,
+				property: 'DIPHD',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Sin Pesca Sur',
+				type: EdmType.Number,
+				property: 'DSPSU',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Sin Pesca CHD',
+				type: EdmType.Number,
+				property: 'DSPHD',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Veda',
+				type: EdmType.Number,
+				property: 'DIVED',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Total',
+				type: EdmType.Number,
+				property: 'TOTDI',
+				scale: 2
+			});
+
+			/**
+			 * Dias
+			 */
+			aCols.push({
+				label: 'Faltantes',
+				type: EdmType.Number,
+				property: 'DIFAL',
+				scale: 2
+			});
+
+			aCols.push({
+				label: 'Rend(%)',
+				type: EdmType.Number,
+				property: 'RENEM',
+				scale: 2
+			});
+
+			return aCols;
+		},
+		onExport: function () {
+			var aCols, oRowBinding, oSettings, oSheet, oTable;
+
+			if (!this._oTable) {
+				this._oTable = this.byId('table');
+			}
+
+			oTable = this._oTable;
+			oRowBinding = oTable.getBinding('rows');
+			aCols = this.createColumnConfig();
+
+			oSettings = {
+				workbook: {
+					columns: aCols,
+					hierarchyLevel: 'Level'
+				},
+				dataSource: oRowBinding,
+				fileName: 'Table export sample.xlsx',
+				worker: false // We need to disable worker because we are using a MockServer as OData Service
+			};
+
+			oSheet = new Spreadsheet(oSettings);
+			oSheet.build().finally(function () {
+				oSheet.destroy();
+			});
+		}
 	});
 });
