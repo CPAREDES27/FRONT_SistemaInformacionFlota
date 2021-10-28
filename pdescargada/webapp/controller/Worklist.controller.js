@@ -171,45 +171,53 @@ sap.ui.define([
 			this.getDataTable(fechaInicio, fechaFin);
 		},
 		getDataTable: async function (fechaInicio, fechaFin) {
-			let listPescaDescargada = await this.getListPescaDescargada(fechaInicio, fechaFin);
+			let listPescaDescargada = await this.getListPescaDescargadaDiaResum(fechaInicio, fechaFin);
 
 			if (listPescaDescargada) {
-				/* let totalGenPescDesc = 0;
-				let listDescDiaSum = [];
+				let plantas = listPescaDescargada.str_pta;
+				let descargas = listPescaDescargada.str_dsd;
+				let descargasDias = listPescaDescargada.str_dsddia;
+				let totalesDescargas = listPescaDescargada.str_dsdtot;
 
-				//Agrupar items por fecha y suma de cantidades de pesca descargadas por fecha (2 decimales) y total general
-				listPescaDescargada.str_dsd.forEach(dsd => {
-					totalGenPescDesc += dsd.CNPDS;
-					let descDiaSum = listDescDiaSum.find(dsdSum => dsdSum.FIDES === dsd.FIDES);
-					if (!descDiaSum) {
-						descDiaSum = listPescaDescargada.str_dsd.filter(dsdFilter => dsdFilter.FIDES === dsd.FIDES).reduce((dsdPrev, dsdCurr) => {
-							let cndpsSum = Math.round(((dsdCurr.CNPDS + dsdPrev.CNPDS) + Number.EPSILON) * 100) / 100;
-							return {
-								CNPDS: cndpsSum,
-								FIDES: dsdCurr.FIDES
-							}
-						});
-						listDescDiaSum.push(descDiaSum);
-					}
-				});
+				//Copiar un elemento de la lista de descargas por días
+				let totales = { ...descargasDias[0] };
 
-				//Adicionar días, promedios y asignar las cantidades de pesca descargada por planta, redondearlas a 2 decimales
-				let listPescaDescargadaSum = listDescDiaSum.map((desc, index) => {
-					listPescaDescargada.str_dsd.filter(d => d.FIDES === desc.FIDES).forEach(d => {
-						let planta = listPescaDescargada.str_pta.find(pta => pta.CDPTA === d.CDPTA);
-						if (planta) {
-							let cndps = Math.round((d.CNPDS + Number.EPSILON) * 100) / 100;
-							desc[`Planta${planta.CDPTA}`] = cndps;
-						}
+				// Adición de campos dinámicos de las plantas
+				let totalesDescargasDias = descargasDias.map(descDias => {
+					const fecha = descDias.FIDES;
+					descargas.filter(desc => desc.FIDES === fecha).forEach(desc => {
+						descDias[`CNPDS${desc.CDPTA}`] = desc.CNPDS;
 					});
 
-					const days = index + 1;
-					const promedio = Math.round((totalGenPescDesc / days + Number.EPSILON) * 100) / 100;
+					return descDias;
+				});
 
-					return { ...desc, DAYS: days, PROM: promedio };
-				}); */
+				//Adicionar la fila de totales
+				totalesDescargas.filter(totalesDesc => totalesDesc.CDPTA !== 'TT').forEach(totalesDesc => {
+					totales[`CNPDS${totalesDesc.CDPTA}`] = totalesDesc.TOTALCNPDS;
+				});
+				totales.CNPDS = totalesDescargas.find(totalesDesc => totalesDesc.CDPTA === 'TT').TOTALCNPDS;
+				totales.FIDES = null;
+				totales.CORREL = null;
+				totales.PROMCNPDS = null;
 
-				this.getModel().setProperty("/STR_DSD", listPescaDescargada.str_dsd);
+				//Unir los totales de descargas por días con las plantas
+				let totalesDescargasDiasPlantas = totalesDescargas.map(totalDescarga => {
+					const planta = plantas.find(planta => planta.CDPTA === totalDescarga.CDPTA);
+					if (planta) {
+						return {
+							planta: planta.DESCR,
+							descarga: totalDescarga.TOTALCNPDS
+						}
+					}
+				}).filter(totalDescargaDiaPlanta => totalDescargaDiaPlanta !== undefined);
+
+
+				totalesDescargasDias.push(totales);
+
+				this.getModel().setProperty("/STR_DSD", totalesDescargasDias);
+				this.getModel().setProperty("/STR_TOTALES_DIAS", descargasDias);
+				this.getModel().setProperty("/STR_TOTALES_PLANTA", totalesDescargasDiasPlantas);
 			}
 		}
 

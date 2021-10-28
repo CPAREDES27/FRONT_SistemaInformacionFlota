@@ -62,19 +62,21 @@ sap.ui.define([
 				oViewModel.getProperty("/shareSendEmailMessage")
 			);
 		},
-		getListPescaDescargada: async function (fechaInicio, fechaFin) {
+		getListPescaDescargadaDiaResum: async function (fechaInicio, fechaFin) {
 			let fechaInicioFormat = formatter.formatDateYYYYMMDD(fechaInicio);
 			let fechaFinFormat = formatter.formatDateYYYYMMDD(fechaFin);
 
 			const body = {
 				fieldstr_pta: [],
 				fielstr_dsd: [],
+				fielstr_dsddia: [],
+				fielstr_dsdtot: [],
 				p_ffdes: fechaFinFormat,
 				p_fides: fechaInicioFormat,
 				p_user: ""
 			};
 
-			let listPescaDescargada = await fetch(`${mainUrlRest}sistemainformacionflota/PescaDescargada`, {
+			let listPescaDescargada = await fetch(`${mainUrlRest}sistemainformacionflota/PescaDescargadaDiaResum`, {
 				method: 'POST',
 				body: JSON.stringify(body)
 			})

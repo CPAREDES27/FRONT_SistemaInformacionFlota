@@ -63,6 +63,7 @@
 					rows="{/STR_DSD}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					rowsUpdated=".onUpdateFinished"
+					fixedBottomRowCount="1"
 					visibleRowCount="5">
 					<table:columns>
 						<table:Column width="8rem">
@@ -82,70 +83,70 @@
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
 								<Label text="Días" />
 							<table:template>
-								<Text text="{DAYS}"/>
+								<Text text="{CORREL}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
 								<Label text="Promedio" />
 							<table:template>
-								<Text text="{PROM}"/>
+								<Text text="{PROMCNPDS}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
 								<Label text="MALAB SUR" />
 							<table:template>
-								<Text text="{Planta0005}"/>
+								<Text text="{CNPDS0005}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
 								<Label text="CHIMB" />
 							<table:template>
-								<Text text="{Planta0119}"/>
+								<Text text="{CNPDS0119}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
 								<Label text="SAMANCO" />
 							<table:template>
-								<Text text="{Planta0009}"/>
+								<Text text="{CNPDS0009}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="4" hAlign="End" width="4rem">
 								<Label text="SUPE" />
 							<table:template>
-								<Text text="{Planta0010}"/>
+								<Text text="{CNPDS0010}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="2" hAlign="Center" width="4rem">
 								<Label text="VEGUETA" />
 							<table:template>
-								<Text text="{Planta0011}"/>
+								<Text text="{CNPDS0011}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="2" hAlign="Center" width="4rem">
 								<Label text="CALLAO NOR" />
 							<table:template>
-								<Text text="{Planta0012}"/>
+								<Text text="{CNPDS0012}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="2" hAlign="Center" width="4rem">
 								<Label text="PISCO SUR" />
 							<table:template>
-								<Text text="{Planta0015}"/>
+								<Text text="{CNPDS0015}"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column headerSpan="2" hAlign="Center" width="4rem">
 								<Label text="MATARANI" />
 							<table:template>
-								<Text text="{Planta0018}"/>
+								<Text text="{CNPDS0018}"/>
 							</table:template>
 						</table:Column>
 					</table:columns>
@@ -159,7 +160,7 @@
 					<Text text="Pesca descargada por día" />
 					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
-							<chart:InteractiveBarChart bars="{/STR_DSD}" labelWidth="25%" selectionChanged="selectionChanged" press="press">
+							<chart:InteractiveBarChart bars="{/STR_TOTALES_DIAS}" labelWidth="25%" selectionChanged="selectionChanged" press="press">
 								<chart:bars>
 									<chart:InteractiveBarChartBar label="{FIDES}" value="{CNPDS}" color="Critical"/>
 								</chart:bars>
@@ -177,10 +178,9 @@
 									<chart:InteractiveDonutChartSegment label="Test Phase" value="38.5" displayedValue="38.5%" color="Good"/>
 								</chart:segments>
 							</chart:InteractiveDonutChart> -->
-							<chart:ColumnMicroChart size="M" press="press" class="sapUiSmallMargin">
+							<chart:ColumnMicroChart columns="{/STR_TOTALES_PLANTA}" size="M" press="press" class="sapUiSmallMargin">
 								<chart:columns>
-									<chart:ColumnMicroChartData	value="100" color="Error"/>
-									<chart:ColumnMicroChartData	value="60" color="Neutral"/>
+									<chart:ColumnMicroChartData label="{planta}" value="{descarga}" color="Error"/>
 								</chart:columns>
 							</chart:ColumnMicroChart>
 						</items>
