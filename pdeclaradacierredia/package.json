@@ -1,9 +1,9 @@
 {
-    "name": "pcptradingreso",
+    "name": "pdeclaradacierredia",
     "version": "0.0.1",
     "private": true,
     "sapuxLayer": "CUSTOMER_BASE",
-    "description": "App de Sist. Info. de Flota",
+    "description": "App de Pesca declarada al cierre del día",
     "keywords": [
         "ui5",
         "openui5",

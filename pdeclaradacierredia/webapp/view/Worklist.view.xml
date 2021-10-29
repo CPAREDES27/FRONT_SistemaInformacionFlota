@@ -1,0 +1,125 @@
+<mvc:View
+	controllerName="com.tasa.pdeclaradacierredia.controller.Worklist"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:semantic="sap.f.semantic">
+
+	<semantic:SemanticPage
+		id="page"
+		headerPinnable="false"
+		toggleHeaderOnTitleClick="false">
+
+		<semantic:titleHeading>
+			<Title
+				text="{i18n>worklistTitle}"
+				level="H2"/>
+		</semantic:titleHeading>
+
+		<!-- Header Content -->
+		<semantic:headerContent>
+			<f:Form id="idFormHeader" >
+				<f:formContainers>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="Fecha">
+								<f:fields>
+									<DateRangeSelection />
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement >
+								<f:fields>
+									<Button text="Actualizar" type="Emphasized"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+				<f:layout>
+					<f:ResponsiveGridLayout
+						labelSpanXL="2"
+						labelSpanL="3"
+						labelSpanM="4"
+						labelSpanS="12"
+						adjustLabelSpan="false"
+						emptySpanXL="0"
+						emptySpanL="0"
+						emptySpanM="0"
+						emptySpanS="0"
+						columnsXL="2"
+						columnsL="2"
+						columnsM="1"
+						singleContainerFullSize="false" />
+				</f:layout>
+			</f:Form>
+		</semantic:headerContent>
+
+		<semantic:content>
+			<Table
+				id="table"
+				width="auto"
+				noDataText="{worklistView>/tableNoDataText}"
+				busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+				growing="true"
+				growingScrollToLoad="true"
+				updateFinished=".onUpdateFinished">
+
+				<headerToolbar>
+					<OverflowToolbar>
+						<SearchField
+							id="searchField"
+							tooltip="{i18n>worklistSearchTooltip}"
+							search=".onSearch">
+							<layoutData>
+								<OverflowToolbarLayoutData
+									maxWidth="200px"
+									priority="NeverOverflow"/>
+							</layoutData>
+						</SearchField>
+					</OverflowToolbar>
+				</headerToolbar>
+
+				<columns>
+					<Column>
+						<header>
+							<Text text="Centro"/>
+						</header>
+					</Column>
+					<Column>
+						<header>
+							<Text text="Descripción"/>
+						</header>
+					</Column>
+					<Column>
+						<header>
+							<Text text="Pesca declarada"/>
+						</header>
+					</Column>
+					<Column hAlign="End">
+						<header>
+							<Text text="Fecha"/>
+						</header>
+					</Column>
+				</columns>
+
+				<items>
+					<ColumnListItem type="Active">
+						<cells>
+							<Text text="empty" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="empty" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="0" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="dd.mm.yyyy" width="auto" maxLines="1" wrapping="false"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</semantic:content>
+
+		<semantic:sendEmailAction>
+			<semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
+		</semantic:sendEmailAction>
+
+
+	</semantic:SemanticPage>
+
+</mvc:View>

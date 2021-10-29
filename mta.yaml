@@ -67,6 +67,10 @@ modules:
       - comtasapcptradreporte.zip
       name: comtasapcptradreporte
       target-path: resources/
+    - artifacts:
+      - comtasapdeclaradacierredia.zip
+      name: comtasapdeclaradacierredia
+      target-path: resources/
 - name: comtasapdeclarada
   type: html5
   path: pdeclarada
@@ -120,6 +124,16 @@ modules:
 - name: comtasapcptradreporte
   type: html5
   path: pcptradreporte
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comtasapdeclaradacierredia
+  type: html5
+  path: pdeclaradacierredia
   build-parameters:
     build-result: dist
     builder: custom

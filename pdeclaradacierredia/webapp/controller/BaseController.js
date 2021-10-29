@@ -10,7 +10,8 @@ sap.ui.define([
 	var URLHelper = mobileLibrary.URLHelper;
 	var mainUrlRest = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com/api/';
 
-	return Controller.extend("com.tasa.pembarcacion.controller.BaseController", {
+	return Controller.extend("com.tasa.pdeclaradacierredia.controller.BaseController", {
+		formatter: formatter,
 		/**
 		 * Convenience method for accessing the router.
 		 * @public
@@ -62,80 +63,45 @@ sap.ui.define([
 				oViewModel.getProperty("/shareSendEmailMessage")
 			);
 		},
-		getDominios: async function (listDomNames) {
-			const dominios = listDomNames.map(dom => {
-				return {
-					domname: dom,
-					status: 'A'
-				}
-			});
+		getPescaDeclaradaCierreDia: async function (fechaInicio, fechaFin) {
+			const fechaInicioFormatted = this.formatter.formatDateYYYYMMDD(fechaInicio);
+			const fechaFinFormatted = this.formatter.formatDateYYYYMMDD(fechaFin);
 
-			const body = {
-				dominios
-			}
-
-			let listDominios = await fetch(`${mainUrlRest}dominios/Listar`, {
-				method: 'POST',
-				body: JSON.stringify(body)
-			}).then(resp => resp.json())
-				.then(data => data)
-				.catch(error => console.log("Error de consumo de servicio"));
-
-			return listDominios;
-		},
-		getTemporadas: async function () {
 			const body = {
 				delimitador: "|",
-				fields: ["CDPCN", "DSPCN", "FHITM", "FHFTM", "CTNAC", "ZCDZAR", "ZDSZAR"],
+				fields: [
+					"WERKS",
+					"DESCR",
+					"CNPCM",
+					"FCIER"
+				],
 				no_data: "",
 				option: [],
 				options: [
 					{
 						cantidad: "",
 						control: "MULTIINPUT",
-						key: "ESPCN",
-						valueHigh: "",
-						valueLow: "S"
+						key: "FCIER",
+						valueHigh: fechaFinFormatted,
+						valueLow: fechaInicioFormatted
 					}
 				],
-				order: "",
+				order: "FCIER AUFNR",
 				p_user: "FGARCIA",
-				rowcount: 0,
+				rowcount: 200,
 				rowskips: 0,
-				tabla: "ZV_FLTZ"
+				tabla: "ZTFL_PDLBCH"
 			};
 
-			let listTemporadas = await fetch(`${mainUrlRest}General/Read_Table`, {
+			let pescaDeclaradaCierreDia = await fetch(`${mainUrlRest}General/Read_Table`, {
 				method: 'POST',
 				body: JSON.stringify(body)
-			}).then(resp => resp.json())
+			})
+				.then(response => response.json())
 				.then(data => data)
-				.catch(error => console.log("Error de consumo de servicio"));
+				.catch(error => console.log("Error al consultar servicio"));
 
-			return listTemporadas;
-		},
-		getListPescasEmbarcacion: async function (temporada, tipoEmbarcacion, fechaInicial, fechaFinal) {
-
-			let fechaInicioFormat = formatter.formatDateYYYYMMDD(fechaInicial);
-			let fechaFinFormat = formatter.formatDateYYYYMMDD(fechaFinal);
-
-			const body = {
-				fieldstr_pem: [],
-				p_cdpcn: temporada,
-				p_cdtem: tipoEmbarcacion,
-				p_fcfin: fechaFinFormat,
-				p_fcini: fechaInicioFormat,
-				p_user: ""
-			};
-
-			let listPescasEmbarcacion = await fetch(`${mainUrlRest}sistemainformacionflota/PescaPorEmbarcacion`, {
-				method: 'POST',
-				body: JSON.stringify(body)
-			}).then(resp => resp.json())
-				.then(data => data)
-				.catch(error => console.log("Error de consumo de servicio"));
-
-			return listPescasEmbarcacion;
+			return pescaDeclaradaCierreDia;
 		}
 	});
 
