@@ -19,7 +19,7 @@ sap.ui.define([
 		 * Called when the worklist controller is instantiated.
 		 * @public
 		 */
-		onInit : function () {
+		onInit: function () {
 			var oViewModel,
 				iOriginalBusyDelay,
 				oTable = this.byId("table");
@@ -33,19 +33,19 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle : this.getResourceBundle().getText("worklistTableTitle"),
+				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
 				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
 				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
 				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
-				tableNoDataText : this.getResourceBundle().getText("tableNoDataText"),
-				tableBusyDelay : 0
+				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
+				tableBusyDelay: 0
 			});
 			this.setModel(oViewModel, "worklistView");
 
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
-			oTable.attachEventOnce("updateFinished", function(){
+			oTable.attachEventOnce("updateFinished", function () {
 				// Restore original busy indicator delay for worklist's table
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
@@ -64,7 +64,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the update finished event
 		 * @public
 		 */
-		onUpdateFinished : function (oEvent) {
+		onUpdateFinished: function (oEvent) {
 			// update the worklist's object counter after the table update
 			var sTitle,
 				oTable = oEvent.getSource(),
@@ -84,7 +84,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
 		 * @public
 		 */
-		onPress : function (oEvent) {
+		onPress: function (oEvent) {
 			// The source is the list item that got pressed
 			this._showObject(oEvent.getSource());
 		},
@@ -94,13 +94,13 @@ sap.ui.define([
 		 * We navigate back in the browser history
 		 * @public
 		 */
-		onNavBack : function() {
+		onNavBack: function () {
 			// eslint-disable-next-line sap-no-history-manipulation
 			history.go(-1);
 		},
 
 
-		onSearch : function (oEvent) {
+		onSearch: function (oEvent) {
 			if (oEvent.getParameters().refreshButtonPressed) {
 				// Search field's 'refresh' button has been pressed.
 				// This is visible if you select any master list item.
@@ -124,7 +124,7 @@ sap.ui.define([
 		 * and group settings and refreshes the list binding.
 		 * @public
 		 */
-		onRefresh : function () {
+		onRefresh: function () {
 			var oTable = this.byId("table");
 			oTable.getBinding("items").refresh();
 		},
@@ -139,7 +139,7 @@ sap.ui.define([
 		 * @param {sap.m.ObjectListItem} oItem selected Item
 		 * @private
 		 */
-		_showObject : function (oItem) {
+		_showObject: function (oItem) {
 			this.getRouter().navTo("object", {
 				objectId: oItem.getBindingContext().getProperty("ProductID")
 			});
@@ -150,7 +150,7 @@ sap.ui.define([
 		 * @param {sap.ui.model.Filter[]} aTableSearchState An array of filters for the search
 		 * @private
 		 */
-		_applySearch: function(aTableSearchState) {
+		_applySearch: function (aTableSearchState) {
 			var oTable = this.byId("table"),
 				oViewModel = this.getModel("worklistView");
 			oTable.getBinding("items").filter(aTableSearchState, "Application");
@@ -159,9 +159,9 @@ sap.ui.define([
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 			}
 		},
-		getPescaDeclaradaCierreDia:async function(fechaInicio,fechaFin){
-			let pescaDeclaradaCierreDia=await this.getPescaDeclaradaCierreDia(fechaInicio,fechaFin);
-
+		getPescaDeclaradaCierreDia: async function (fechaInicio, fechaFin) {
+			let pescaDeclaradaCierreDia = await this.getPescaDeclaradaCierreDia(fechaInicio, fechaFin);
+			this.getModel().setProperty("/pescaDeclaradaCierreDia", pescaDeclaradaCierreDia);
 		}
 	});
 });
