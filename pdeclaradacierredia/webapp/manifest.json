@@ -19,6 +19,21 @@
                     "localUri": "localService/metadata.xml"
                 }
             }
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "com-tasa-pdeclaradacierredia-inbound": {
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    },
+                    "semanticObject": "pescaDeclaradaCierreDia",
+                    "action": "display",
+                    "title": "{{flpTitle}}",
+                    "subTitle": "{{flpSubtitle}}",
+                    "icon": ""
+                }
+            }
         }
     },
     "sap.ui": {
