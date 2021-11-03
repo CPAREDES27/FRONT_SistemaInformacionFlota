@@ -22,8 +22,7 @@ sap.ui.define([], function () {
 
 			return `${year}${month >= 10 ? month : `0${month}`}${day >= 10 ? day : `0${day}`}`;
 		},
-		formatDateDDMMYYYY: function (dateString) {
-			let date = new Date(dateString.substring(0, 4), dateString.substring(4, 6) - 1, dateString.substring(6, 8));
+		formatDateDDMMYYYY: function (date) {
 			const day = date.getDate();
 			const month = date.getMonth() + 1;
 			const year = date.getFullYear();
