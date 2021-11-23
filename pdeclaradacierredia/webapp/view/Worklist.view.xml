@@ -24,12 +24,12 @@
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DateRangeSelection />
+									<DateRangeSelection id="dateRange" />
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement >
 								<f:fields>
-									<Button text="Actualizar" type="Emphasized"/>
+									<Button text="Actualizar" type="Emphasized" press=".getListPescaDeclaradaCierreDia"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -58,9 +58,12 @@
 			<Table
 				id="table"
 				width="auto"
-				noDataText="{worklistView>/tableNoDataText}"
+				noDataText="Sin datos"
 				busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 				growing="true"
+				items="{
+					path: '/listPescaDeclaradaCierreDia'
+				}"
 				growingScrollToLoad="true"
 				updateFinished=".onUpdateFinished">
 
@@ -68,14 +71,11 @@
 					<OverflowToolbar>
 						<SearchField
 							id="searchField"
-							tooltip="{i18n>worklistSearchTooltip}"
-							search=".onSearch">
-							<layoutData>
-								<OverflowToolbarLayoutData
-									maxWidth="200px"
-									priority="NeverOverflow"/>
-							</layoutData>
-						</SearchField>
+							width="auto"
+							liveChange=".onSearch"
+							placeholder="Búsqueda rápida" />
+
+						<Button type="Emphasized" icon="sap-icon://excel-attachment" press="onExport"/>
 					</OverflowToolbar>
 				</headerToolbar>
 
@@ -105,10 +105,10 @@
 				<items>
 					<ColumnListItem type="Active">
 						<cells>
-							<Text text="empty" width="auto" maxLines="1" wrapping="false"/>
-							<Text text="empty" width="auto" maxLines="1" wrapping="false"/>
-							<Text text="0" width="auto" maxLines="1" wrapping="false"/>
-							<Text text="dd.mm.yyyy" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="{WERKS}" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="{DESCR}" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="{CNPCM}" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="{ path: 'FCIER', formatter: '.formatter.formatDateDDMMYYYY' }" width="auto" maxLines="1" wrapping="false"/>
 						</cells>
 					</ColumnListItem>
 				</items>

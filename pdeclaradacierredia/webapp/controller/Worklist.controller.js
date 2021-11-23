@@ -3,9 +3,13 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
-], function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
+	"sap/ui/model/FilterOperator",
+	'sap/ui/export/library',
+	'sap/ui/export/Spreadsheet',
+], function (BaseController, JSONModel, formatter, Filter, FilterOperator, exportLibrary, Spreadsheet) {
 	"use strict";
+
+	var EdmType = exportLibrary.EdmType;
 
 	return BaseController.extend("com.tasa.pdeclaradacierredia.controller.Worklist", {
 
@@ -49,6 +53,8 @@ sap.ui.define([
 				// Restore original busy indicator delay for worklist's table
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
+
+			this.loadData();
 		},
 
 		/* =========================================================== */
@@ -101,6 +107,8 @@ sap.ui.define([
 
 
 		onSearch: function (oEvent) {
+			const oTableItemsBinding = this.byId("table").getBinding("items");
+
 			if (oEvent.getParameters().refreshButtonPressed) {
 				// Search field's 'refresh' button has been pressed.
 				// This is visible if you select any master list item.
@@ -112,9 +120,19 @@ sap.ui.define([
 				var sQuery = oEvent.getParameter("query");
 
 				if (sQuery && sQuery.length > 0) {
-					aTableSearchState = [new Filter("ProductID", FilterOperator.Contains, sQuery)];
+
+					aTableSearchState = [
+						new Filter("WERKS", FilterOperator.Contains, sQuery),
+						new Filter("DESCR", FilterOperator.Contains, sQuery),
+						new Filter("CNPCM", FilterOperator.EQ, sQuery),
+						new Filter("FCIER", FilterOperator.BT, sQuery)
+					];
 				}
-				this._applySearch(aTableSearchState);
+
+				var oFilters = new Filter({
+					filters: aTableSearchState
+				});
+				oTableItemsBinding.filter(oFilters);
 			}
 
 		},
@@ -155,13 +173,85 @@ sap.ui.define([
 				oViewModel = this.getModel("worklistView");
 			oTable.getBinding("items").filter(aTableSearchState, "Application");
 			// changes the noDataText of the list in case there are no filter results
-			if (aTableSearchState.length !== 0) {
+			/* if (aTableSearchState.length !== 0) {
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
-			}
+			} */
 		},
-		getPescaDeclaradaCierreDia: async function (fechaInicio, fechaFin) {
-			let pescaDeclaradaCierreDia = await this.getPescaDeclaradaCierreDia(fechaInicio, fechaFin);
-			this.getModel().setProperty("/pescaDeclaradaCierreDia", pescaDeclaradaCierreDia);
+		loadData: function () {
+			let now = new Date();
+
+			this.byId("dateRange").setDateValue(now);
+			this.byId("dateRange").setSecondDateValue(now);
+		},
+		getListPescaDeclaradaCierreDia: async function () {
+			let fechaInicio = this.byId("dateRange").getDateValue();
+			let fechaFin = this.byId("dateRange").getSecondDateValue();
+
+			let data = await this.getPescaDeclaradaCierreDia(fechaInicio, fechaFin);
+
+			let listPescaDeclaradaCierreDia = data.data;
+			//Establecer la cadena de fecha como objeto Date
+			listPescaDeclaradaCierreDia.forEach(p => {
+				p.FCIER = this.formatter.getDateFromString(p.FCIER);
+			});
+			this.getModel().setProperty("/listPescaDeclaradaCierreDia", listPescaDeclaradaCierreDia);
+		},
+		createColumnConfig: function () {
+			var aCols = [];
+
+			aCols.push({
+				label: 'Centro',
+				type: EdmType.String,
+				property: 'WERKS'
+			});
+
+			aCols.push({
+				label: 'Descripción',
+				type: EdmType.String,
+				property: 'DESCR'
+			});
+
+			aCols.push({
+				label: 'Pesca Declarada',
+				type: EdmType.Number,
+				property: 'CNPCM',
+				scale: 0
+			});
+
+			aCols.push({
+				label: 'Fecha',
+				type: EdmType.DateTime,
+				property: 'FCIER',
+				format: 'yyyy-mm-dd'
+			});
+
+			return aCols;
+		},
+		onExport: function () {
+			var aCols, oRowBinding, oSettings, oSheet, oTable;
+
+			if (!this._oTable) {
+				this._oTable = this.byId('table');
+			}
+
+			oTable = this._oTable;
+			oRowBinding = oTable.getBinding('items');
+			aCols = this.createColumnConfig();
+
+			oSettings = {
+				workbook: {
+					columns: aCols,
+					hierarchyLevel: 'Level'
+				},
+				dataSource: oRowBinding,
+				fileName: 'PescDeclCierre.xlsx',
+				worker: false // We need to disable worker because we are using a MockServer as OData Service
+			};
+
+			oSheet = new Spreadsheet(oSettings);
+			oSheet.build().finally(function () {
+				oSheet.destroy();
+			});
 		}
 	});
 });

@@ -79,7 +79,7 @@
                 }
             },
             "": {
-                "dataSource": "mainService",
+                "type": "sap.ui.model.json.JSONModel",
                 "preload": true
             }
         },
