@@ -10,7 +10,7 @@
 
 	<semantic:SemanticPage
 		id="page"
-		toggleHeaderOnTitleClick="false">
+		class="sapUiNoContentPadding">
 
 		<semantic:titleHeading>
 			<Title
@@ -20,25 +20,40 @@
 
 		<!-- Header Content -->
 		<semantic:headerContent>
-			<f:Form id="idFormHeader" >
+			<f:Form 
+				id="idFormHeader"
+				binding="{/form}"
+				editable="true" >
 				<f:formContainers>
 					<f:FormContainer >
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DatePicker id="fechaPescaDeclarada" valueFormat="yyyy-MM-dd" />
+									<DatePicker 	
+										id="fechaPescaDeclarada"
+										value="{fecon}" 
+										displayFormat="dd/MM/yyyy"
+										valueFormat="dd/MM/yyyy"/>
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement label="MotivoMarea">
 								<f:fields>
-									<Select id="motivoPescaDeclarada" items="{ path: 'worklistView>/motivos' }">
-										<core:Item key="{worklistView>id}" text="{worklistView>descripcion}" />
+									<Select 
+										id="motivoPescaDeclarada"
+										selectedKey="{cdmma}" 
+										items="{ path: '/motivoMarea' }">
+										<core:Item key="{id}" text="{descripcion}" />
 									</Select>
 								</f:fields>
 							</f:FormElement>
-							<f:FormElement >
+							<f:FormElement label="">
 								<f:fields>
-									<Button text="Buscar" type="Emphasized" press=".buscarPescaDescargada"/>
+									<ObjectStatus
+										title="Hora" 
+										text="{hora}"
+										state="Indication03" />
+									<Button text="Buscar" icon="sap-icon://search" type="Emphasized" press=".onBuscarPescaDescargada"/>
+									<Button text="Limpiar" icon="sap-icon://clear-filter" type="Ghost" press=".onCleanFilter"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -47,17 +62,41 @@
 						<f:formElements>
 							<f:FormElement label="Pesca declarada">
 								<f:fields>
-									<Text text="{/totalGenPescDecl}/{/totalGenNumEmba}" />
+									<Input 
+									value="{
+												path:'/totalGenPescDecl',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ','
+												}
+											} / {
+												path:'/totalGenNumEmba',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ','
+												}
+											}" 
+										editable="false"/>
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement label="Pesca descargada">
 								<f:fields>
-									<Text text="{/totalGenPescDesc}/{/totalGenNumEmbaDesc}" />
-								</f:fields>
-							</f:FormElement>
-							<f:FormElement label="Hora">
-								<f:fields>
-									<Text text="{/Hora}" />
+									<Input 
+										value="{
+													path:'/totalGenPescDesc',
+													type:'sap.ui.model.type.Float',
+													formatOptions:{
+														minIntegerDigits:1,
+														minFractionDigits:3,
+														maxFractionDigits:3,
+														groupingEnabled:true,
+														groupingSeparator: ',',
+														decimalSeparator: '.'
+													}
+												} / {/totalGenNumEmbaDesc}" 
+										editable="false"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -82,40 +121,51 @@
 			</f:Form>
 		</semantic:headerContent>
 
-		<semantic:content>
-			<layout:Grid defaultSpan="XL12 L12 M12 S12" >		
+		<semantic:content >
+			<layout:Grid defaultSpan="XL12 L12 M12 S12" class="sapUiNoContentPadding sapUiMediumMarginTop" >
 				<table:Table id="tablePescaDeclarada" 
-					rows="{ path: '/STR_TP', formatter: '.formatter.setColorsFields' }"
+					rows="{ path: '/str_tp', formatter: '.formatter.setColorsFields' }"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					fixedBottomRowCount="1"
+					fixedColumnCount="1"
 					selectionMode="None"
-					visibleRowCount="5">
+					rowActionCount="1"
+					visibleRowCount="5"
+					class="classTable">
 					<table:columns>
-						<table:Column width="8rem">
-							<Label text="Planta" />
-							<table:template>
-								<Text text="{DESCR}"/>     
+						<table:Column width="8rem"  >
+							<table:multiLabels>
+								<Label visible="false" />
+								<Label text="Planta" />
+							</table:multiLabels>
+							<table:template  >
+								<ObjectStatus 
+									text="{DESCR}"
+									state="Information" />     
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+
+						<table:Column headerSpan="4,1" hAlign="Center" width="4rem" class="col">
 							<table:multiLabels>
 								<Label text="Flota propia" textAlign="Center" />
 								<Label text="Asig" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CEMBA}"/>
+								<Text text="{
+												path:'CEMBA'
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column hAlign="End" width="4rem" class="col">
 							<table:multiLabels>
 								<Label text="Flota propia" />
-								<Label text="Pesc" />
+								<Label text="Pesc" textAlign="Center"/>
 							</table:multiLabels>
 							<table:template>
 								<Text text="{CEMBP}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column width="4rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Flota propia" />
 								<Label text="Inop" textAlign="Center" />
@@ -124,7 +174,7 @@
 								<Text text="{CEMBI}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Flota propia" />
 								<Label text="Otro" />
@@ -133,43 +183,77 @@
 								<Text text="{CEMBO}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" hAlign="Center" width="4rem">
+
+						<table:Column id="idColAsig" headerSpan="2" hAlign="End" width="4rem">
 							<table:multiLabels >
 								<Label text="% CBOD" />
 								<Label text="Asig" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PORC_CBOD}"/>
+								<Text text="{
+												path:'PORC_CBOD',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ','
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" width="4rem">
+						<table:Column id="idColOper" width="4rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="% CBOD" />
 								<Label text="Oper" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PORC_CBOD_OPER}"/>
+								<Text text="{
+												path:'PORC_CBOD_OPER',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ','
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+
+						<table:Column id="idColDesc" headerSpan="4" hAlign="Center" width="8rem">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="Desc" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNPDS}"/>
+								<Text text="{
+												path:'CNPDS',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													minIntegerDigits:1,
+													minFractionDigits:3,
+													maxFractionDigits:3,
+													groupingEnabled:true,
+													groupingSeparator: ',',
+													decimalSeparator: '.'
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" width="4rem">
+						<table:Column id="idColDecl" width="6rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="Decl" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{TOT_PESC_DECL}"/>
+								<Text text="{
+												path:'TOT_PESC_DECL',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ','
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" width="4rem">
+						<table:Column id="idColEp" width="4rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="E/P" />
@@ -178,25 +262,42 @@
 								<Text text="{TOT_NUM_EMBA}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" width="4rem">
+						<table:Column id="idColPorc" width="4rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="%" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PORC_PESC_DECL}"/>
+								<Text text="{
+												path:'PORC_PESC_DECL',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ',',
+													decimalSeparator: '.'
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" hAlign="Center">
+
+						<table:Column id="idColTn" headerSpan="2" hAlign="Center" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca Propios" />
 								<Label text="TN" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNPEP}"/>
+								<Text text="{
+												path:'CNPEP',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ',',
+													decimalSeparator: '.'
+												}	
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2">
+						<table:Column id="idColPep" hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca Propios" />
 								<Label text="E/P" />
@@ -205,16 +306,25 @@
 								<Text text="{NEMBP}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center">
+
+						<table:Column id="idColTtn" headerSpan="2" hAlign="Center" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca Terceros" />
 								<Label text="TN" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNPET}"/>
+								<Text text="{
+												path:'CNPET',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ',',
+													decimalSeparator: '.'
+												}	
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4">
+						<table:Column id="idColTep" hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca Terceros" />
 								<Label text="E/P" />
@@ -223,32 +333,93 @@
 								<Text text="{NEMBT}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" hAlign="Center">
+
+						<table:Column id="idColPprop"  headerSpan="2" hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Promedio" />
 								<Label text="Prop" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PROM_PESC_PROP}"/>
+								<Text text="{
+												path:'PROM_PESC_PROP',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ','
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2">
+						<table:Column id="idColPterc" hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Promedio" />
 								<Label text="Terc" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PROM_PESC_TERC}"/>
+								<Text text="{
+												path:'PROM_PESC_TERC',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingEnabled:true,
+													groupingSeparator: ','
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column >
-							<Label text="Ver detalle" />
+
+						<table:Column hAlign="Center" width="4rem" >
+							<Label visible="false" />
 							<table:template>
-								<Button icon="sap-icon://show" />
+								<Button 
+									icon="sap-icon://navigation-right-arrow" 
+									type="Transparent" 
+									press="onPress" 
+									tooltip="Ver detalle"/>
 							</table:template>
 						</table:Column>
 					</table:columns>
-				</table:Table>
+					<!-- <table:rowActionTemplate>
+						<table:RowAction >
+							<table:items>
+								<table:RowActionItem
+									icon="sap-icon://open-command-field"
+									text="Ver detalle"
+									type="Navigation"
+									press="onPress"/>
+							</table:items>
+						</table:RowAction>
+					</table:rowActionTemplate> -->
+					<!-- <table:footer>
+						<Table>
+							<columns>
+								<Column>
+									<Label text="Hola" />
+								</Column>
+								<Column>
+									<Label text="Hola" />
+								</Column>
+								<Column>
+									<Label text="Hola" />
+								</Column>
+								<Column>
+									<Label text="Hola" />
+								</Column>
+							</columns>
+							<items>
+								<ColumnListItem
+									vAlign="Inherit"
+								>
+									<cells>
+										<Text text="Mundo" />
+										<Text text="Mundo" />
+										<Text text="Mundo" />
+										<Text text="Mundo" />
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</table:footer> -->
+				</table:Table>		
 
 				<layout:HorizontalLayout>
 					<layout:layoutData>
@@ -259,34 +430,34 @@
 						<Text text="Porc Pesca por Puerto 00%" />
 						<Text text="Porc Cap Bod por Puerto (99%)" />
 					</VBox>
-					
 				</layout:HorizontalLayout>
-
+				
 				<layout:HorizontalLayout>
 					<layout:layoutData>
 						<layout:GridData span="XL12 L12 M12 S12"/>
 					</layout:layoutData>
 					<!-- Graficos -->
-					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
+					<VBox width="30rem"  alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
-							<chart:InteractiveBarChart bars="{/STR_TP_GRAPHICS}" labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
-								<chart:bars>
-									<chart:InteractiveBarChartBar label="{descripcion}" value="{value}" color="Critical"/>
-								</chart:bars>
-							</chart:InteractiveBarChart>
-						</items>
-					</FlexBox>
-
-					<FlexBox width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
-						<items>
-							<chart:InteractiveDonutChart segments="{/STR_TP_GRAPHICS}" selectionChanged="onSelectionChanged">
+							<chart:InteractiveDonutChart  segments="{/STR_TP_GRAPHICS}" displayedSegments="{=${/countBars}}" >
 								<chart:segments>
-									<chart:InteractiveDonutChartSegment label="{descripcion}" value="{value}" displayedValue="{value}%" color="Error"/>
+									<chart:InteractiveDonutChartSegment label="{descripcion}" value="{value}" displayedValue="{value}%" color="Neutral"/>
 								</chart:segments>
 							</chart:InteractiveDonutChart>
 						</items>
-					</FlexBox>
+					</VBox>
+
+					<VBox width="30rem"  height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<chart:InteractiveBarChart labelWidth="50%" bars="{/STR_TP_GRAPHICS}" displayedBars="{=${/countBars}}">
+								<chart:bars>
+									<chart:InteractiveBarChartBar label="{descripcion}" value="{value}" color="Good"/>
+								</chart:bars>
+							</chart:InteractiveBarChart>
+						</items>
+					</VBox>
 				</layout:HorizontalLayout>
+
 			</layout:Grid>
 		</semantic:content>
 

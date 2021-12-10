@@ -1,0 +1,69 @@
+/* */
+#container-pdeclarada---worklist--idColAsig, 
+#container-pdeclarada---worklist--idColAsig_1,
+#container-pdeclarada---worklist--idColOper_1,
+#container-pdeclarada---worklist--idColDesc,
+#container-pdeclarada---worklist--idColDesc_1,
+#container-pdeclarada---worklist--idColDecl_1,
+#container-pdeclarada---worklist--idColEp_1,
+#container-pdeclarada---worklist--idColPorc_1,
+#container-pdeclarada---worklist--idColTn,
+#container-pdeclarada---worklist--idColTn_1,
+#container-pdeclarada---worklist--idColPep_1,
+#container-pdeclarada---worklist--idColTtn,
+#container-pdeclarada---worklist--idColTtn_1,
+#container-pdeclarada---worklist--idColTep_1,
+#container-pdeclarada---worklist--idColPprop,
+#container-pdeclarada---worklist--idColPprop_1,
+#container-pdeclarada---worklist--idColPterc_1{
+    background-color: transparent;
+}
+
+.classTable td:nth-child(2){
+background-color: #ff8073; /*rgba(255, 128, 115, 1)  || rgba(255, 152, 140, 1) */
+}
+.classTable td:nth-child(3){
+    background-color: #FDBB71; /* rgba(253, 187, 113, 1)  // rgba(254, 204, 142, 1)*/
+}
+.classTable td:nth-child(4){
+    background-color: #bdcfe9  ; /* rgba(189, 207, 233, 1) || rgba(189, 207, 233, 1)*/
+}
+.classTable td:nth-child(5){
+    background-color: #FDBB71; /* rgba(253, 187, 113, 1) */
+}
+.classTable td:nth-child(6){
+    background-color: #FDBB71; /* rgba(253, 187, 113, 1)  // rgba(254, 204, 142, 1)*/
+}
+.classTable td:nth-child(7){
+    background-color: #BAEE9A; /*rgba(186, 238, 154, 1)*/
+}
+.classTable td:nth-child(8){
+    background-color: #bdcfe9  ; /* rgba(189, 207, 233, 1) */
+}
+.classTable td:nth-child(9){
+    background-color: #FDBB71; /* rgba(253, 187, 113, 1) */
+}
+.classTable td:nth-child(10){
+    background-color: #FDBB71; /* rgba(253, 187, 113, 1)  // rgba(254, 204, 142, 1)*/
+}
+.classTable td:nth-child(11){
+    background-color: #BAEE9A; /*rgba(186, 238, 154, 1)*/
+    background-color: #A6E5F4; /* rgba(166, 229, 244, 1) */
+}
+.classTable td:nth-child(12){
+    background-color: #A6E5F4; /* rgba(166, 229, 244, 1) */
+}
+.classTable td:nth-child(13){
+    background-color: #A6E5F4; /* rgba(166, 229, 244, 1) */
+}
+.classTable td:nth-child(14){
+    background-color: #BAEE9A; /*rgba(186, 238, 154, 1)*/
+}
+.classTable td:nth-child(15){
+    background-color: #BAEE9A; /*rgba(186, 238, 154, 1)*/
+}
+.classTable td:nth-child(16){
+    background-color: #BAEE9A; /*rgba(186, 238, 154, 1)*/
+}
+  
+  

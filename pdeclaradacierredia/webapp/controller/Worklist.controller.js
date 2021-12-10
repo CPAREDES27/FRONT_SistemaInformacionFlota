@@ -6,6 +6,7 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	'sap/ui/export/library',
 	'sap/ui/export/Spreadsheet',
+	"sap/ui/core/BusyIndicator"
 ], function (BaseController, JSONModel, formatter, Filter, FilterOperator, exportLibrary, Spreadsheet) {
 	"use strict";
 
@@ -37,11 +38,7 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
-				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
-				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
-				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
-				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
+				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
 				tableBusyDelay: 0
 			});
 			this.setModel(oViewModel, "worklistView");
@@ -108,6 +105,7 @@ sap.ui.define([
 
 		onSearch: function (oEvent) {
 			const oTableItemsBinding = this.byId("table").getBinding("items");
+			var sQuery = oEvent.getSource().getValue();
 
 			if (oEvent.getParameters().refreshButtonPressed) {
 				// Search field's 'refresh' button has been pressed.
@@ -116,23 +114,25 @@ sap.ui.define([
 				// refresh the list binding.
 				this.onRefresh();
 			} else {
-				var aTableSearchState = [];
-				var sQuery = oEvent.getParameter("query");
-
+				
 				if (sQuery && sQuery.length > 0) {
+					var aTableSearchState = [];
 
 					aTableSearchState = [
 						new Filter("WERKS", FilterOperator.Contains, sQuery),
 						new Filter("DESCR", FilterOperator.Contains, sQuery),
 						new Filter("CNPCM", FilterOperator.EQ, sQuery),
-						new Filter("FCIER", FilterOperator.BT, sQuery)
+						new Filter("FCIER", FilterOperator.EQ, sQuery)
 					];
+				}else{
+					this.onRefresh();
 				}
-
 				var oFilters = new Filter({
-					filters: aTableSearchState
+					filters: aTableSearchState,
+					and:false
 				});
-				oTableItemsBinding.filter(oFilters);
+				oTableItemsBinding.filter(oFilters,"Application");
+
 			}
 
 		},
@@ -184,17 +184,33 @@ sap.ui.define([
 			this.byId("dateRange").setSecondDateValue(now);
 		},
 		getListPescaDeclaradaCierreDia: async function () {
-			let fechaInicio = this.byId("dateRange").getDateValue();
-			let fechaFin = this.byId("dateRange").getSecondDateValue();
+			let oModel = this.getModel(),
+			sRangeDate = oModel.getProperty("/rangeDate");
+			if(!sRangeDate){
+				this.getMessageDialog("Warning","Ingrese fecha");
+				return;
+			}
+			let sStartDate = sRangeDate.split("-")[0].trim(),
+			sEndDate = sRangeDate.split("-")[1].trim(),
+			oParam = new Object;
 
-			let data = await this.getPescaDeclaradaCierreDia(fechaInicio, fechaFin);
+			sStartDate = formatter.formatDateInverse(sStartDate);
+			sEndDate = formatter.formatDateInverse(sEndDate);
+			oParam.sStartDate = sStartDate;
+			oParam.sEndDate = sEndDate;
 
-			let listPescaDeclaradaCierreDia = data.data;
-			//Establecer la cadena de fecha como objeto Date
-			listPescaDeclaradaCierreDia.forEach(p => {
-				p.FCIER = this.formatter.getDateFromString(p.FCIER);
-			});
-			this.getModel().setProperty("/listPescaDeclaradaCierreDia", listPescaDeclaradaCierreDia);
+			this.getDataMainTable(oModel, oParam);
+			// let fechaInicio = this.byId("dateRange").getDateValue();
+			// let fechaFin = this.byId("dateRange").getSecondDateValue();
+
+			// let data = await this.getPescaDeclaradaCierreDia(fechaInicio, fechaFin);
+
+			// let listPescaDeclaradaCierreDia = data.data;
+			// //Establecer la cadena de fecha como objeto Date
+			// listPescaDeclaradaCierreDia.forEach(p => {
+			// 	p.FCIER = this.formatter.getDateFromString(p.FCIER);
+			// });
+			// this.getModel().setProperty("/listPescaDeclaradaCierreDia", listPescaDeclaradaCierreDia);
 		},
 		createColumnConfig: function () {
 			var aCols = [];
@@ -228,14 +244,13 @@ sap.ui.define([
 			return aCols;
 		},
 		onExport: function () {
-			var aCols, oRowBinding, oSettings, oSheet, oTable;
-
-			if (!this._oTable) {
-				this._oTable = this.byId('table');
+			let oTable = this.getView().byId("table"),
+			oRowBinding = oTable.getBinding('items'),
+			aCols,oSettings, oSheet;
+			if(oRowBinding.oList.length===0){
+                this.getMessageDialog("Warning","No hay datos para exportar");
+                return;
 			}
-
-			oTable = this._oTable;
-			oRowBinding = oTable.getBinding('items');
 			aCols = this.createColumnConfig();
 
 			oSettings = {

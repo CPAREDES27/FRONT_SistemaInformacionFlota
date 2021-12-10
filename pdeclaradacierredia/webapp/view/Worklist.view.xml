@@ -7,8 +7,7 @@
 
 	<semantic:SemanticPage
 		id="page"
-		headerPinnable="false"
-		toggleHeaderOnTitleClick="false">
+		class="sapUiNoContentPadding">
 
 		<semantic:titleHeading>
 			<Title
@@ -24,12 +23,24 @@
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DateRangeSelection id="dateRange" />
+									<DateRangeSelection 
+										id="dateRange"
+										value="{/rangeDate}"
+										valueFormat="dd/MM/yyyy"
+										displayFormat="dd/MM/yyyy" />
 								</f:fields>
 							</f:FormElement>
-							<f:FormElement >
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="">
 								<f:fields>
-									<Button text="Actualizar" type="Emphasized" press=".getListPescaDeclaradaCierreDia"/>
+									<Button 	
+										text="Actualizar" 
+										type="Emphasized" 
+										icon="sap-icon://search"
+										press=".getListPescaDeclaradaCierreDia"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -48,7 +59,7 @@
 						emptySpanS="0"
 						columnsXL="2"
 						columnsL="2"
-						columnsM="1"
+						columnsM="2"
 						singleContainerFullSize="false" />
 				</f:layout>
 			</f:Form>
@@ -62,20 +73,27 @@
 				busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 				growing="true"
 				items="{
-					path: '/listPescaDeclaradaCierreDia'
+					path: '/lista'
 				}"
 				growingScrollToLoad="true"
 				updateFinished=".onUpdateFinished">
 
 				<headerToolbar>
 					<OverflowToolbar>
+						<Title text="{worklistView>/worklistTableTitle}" />
+						<ToolbarSpacer/>
+						<Button 
+							text="Exportar"
+							type="Emphasized" 
+							icon="sap-icon://excel-attachment" 
+							press="onExport"/>
 						<SearchField
 							id="searchField"
 							width="auto"
+							showRefreshButton="true"
 							liveChange=".onSearch"
 							placeholder="Búsqueda rápida" />
 
-						<Button type="Emphasized" icon="sap-icon://excel-attachment" press="onExport"/>
 					</OverflowToolbar>
 				</headerToolbar>
 
@@ -90,12 +108,12 @@
 							<Text text="Descripción"/>
 						</header>
 					</Column>
-					<Column>
+					<Column hAlign="End">
 						<header>
 							<Text text="Pesca declarada"/>
 						</header>
 					</Column>
-					<Column hAlign="End">
+					<Column >
 						<header>
 							<Text text="Fecha"/>
 						</header>
@@ -103,22 +121,30 @@
 				</columns>
 
 				<items>
-					<ColumnListItem type="Active">
+					<ColumnListItem type="Inactive">
 						<cells>
-							<Text text="{WERKS}" width="auto" maxLines="1" wrapping="false"/>
+							<ObjectStatus
+								text="{WERKS}"
+								state="Information"
+								/>
 							<Text text="{DESCR}" width="auto" maxLines="1" wrapping="false"/>
-							<Text text="{CNPCM}" width="auto" maxLines="1" wrapping="false"/>
-							<Text text="{ path: 'FCIER', formatter: '.formatter.formatDateDDMMYYYY' }" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="{
+											path:'CNPCM',
+											type:'sap.ui.model.type.Integer',
+											formatOptions:{
+												groupingEnabled:true,
+												groupingSeparator: ','
+											}
+										}" width="auto" maxLines="1" wrapping="false"/>
+							<Text text="{ 
+											path: 'FCIER',
+											formatter:'.formatter.formatDateInverse2'
+										}"/>
 						</cells>
 					</ColumnListItem>
 				</items>
 			</Table>
 		</semantic:content>
-
-		<semantic:sendEmailAction>
-			<semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
-		</semantic:sendEmailAction>
-
 
 	</semantic:SemanticPage>
 

@@ -1,8 +1,10 @@
 sap.ui.define([
 	"./BaseController",
-	"sap/ui/model/json/JSONModel"
-], function (BaseController, JSONModel) {
+	"sap/ui/model/json/JSONModel",
+	"../model/formatter"
+], function (BaseController, JSONModel, formatter) {
 	"use strict";
+	const HOST = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com';
 
 	return BaseController.extend("com.tasa.pembarcacion.controller.App", {
 
@@ -29,6 +31,85 @@ sap.ui.define([
 
 			// apply content density mode to root view
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+			// Asignamos propiedad de datos de seleccion
+			const oModel = this.getModel();
+			oModel.setProperty("/formSearch", {
+				startDate:"",
+				endDate:"",
+				tempDesc:"",
+				fecha:""
+			});
+			this.iCount=0;
+			this.iCountService=2;
+			this.getDominiosService(oModel);
+			this.getTemporadasService(oModel); 
+		},
+
+		getDominiosService: async function(oModel){
+			let oService = {},
+			oDominiosData;
+
+			oService.PATH = HOST+"/api/dominios/Listar";
+			oService.param = {
+				dominios:[
+					{
+						domname:"TIPOEMBARCACION",
+						status:"A"
+					}
+				]
+			};
+			
+			oDominiosData = await this.getDataService(oService);
+			if(oDominiosData.data[0].data.length>0){
+				oModel.setProperty("/tipoEmbarcacion",oDominiosData["data"][0]["data"]);
+			}else{
+				this.getMessageDialog("Information","No se econtraron registros en tipo de embarcación");
+			}
+		},
+
+		getTemporadasService: async function(oModel){
+			let oService = {},
+			oTemporadaData;
+			oService.PATH = HOST + "/api/General/Read_Table";
+			oService.param = {
+				delimitador: "|",
+				fields: ["CDPCN", "DSPCN", "FHITM", "FHFTM", "CTNAC", "ZCDZAR", "ZDSZAR"],
+				no_data: "",
+				option: [],
+				options: [
+					{
+						cantidad: "",
+						control: "MULTIINPUT",
+						key: "ESPCN",
+						valueHigh: "",
+						valueLow: "S"
+					}
+				],
+				order: "",
+				p_user: "FGARCIA",
+				rowcount: 0,
+				rowskips: 0,
+				tabla: "ZV_FLTZ"
+			};
+
+			oTemporadaData = await this.getDataService(oService);
+			if(oTemporadaData.data.length>0){
+				let aData = oTemporadaData["data"];
+				aData.sort((a,b) => formatter.setFormatDate(b.FHITM) - formatter.setFormatDate(a.FHITM));
+				let oLastTemp = aData[0],
+				sStartDate = oLastTemp["FHITM"],
+				sEndDate = oLastTemp["FHFTM"],
+				sDescTemp = oLastTemp["DSPCN"],
+				sCodPort = oLastTemp["CDPCN"];
+				
+				oModel.setProperty("/formSearch/startDate",sStartDate);
+				oModel.setProperty("/formSearch/endDate",sEndDate);
+				oModel.setProperty("/formSearch/tempDesc",sDescTemp);
+				oModel.setProperty("/formSearch/codPort",sCodPort);
+			}else{
+				this.getMessageDialog("Information","No se econtraron registros de temporadas")
+			}
 		}
 	});
 

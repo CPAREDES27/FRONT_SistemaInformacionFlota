@@ -1,0 +1,123 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+    <Dialog
+        showHeader="false">
+        <beginButton>
+            <Button
+                icon="sap-icon://decline"
+                text="Cerrar"
+                type="Reject"
+                press="onCloseDialog"/>
+        </beginButton>
+        <content>
+            <IconTabBar
+				selectedKey="{objectView>/plantaSelectedKey}"
+				select="onDateFilterSelect">
+				<content>
+                    <IconTabBar
+						id="iconTabBar2"
+						headerMode="Inline"
+                        tabDensityMode="Compact"
+                        selectedKey="{objectView>/plantPropTercKey}"
+						class="sapUiNoMargin sapUiNoContentPadding"
+                        select="onPlantaFilterSelect">
+                        <content>
+                            <Table
+                                id="plantaTableId"
+                                updateFinished="onUpdateFinishedTable">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <ObjectStatus
+                                            icon="sap-icon://appointment"
+                                            state="Indication06"
+                                            text="{/plantaTextTitle}"
+                                            title="{/plantaTableTitle}"/>
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column>
+                                        <Label text="Embaración" />
+                                        <footer>
+                                            <Text text="{}" />
+                                        </footer>
+                                    </Column>
+                                    <Column>
+                                        <Label text="CBOD" />
+                                        <footer>
+                                            <Text text="{}" />
+                                        </footer>
+                                    </Column>
+                                    <Column>
+                                        <Label text="Decl" />
+                                        <footer>
+                                            <Text text="{}" />
+                                        </footer>
+                                    </Column>
+                                    <Column>
+                                        <Label text="Desc" />
+                                        <footer>
+                                            <Text text="{}" />
+                                        </footer>
+                                    </Column>
+                                    <Column>
+                                        <Label text="Difer %" />
+                                        <footer>
+                                            <Text text="{}" />
+                                        </footer>
+                                    </Column>
+                                </columns>
+                                <!-- <items>
+                                    <ColumnListItem id="ItemsTemplateId">
+                                        <cells>
+                                            <Text text="{NMEMB}" />
+                                            <Text text="{}" />
+                                            <Text text="{}" />
+                                            <Text text="{}" />
+                                            <Text text="{}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items> -->
+                            </Table>
+                        </content>
+						<items>
+							<IconTabFilter
+								key="DPT"
+								text="Pesca Propios"
+								count="3">
+							</IconTabFilter>
+							<IconTabFilter
+								key="DTT"
+								text="Pesca Terceros"
+								count="4321">
+							</IconTabFilter>
+						</items>
+					</IconTabBar>
+				</content>
+				<items>
+					<IconTabFilter
+						key="DP"
+						text="Día"
+						icon="sap-icon://badge">
+					</IconTabFilter>
+					<IconTabSeparator/>
+					<IconTabFilter
+						key="RP"
+						text="Rango"
+						icon="sap-icon://initiative"
+						iconColor="Positive">
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+        </content>
+        <subHeader>
+            <OverflowToolbar>
+                <ObjectStatus
+                    icon="sap-icon://factory"
+                    state="Information"
+                    text="{DESCR}"
+                    title="Planta"/>
+            </OverflowToolbar>
+        </subHeader>
+    </Dialog>
+</core:FragmentDefinition>

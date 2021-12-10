@@ -71,6 +71,10 @@ modules:
       - comtasapdeclaradacierredia.zip
       name: comtasapdeclaradacierredia
       target-path: resources/
+    - artifacts:
+      - comtasapcomptproduce.zip
+      name: comtasapcomptproduce
+      target-path: resources/
 - name: comtasapdeclarada
   type: html5
   path: pdeclarada
@@ -134,6 +138,16 @@ modules:
 - name: comtasapdeclaradacierredia
   type: html5
   path: pdeclaradacierredia
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comtasapcomptproduce
+  type: html5
+  path: pcomptproduce
   build-parameters:
     build-result: dist
     builder: custom

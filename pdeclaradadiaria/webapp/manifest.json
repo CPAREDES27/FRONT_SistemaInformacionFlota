@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "pattern": "Products/{objectId}",
+                    "pattern": "Fecha/{objectId}",
                     "name": "object",
                     "target": [
                         "object"

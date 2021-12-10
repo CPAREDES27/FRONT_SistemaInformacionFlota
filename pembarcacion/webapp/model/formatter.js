@@ -33,6 +33,32 @@ sap.ui.define([], function () {
 		getDateFromString: function (dateString) {
 			let date = new Date(dateString.substring(0, 4), dateString.substring(4, 6) - 1, dateString.substring(6, 8));
 			return date;
+		},
+
+		/**
+		 * Recibe string dd/mm/yyyy y devuelve objecto Date
+		 * @param {string} sDate 
+		 */
+		setFormatDate:function(sDate){
+			if(sDate){
+				let oDate = new Date(sDate.split("/")[2],sDate.split("/")[1]-1,sDate.split("/")[0]);
+				return oDate;
+			}else{
+				return "";
+			}
+		},
+
+		/**
+		 * Recibe string dd/mm/yyyy y devuelve yyyymmdd
+		 * @param {string} sDate 
+		 */
+		setFormatDateYYYYMMDD:function(sDate){
+			if(sDate){
+				let sNewDate = sDate.split("/")[2]+sDate.split("/")[1]+sDate.split("/")[0];
+				return sNewDate;
+			}else{
+				return "";
+			}
 		}
 	};
 

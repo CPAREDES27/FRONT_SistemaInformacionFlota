@@ -29,10 +29,28 @@ sap.ui.define([], function () {
 
 			return `${day >= 10 ? day : `0${day}`}/${month >= 10 ? month : `0${month}`}/${year}`;
 		},
-		getDateFromString: function (dateString) {
-			let date = new Date(dateString.substring(0, 4), dateString.substring(4, 6) - 1, dateString.substring(6, 8));
-			return date;
+
+		formatDateInverse:function(sDate){
+			if(sDate){
+				let sNewDate =`${sDate.split("/")[2]}${sDate.split("/")[1]}${sDate.split("/")[0]}`;
+				return sNewDate;
+			}else{
+				return "";
+			}
+		},
+
+		formatDateInverse2:function(sDate){
+			if(sDate){
+				let sNewDate =`${sDate.slice(6)}/${sDate.slice(4,6)}/${sDate.slice(0,4)}`;
+				return sNewDate;
+			}else{
+				return "";
+			}
 		}
+		// getDateFromString: function (dateString) {
+		// 	let date = new Date(dateString.substring(0, 4), dateString.substring(4, 6) - 1, dateString.substring(6, 8));
+		// 	return date;
+		// }
 	};
 
 });

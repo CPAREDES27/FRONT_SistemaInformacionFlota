@@ -7,9 +7,7 @@
 	xmlns:table="sap.ui.table">
 
 	<semantic:SemanticPage
-		id="page"
-		headerPinnable="false"
-		toggleHeaderOnTitleClick="false">
+		id="page">
 
 		<semantic:titleHeading>
 			<Title
@@ -19,96 +17,77 @@
 
 		<!-- Header Content -->
 		<semantic:headerContent>
-			<f:Form id="idFormHeader" >
+			<f:Form 
+				id="idFormHeader" 
+				editable="true"
+				binding="{/formSearch}">
 				<f:formContainers>
 					<f:FormContainer >
 						<f:formElements>
-							<f:FormElement label="Fecha">
+							<f:FormElement label="Opción">
 								<f:fields>
-									<Select id="opcionFecha" items="{ path: '/OPCIONES_FECHA' }" >
-										<core:Item key="{id}" text="{descripcion}" />
-									</Select>
+									<RadioButtonGroup columns="2" valueState="Error" select="onSelectRadioButton" >
+										<RadioButton text="Temporada" class="sapUiMediumMarginEnd" />
+										<RadioButton text="Fecha" />
+									</RadioButtonGroup>
 								</f:fields>
 							</f:FormElement>
-						</f:formElements>
-					</f:FormContainer>
-					<f:FormContainer >
-						<f:formElements>
 							<f:FormElement label="Temporadas">
 								<f:fields>
-									<Input id="txtTemporadas"
-										showSuggestion="true"
-										showTableSuggestionValueHelp="false"
-										suggestionRows="{/SUGGESTION_TEMPORADAS}"
+									<Input 
+										id="txtTemporadas"
+										value="{
+											parts:[
+												{path:'startDate'},
+												{path:'endDate'},
+												{path:'tempDesc'}
+											]
+										}"
+										placeholder="Seleccione temporada"
+										showValueHelp="true"
+										valueHelpRequest="onSearchHelp"
+										enabled="{worklistView>/enabledTempInput}"
 										change="updateDateRange"
-										value="{/temporada}"
-										>
-										<suggestionColumns>
-											<Column width="10rem">
-												<Label text="Código" />
-											</Column>
-											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
-												hAlign="Center">
-												<Label text="Descripción" />
-											</Column>
-											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
-												hAlign="Center">
-												<Label text="Fecha inicio" />
-											</Column>
-											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
-												hAlign="Center">
-												<Label text="Fecha fin" />
-											</Column>
-											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
-												hAlign="Center">
-												<Label text="Cuota" />
-											</Column>
-											<Column width="10rem" minScreenWidth="Tablet" demandPopin="true"
-												hAlign="End">
-												<Label text="Zona" />
-											</Column>
-										</suggestionColumns>
-
-										<suggestionRows>
-											<ColumnListItem>
-												<Label text="{CDPCN}" />
-												<Label text="{DSPCN}" />
-												<Label text="{ path: 'FHITM', formatter: '.formatter.formatDateDDMMYYYY' }" />
-												<Label text="{ path: 'FHFTM', formatter: '.formatter.formatDateDDMMYYYY' }" />
-												<Label text="{CTNAC}" />
-												<Label text="{ZDSZAR}" />
-											</ColumnListItem>
-										</suggestionRows>
-									</Input>
+										tooltip="{tempDesc}"/>
 								</f:fields>
 							</f:FormElement>
-						</f:formElements>
-					</f:FormContainer>
-					<f:FormContainer >
-						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DateRangeSelection id="dateRangePescaEmbarcacion" width="100%" />
+									<DateRangeSelection 
+										id="dateRangePescaEmbarcacion"
+										value="{fecha}"
+										displayFormat="dd/MM/yyyy"
+										valueFormat="dd/MM/yyyy"
+										enabled="{worklistView>/enabledDateInput}" />
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>
+					
 					<f:FormContainer >
 						<f:formElements>
 							<f:FormElement label="Tipo embarcación">
 								<f:fields>
-									<Select id="tipoEmbarcacion" items="{ path: '/TIPOS_EMBARCACION' }" >
+									<Select 
+										id="tipoEmbarcacion" 
+										selectedKey="{tipoEmb}"
+										items="{ path: '/tipoEmbarcacion' }" >
 										<core:Item key="{id}" text="{descripcion}" />
 									</Select>
 								</f:fields>
 							</f:FormElement>
-						</f:formElements>
-					</f:FormContainer>
-					<f:FormContainer >
-						<f:formElements>
-							<f:FormElement >
+							<f:FormElement label="">
 								<f:fields>
-									<Button text="Buscar" type="Emphasized" press="buscarPescasPorEmbarcacion"/>
+									<Button 
+										text="Buscar" 
+										type="Emphasized"
+										icon="sap-icon://search" 
+										press="onPescaSearch"/>
+										<Button 
+											text="Limpiar" 
+											type="Ghost"
+											icon="sap-icon://clear-filter" 
+											press="onClearSearch"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -117,16 +96,16 @@
 				<f:layout>
 					<f:ResponsiveGridLayout
 						labelSpanXL="3"
-						labelSpanL="4"
-						labelSpanM="4"
+						labelSpanL="3"
+						labelSpanM="3"
 						labelSpanS="12"
 						adjustLabelSpan="false"
 						emptySpanXL="0"
 						emptySpanL="0"
 						emptySpanM="0"
 						emptySpanS="0"
-						columnsXL="3"
-						columnsL="3"
+						columnsXL="2"
+						columnsL="2"
 						columnsM="1"
 						singleContainerFullSize="false" />
 				</f:layout>
@@ -141,18 +120,24 @@
 		<semantic:content>
 			<table:Table id="table" 
 					rows="{/PESCAS_EMBARCACION}"
+					fixedColumnCount="1"
+					selectionMode="None"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					rowsUpdated=".onUpdateFinished"
 					fixedBottomRowCount="1"
-					visibleRowCount="7">
+					class="classTable">
 					<table:extension>
 						<OverflowToolbar style="Clear">
 							<ToolbarSpacer />
-							<Button type="Emphasized" icon="sap-icon://excel-attachment" press="onExport"/>
+							<Button 
+								text="Exportar"
+								type="Emphasized" 
+								icon="sap-icon://excel-attachment" 
+								press="onExport"/>
 						</OverflowToolbar>
 					</table:extension>
 					<table:columns>
-						<table:Column width="8rem">
+						<table:Column width="12rem">
 							<table:multiLabels>
 								<Label text="" />
 								<Label text="Embarcación" />
@@ -161,6 +146,7 @@
 								<Text text="{NMEMB}"/>     
 							</table:template>
 						</table:Column>
+
 						<table:Column width="4rem">
 							<table:multiLabels>
 								<Label text="" />
@@ -170,7 +156,12 @@
 								<Text text="{CPPMS}"/>     
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center" width="5rem">
+						
+						<table:Column 
+							headerSpan="2,1" 
+							hAlign="Center" 
+							width="5rem" 
+							visible="{worklistView>/visibleColCuota}">
 							<table:multiLabels>
 								<Label text="CUOTA" textAlign="Center" />
 								<Label text="Periodo" textAlign="Center" />
@@ -179,7 +170,11 @@
 								<Text text="{CPRNC}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="5rem">
+						<table:Column 
+							headerSpan="2,1" 
+							hAlign="End" 
+							width="6rem"
+							visible="{worklistView>/visibleColCuota}">
 							<table:multiLabels>
 								<Label text="CUOTA" />
 								<Label text="Avance(%)" />
@@ -188,25 +183,8 @@
 								<Text text="{= ${CAVNC} * 100}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center" width="5rem">
-							<table:multiLabels>
-								<Label text="CUOTA" textAlign="Center" />
-								<Label text="Periodo" textAlign="Center" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{CPRSU}"/>
-							</table:template>
-						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="5rem">
-							<table:multiLabels>
-								<Label text="CUOTA" />
-								<Label text="Avance(%)" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{= ${CAVSU} * 100}"/>
-							</table:template>
-						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="5rem">
+
+						<table:Column headerSpan="4,1" hAlign="Center" width="7rem">
 							<table:multiLabels>
 								<Label text="Pesca TM" />
 								<Label text="Centro Norte" textAlign="Center" />
@@ -215,7 +193,11 @@
 								<Text text="{CNDCN}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column 
+							headerSpan="4,1" 
+							hAlign="End" 
+							width="4rem"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Pesca TM" />
 								<Label text="Sur" />
@@ -224,7 +206,11 @@
 								<Text text="{CNDSU}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" hAlign="Center" width="4rem">
+						<table:Column 
+							headerSpan="4,1" 
+							hAlign="Center" 
+							width="4rem"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels >
 								<Label text="Pesca TM" />
 								<Label text="CHD" />
@@ -233,7 +219,10 @@
 								<Text text="{CNDHD}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" width="4rem">
+						<table:Column 
+							headerSpan="4,1" 
+							width="4rem"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Pesca TM" />
 								<Label text="Total" />
@@ -242,7 +231,8 @@
 								<Text text="{CNDTO}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+
+						<table:Column headerSpan="7,1" hAlign="Center" width="7rem">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Centro Norte" />
@@ -251,7 +241,11 @@
 								<Text text="{DIPCN}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" width="4rem">
+						<table:Column 
+							headerSpan="7,1" 
+							width="4rem"
+							hAlign="End"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Sur" />
@@ -260,7 +254,11 @@
 								<Text text="{DIPSU}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" width="4rem">
+						<table:Column 
+							headerSpan="4" 
+							width="4rem"
+							hAlign="End"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="CHD" />
@@ -269,7 +267,11 @@
 								<Text text="{DIPHD}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" width="4rem">
+						<table:Column 
+							headerSpan="7,1" 
+							width="7rem"
+							hAlign="End"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Sin Pesca Sur" />
@@ -278,7 +280,11 @@
 								<Text text="{DSPSU}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" hAlign="Center">
+						<table:Column 
+							headerSpan="2" 
+							hAlign="End" 
+							width="8rem"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Sin Pesca CHD" />
@@ -287,7 +293,11 @@
 								<Text text="{DSPHD}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2">
+						<table:Column 
+							headerSpan="7,1" 
+							width="4rem"
+							hAlign="End"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Veda" />
@@ -296,7 +306,11 @@
 								<Text text="{DIVED}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center">
+						<table:Column 
+							headerSpan="7,1" 
+							hAlign="Center" 
+							width="6rem"
+							visible="{worklistView>/visibleColTM}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Total" />
@@ -305,7 +319,12 @@
 								<Text text="{TOTDI}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4">
+
+						<table:Column 
+							headerSpan="1" 
+							width="6rem"
+							hAlign="End"
+							visible="{worklistView>/visibleColDias}">
 							<table:multiLabels>
 								<Label text="Dias" />
 								<Label text="Faltantes" />
@@ -314,9 +333,14 @@
 								<Text text="{DIFAL}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2" hAlign="Center">
+
+						<table:Column 
+							headerSpan="1" 
+							hAlign="Center" 
+							width="6rem"
+							visible="{worklistView>/visibleColDias}">
 							<table:multiLabels>
-								<Label text="Días" />
+								<Label text="" />
 								<Label text="Rend(%)" />
 							</table:multiLabels>
 							<table:template>

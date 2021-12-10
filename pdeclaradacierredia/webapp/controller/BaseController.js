@@ -2,13 +2,14 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",
 	"sap/m/library",
-	"../model/formatter"
-], function (Controller, UIComponent, mobileLibrary, formatter) {
+	"../model/formatter",
+	"sap/ui/core/BusyIndicator"
+], function (Controller, UIComponent, mobileLibrary, formatter,BusyIndicator) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
 	var URLHelper = mobileLibrary.URLHelper;
-	var mainUrlRest = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com/api/';
+	var HOST = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com';
 
 	return Controller.extend("com.tasa.pdeclaradacierredia.controller.BaseController", {
 		formatter: formatter,
@@ -51,17 +52,90 @@ sap.ui.define([
 			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
 		},
 
-		/**
-		 * Event handler when the share by E-Mail button has been clicked
-		 * @public
-		 */
-		onShareEmailPress: function () {
-			var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));
-			URLHelper.triggerEmail(
-				null,
-				oViewModel.getProperty("/shareSendEmailSubject"),
-				oViewModel.getProperty("/shareSendEmailMessage")
-			);
+		getDataService: async function(sUrl,param){
+			BusyIndicator.show(0);
+			try {
+				let oResponseData = await fetch(sUrl,{
+					method:'POST',
+					body:JSON.stringify(param)
+				});
+				if(oResponseData.ok) {
+					this.count++;
+					return oResponseData.json();
+				}else{
+					return null;
+				}
+			} catch (error) {
+				BusyIndicator.hide();
+				Log.error(error);
+				this.getMessageDialog("Error", "Se produjo un error de conexión")
+				return null;
+			}
+		},
+
+		getDataMainTable: async function(oModel,oParam){
+			const sUrl = HOST + '/api/General/Read_Table',
+			param = new Object;
+
+			const body = {
+				delimitador: "|",
+				fields: [
+					"WERKS",
+					"DESCR",
+					"CNPCM",
+					"FCIER"
+				],
+				no_data: "",
+				option: [],
+				options: [
+					{
+						cantidad: "8",
+						control: "MULTIINPUT",
+						key: "FCIER",
+						valueHigh: oParam.sEndDate,
+						valueLow: oParam.sStartDate
+					}
+				],
+				order: "FCIER AUFNR",
+				p_user: "FGARCIA",
+				rowcount: 200,
+				rowskips: 0,
+				tabla: "ZTFL_PDLBCH"
+			};
+			let oPescaData = await this.getDataService(sUrl, body),
+			aData;
+			if(oPescaData){
+				if(oPescaData.data.length>0){
+					oModel.setProperty(`/lista`,oPescaData.data);
+				}else{
+					this.getMessageDialog("Information", "No se econtraron registros para la busqueda");
+					oModel.setProperty(`/lista`,[]);
+				}
+				BusyIndicator.hide();
+			}
+			
+		},
+
+		getMessageDialog:function(sTypeDialog,sMessage){
+			let oMessageDialog;
+			if (!oMessageDialog) {
+				oMessageDialog = new sap.m.Dialog({
+					type: sap.m.DialogType.Message,
+					title: "Mensaje",
+					state: sTypeDialog,
+					content: new sap.m.Text({ text: sMessage }),
+					beginButton: new sap.m.Button({
+						type: sap.m.ButtonType.Emphasized,
+						text: "OK",
+						press: function () {
+							// BusyIndicator.show(0);
+							oMessageDialog.close();
+						}.bind(this)
+					})
+				});
+			}
+
+			oMessageDialog.open();
 		},
 		getPescaDeclaradaCierreDia: async function (fechaInicio, fechaFin) {
 			const fechaInicioFormatted = this.formatter.formatDateYYYYMMDD(fechaInicio);

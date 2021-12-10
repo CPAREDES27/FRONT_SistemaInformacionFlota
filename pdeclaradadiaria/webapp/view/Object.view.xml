@@ -2,6 +2,7 @@
 	controllerName="com.tasa.pdeclaradadiaria.controller.Object"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:table="sap.ui.table"
 	xmlns:semantic="sap.f.semantic">
 
 	<semantic:SemanticPage
@@ -13,23 +14,158 @@
 
 		<semantic:titleHeading>
 			<Title
-				text="{ProductID}"
-				level="H2"/>
+				text="Detalle de pesca declarada {FECCONMOV}"
+				level="H3"/>
 		</semantic:titleHeading>
 
-		<semantic:headerContent>
-			<ObjectNumber
-				number="{
-					path: 'UnitPrice',
-					formatter: '.formatter.numberUnit'
-				}"
-				unit="{QuantityPerUnit}"
-			/>
-		</semantic:headerContent>
+		<semantic:content>
+			<IconTabBar
+				selectedKey="{objectView>/selectedKey}"
+				select="onFilterSelect">
+				<content>
+					<table:Table
+						id="detailTableId"
+						selectionMode="None">
+						<table:extension>
+							<OverflowToolbar>
+								<ObjectStatus
+									icon="sap-icon://appointment"
+									state="Indication06"
+									text="{/dateType}"
+									title="{/titleTable}"/>
+							</OverflowToolbar>
+						</table:extension>
+						<table:columns>
+							<table:Column headerSpan="2,1">
+								<table:multiLabels>
+									<Label visible="false" />
+									<Label text="Centro" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{WERKS}" />
+								</table:template>
+							</table:Column>
+							<table:Column headerSpan="2,1">
+								<table:multiLabels>
+									<Label visible="false" />
+									<Label text="Planta" />
+								</table:multiLabels>
+								<table:template>
+									<Link
+										id="linkTable"
+										emphasized="true"
+										enabled="true"
+										text="{DESCR}"
+										press="onPlantaDetail"/>
+								</table:template>
+							</table:Column>
 
-		<semantic:sendEmailAction>
-			<semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
-		</semantic:sendEmailAction>
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Total Pesca" />
+									<Label text="Decl" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{}" />
+								</table:template>
+							</table:Column>
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Total Pesca" />
+									<Label text="Desc" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{}" />
+								</table:template>
+							</table:Column>
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Total Pesca" />
+									<Label text="Difer %" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{}" />
+								</table:template>
+							</table:Column>
+
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Pesca Propios" />
+									<Label text="Decl" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{PDLPR}" />
+								</table:template>
+							</table:Column>
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Pesca Propios" />
+									<Label text="Desc" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{PDSPR}" />
+								</table:template>
+							</table:Column>
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Pesca Propios" />
+									<Label text="Dif %" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{}" />
+								</table:template>
+							</table:Column>
+
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Pesca Terceros" />
+									<Label text="Decl" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{PDLTR}" />
+								</table:template>
+							</table:Column>
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Pesca Terceros" />
+									<Label text="Desc" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{PDSTR}" />
+								</table:template>
+							</table:Column>
+							<table:Column headerSpan="3,1">
+								<table:multiLabels>
+									<Label text="Pesca Terceros" />
+									<Label text="Dif %" />
+								</table:multiLabels>
+								<table:template>
+									<Text text="{}" />
+								</table:template>
+							</table:Column>
+						</table:columns>
+					</table:Table>
+				</content>
+				<items>
+					<IconTabFilter
+						key="D"
+						text="Día"
+						icon="sap-icon://badge">
+					</IconTabFilter>
+					<IconTabSeparator/>
+					<IconTabFilter
+						key="R"
+						text="Rango"
+						icon="sap-icon://initiative"
+						iconColor="Positive">
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</semantic:content>
+
+		<semantic:closeAction>
+			<semantic:CloseAction press="onNavBack" />
+		</semantic:closeAction>
 
 
 	</semantic:SemanticPage>

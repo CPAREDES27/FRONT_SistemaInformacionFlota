@@ -3,9 +3,11 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
-], function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
+	"sap/ui/model/FilterOperator",
+	"sap/ui/core/BusyIndicator"
+], function (BaseController, JSONModel, formatter, Filter, FilterOperator,BusyIndicator) {
 	"use strict";
+	var HOST = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com';
 
 	return BaseController.extend("com.tasa.pdeclaradadiaria.controller.Worklist", {
 
@@ -20,10 +22,11 @@ sap.ui.define([
 		 * @public
 		 */
 		onInit: function () {
-			var oViewModel,
-				iOriginalBusyDelay,
-				oTable = this.byId("table");
-				oVizFrameTnEp=this.byId("idVizFrameTnEp")
+			let oViewModel,
+			iOriginalBusyDelay,
+			oModel = this.getModel(),
+			oTable = this.byId("table");
+				// oVizFrameTnEp=this.byId("idVizFrameTnEp")
 
 			// Put down worklist table's original value for busy indicator delay,
 			// so it can be restored later on. Busy handling on the table is
@@ -34,10 +37,7 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
-				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
-				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
-				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
+				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),				
 				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
 				tableBusyDelay: 0
 			});
@@ -46,20 +46,39 @@ sap.ui.define([
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
-			oTable.attachEventOnce("updateFinished", function () {
-				// Restore original busy indicator delay for worklist's table
-				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
-			});
+			// oTable.attachRowsUpdated("updateFinished", function () {
+			// 	// Restore original busy indicator delay for worklist's table
+			// 	oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
+			// });
+		},
 
-			let currentDate = new Date();
-			let monthAgo = new Date();
+		/**
+		 * @override
+		 */
+		onAfterRendering: function() {
+			// Carga inicial
+			let oParam = new Object,
+			oModel = this.getModel(),
+			currentDate = new Date(),
+			monthAgo = new Date(),
+			sStartDate,
+			sEndDate,
+			sRangeDate;
+
 			monthAgo.setMonth(monthAgo.getMonth() - 1);
+			sStartDate = formatter.formatDateDDMMYYYY(monthAgo);
+			sEndDate = formatter.formatDateDDMMYYYY(currentDate);
+			sRangeDate = `${sStartDate} - ${sEndDate}`;
+			oModel.setProperty("/rangeDate", sRangeDate);
 
-			let oDateRangePescaDeclaradaDiaria = this.byId("dateRangePescaDeclaradaDiaria");
-			oDateRangePescaDeclaradaDiaria.setDateValue(monthAgo);
-			oDateRangePescaDeclaradaDiaria.setSecondDateValue(currentDate);
+			oParam.sEndDate = formatter.formatDateYYYYMMDD(currentDate);
+			oParam.sStartDate = formatter.formatDateYYYYMMDD(monthAgo);
 
-			this.getDataTable(monthAgo, currentDate);
+			// variable global para configuracion de totales
+			this.iLastStartIndex=0;
+
+			this._getDataMainTable(oModel,oParam);
+		
 		},
 
 		/* =========================================================== */
@@ -88,6 +107,23 @@ sap.ui.define([
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
 			this.getModel("worklistView").setProperty("/worklistTableTitle", sTitle);
+		},
+
+		onRowsUpateTable:function(oEvent){
+			let oTable = this.getView().byId(oEvent.getParameter("id")),
+			oRowBinding = oTable.getBinding("rows"),
+			iLastStartIndex = oRowBinding.iLastStartIndex;
+			if(iLastStartIndex>0){
+				if(this.iLastStartIndex===iLastStartIndex) return;
+				this.iLastStartIndex=iLastStartIndex;
+				let aDataRows = oRowBinding.oList,
+				oDataLastRow = aDataRows[iLastStartIndex],
+				aRows = oTable.getRows(),
+				iFixedRowCount = oTable.getVisibleRowCount(),
+				oRowLast = aRows[iFixedRowCount-1];
+				this._setTotals(oRowLast);
+				this._setDataGraphics(oDataLastRow);
+			}
 		},
 
 		/**
@@ -140,6 +176,33 @@ sap.ui.define([
 			oTable.getBinding("items").refresh();
 		},
 
+		onClearFilters:function(){
+			let oModel = this.getModel();
+			oModel.setProperty("/rangeDate", "")
+		},
+
+		/**
+		 * Metodo para cargar tabla principal
+		 * @param {event} oEvent 
+		 */
+		onSearchPesca: function (oEvent) {
+			let oModel = this.getModel(),
+			sRangeDate = oModel.getProperty("/rangeDate"),
+			sStartDate = sRangeDate.split("-")[0].trim(),
+			sEndDate = sRangeDate.split("-")[1].trim(),
+			oParam = new Object;
+			
+			sStartDate = formatter.formatDateInverse(sStartDate);
+			sEndDate = formatter.formatDateInverse(sEndDate);
+			oParam.sStartDate = sStartDate;
+			oParam.sEndDate = sEndDate;
+
+			// const fechaInicio = this.byId("dateRangePescaDeclaradaDiaria").getDateValue();
+			// const fechaFin = this.byId("dateRangePescaDeclaradaDiaria").getSecondDateValue();
+
+			this._getDataMainTable(oModel, oParam);
+		},
+
 		/* =========================================================== */
 		/* internal methods                                            */
 		/* =========================================================== */
@@ -151,9 +214,13 @@ sap.ui.define([
 		 * @private
 		 */
 		_showObject: function (oItem) {
+			let oObject = oItem.getBindingContext().getObject(),
+			sDate = oObject["FECCONMOV"];
 			this.getRouter().navTo("object", {
-				objectId: oItem.getBindingContext().getProperty("ProductID")
+				objectId: oItem.getBindingContext().getPath().split("/")[2]
 			});
+			
+			this._getDetailData(sDate);
 		},
 
 		/**
@@ -170,67 +237,95 @@ sap.ui.define([
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 			}
 		},
-		buscarPescaDescargadaDiaria: function () {
-			const fechaInicio = this.byId("dateRangePescaDeclaradaDiaria").getDateValue();
-			const fechaFin = this.byId("dateRangePescaDeclaradaDiaria").getSecondDateValue();
+		_getDataMainTable: async function(oModel,oParam){
+			const sUrl = HOST + '/api/sistemainformacionflota/PescaDeclaradaDiara',
+			param = new Object;
 
-			this.getDataTable(fechaInicio, fechaFin);
+			param.fieldstr_dl= [];
+			param.p_fefin= oParam.sEndDate;
+			param.p_feini= oParam.sStartDate;
+			param.p_user="";
+			let oPescaData = await this.getDataService(sUrl, param),
+			aData;
+			if(oPescaData){
+				aData = oPescaData["str_dl"];
+				if(aData.length>0){
+					oModel.setProperty(`/STR_DL`,aData);
+					
+				}else{
+					this.getMessageDialog("Information", "No se econtraron registros para la busqueda");
+					oModel.setProperty(`/STR_DL`,[]);
+				}
+				BusyIndicator.hide();
+			}
+			
 		},
-		calcularTotales: function () {
-			let listPescaDeclaradaDiaria = this.getModel().getProperty("/STR_DL");
 
-			/**
-			 * Copia del primer elemento para obtener su modelo
-			 */
-			let pescaDeclaradaDiara = { ...listPescaDeclaradaDiaria[0] };
+		_setTotals:function(oRowLast){
+			let oModel = this.getModel(),
+			aCells = oRowLast.getCells(),
+			oFechaCell = aCells[0],
+			oHarCell = aCells[1],
+			oTnProp = aCells[3],
+			oPorcProp = aCells[4],
+			oTnTerc = aCells[5],
+			oPorcTerc = aCells[6];
 
+			// columna total
+			oFechaCell.setText("Total");
+			oFechaCell.setEnabled(false);
+			oFechaCell.setEmphasized(true);
 
+			// % Pesca propios
+			let iValueProp = parseFloat(oTnProp.getText())/parseFloat(oHarCell.getText());
+			oPorcProp.setText(iValueProp*100);
+
+			// % Pesca Terceros
+			let iValueTerc = parseFloat(oTnTerc.getText())/parseFloat(oHarCell.getText());
+			oPorcTerc.setText(iValueTerc*100);
+			
 		},
-		getDataTable: async function (fechaInicio, fechaFin) {
-			let listPescaDeclaradaDiaria = await this.getListPescaDeclaradaDiaria(fechaInicio, fechaFin);
-			if (listPescaDeclaradaDiaria) {
-				this.getModel().setProperty("/STR_DL", listPescaDeclaradaDiaria.str_dl);
-				let str_dlTotales = listPescaDeclaradaDiaria.str_dl[listPescaDeclaradaDiaria.str_dl.length - 1];
+		
+		_setDataGraphics:function(oDataLastRow){
+			let oModel = this.getModel(),
+			aGraphData=[
+				{
+					descripcion:"Propios",
+					value:oDataLastRow["PORC_DECL_CHI_PROP"]
+				},
+				{
+					descripcion:"Terceros",
+					value:oDataLastRow["PORC_DECL_CHI_TERC"]
+				}
+			];
 
-				//Reporte de % totales de pesca declarada propios y terceros
-				this.getModel().setProperty("/PORC_PESC_DECL",
-					[
-						{
-							descripcion: 'Propios',
-							value: str_dlTotales.PORC_DECL_CHI_PROP
-						}, {
-							descripcion: 'Terceros',
-							value: str_dlTotales.PORC_DECL_CHI_TERC
-						}
-					]);
+			oModel.setProperty("/dataGraficPorc", aGraphData);
+		},
+		
+		_getDetailData: async function(sDate){
+			let sUrl = HOST+"/api/sistemainformacionflota/PescaDeclaradaDife",
+			oModel = this.getModel(),
+			sDateParam = formatter.formatDateInverse(sDate),
+			sRangeDate = oModel.getProperty("/rangeDate"),
+			sStartDate = sRangeDate.split("-")[0].trim(),
+			sEndDate = sRangeDate.split("-")[1].trim(),
+			sStartDateParam = formatter.formatDateInverse(sStartDate),
+			sEndDateParam = formatter.formatDateInverse(sEndDate),
+			param = {
+				fieldstr_emd: [],
+				fieldstr_emr: [],
+				fieldstr_ptd: [],
+				fieldstr_ptr: [],
+				p_fecha: sDateParam,
+				p_ffdes: sEndDateParam,
+				p_fides: sStartDateParam,
+				p_user: "FGARCIA"
+			},
 
-				//Reportes de TN/EP propios y terceros
-				let st_dlGraphics = JSON.parse(JSON.stringify(listPescaDeclaradaDiaria.str_dl))
-				st_dlGraphics.pop();
-				let pesca = [{
-					desc: '',
-					lines: [{
-						points: [{
-							min: 243,
-							max: 428
-						}]
-					}, {
-						points: [{
-							min: 122,
-							max: 143
-						}]
-					}]
-				}]
-				this.getModel().setProperty("/PESCA_TN_EP", pesca);
+			oPescaDetail = await this.getDataService(sUrl, param);
 
-				const reportPTnEp = st_dlGraphics.map(s => {
-					return {
-						fecha: s.FECCONMOV,
-						prop: s.EFIC_PROP,
-						terc: s.EFIC_TERC
-					};
-				});
-				this.getModel().setProperty("/TN_EP", reportPTnEp);
+			if(oPescaDetail){
+				oModel.setProperty("/pescaDetail", oPescaDetail);
 			}
 		}
 	});

@@ -1,20 +1,18 @@
 <mvc:View
 	controllerName="com.tasa.pdeclaradadiaria.controller.Worklist"
 	xmlns="sap.m"
-	xmlns:viz="sap.viz.ui5.controls"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:semantic="sap.f.semantic"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:table="sap.ui.table"
     xmlns:chart="sap.suite.ui.microchart"
-	xmlns:layout="sap.ui.layout"
-	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
-	xmlns:viz.data="sap.viz.ui5.data">
+	xmlns:viz="sap.viz.ui5.controls"
+	xmlns:viz.data="sap.viz.ui5.data"
+	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
 
 	<semantic:SemanticPage
 		id="page"
-		headerPinnable="false"
-		toggleHeaderOnTitleClick="false">
+		class="sapUiNoContentPadding">
 
 		<semantic:titleHeading>
 			<Title
@@ -24,19 +22,36 @@
 
 		<!-- Header Content -->
 		<semantic:headerContent>
-			<f:Form id="idFormHeader" >
+			<f:Form id="idFormHeader" editable="true" >
 				<f:formContainers>
 					<f:FormContainer >
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DateRangeSelection id="dateRangePescaDeclaradaDiaria" />
+									<DateRangeSelection 
+										id="dateRangePescaDeclaradaDiaria"
+										value="{/rangeDate}"
+										displayFormat="dd/MM/yyyy"
+										valueFormat="dd/MM/yyyy" />
 								</f:fields>
 							</f:FormElement>
 
-							<f:FormElement >
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="">
 								<f:fields>
-									<Button text="Buscar" type="Emphasized" press="buscarPescaDescargadaDiaria"/>
+									<Button 
+										text="Buscar" 
+										icon="sap-icon://search" 
+										type="Emphasized" 
+										press="onSearchPesca"/>
+									<Button 
+										text="Limpiar" 
+										icon="sap-icon://clear-filter" 
+										type="Ghost" 
+										press="onClearFilters"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -62,239 +77,411 @@
 		</semantic:headerContent>
 
 		<semantic:content>
-			<layout:Grid defaultSpan="XL12 L12 M12 S12" >
+			
+			<VBox>
+				<items>
 				<table:Table id="table" 
 					rows="{/STR_DL}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+					rowsUpdated="onRowsUpateTable"
 					fixedBottomRowCount="1"
-					rowsUpdated=".onUpdateFinished"
-					visibleRowCount="5">
+					visibleRowCount="5"
+					fixedColumnCount="1"
+					selectionMode="None"
+					class="classTable">
 					<table:columns>
-						<table:Column width="6rem">
+						<table:Column width="6rem" class="colClass">
 							<table:multiLabels>
 								<Label text="" />
 								<Label text="" />
 								<Label text="Fecha" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{FECCONMOV}"/>     
+								<Link
+									text="{FECCONMOV}"
+									press="onPress"/>
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+						<table:Column headerSpan="10,2,1" hAlign="Center" width="7rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Total Pesca" />
 								<Label text="Harina" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PESC_DECL_CHI}"/>
+								<Text text="{
+												path:'PESC_DECL_CHI',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingSeparator:',',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" width="4rem">
+						<table:Column width="7rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Total Pesca" />
 								<Label text="C.H.D." />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PDECH}"/>
-							</table:template>
-						</table:Column>
-						
-						<table:Column headerSpan="2" hAlign="Center">
-							<table:multiLabels>
-								<Label text="Pesca declarada" />
-								<Label text="Pesca Propios" />
-								<Label text="TN" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{PPCHI}"/>
-							</table:template>
-						</table:Column>
-						<table:Column headerSpan="2">
-							<table:multiLabels>
-								<Label text="Pesca declarada" />
-								<Label text="Pesca Propios" />
-								<Label text="%" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{PORC_DECL_CHI_PROP}%"/>
-							</table:template>
-						</table:Column>
-						<table:Column headerSpan="4" hAlign="Center">
-							<table:multiLabels>
-								<Label text="Pesca declarada" />
-								<Label text="Pesca Terceros" />
-								<Label text="TN" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{PTCHI}"/>
-							</table:template>
-						</table:Column>
-						<table:Column headerSpan="4">
-							<table:multiLabels>
-								<Label text="Pesca declarada" />
-								<Label text="Pesca Terceros" />
-								<Label text="%" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{PORC_DECL_CHI_TERC}%"/>
+								<Text text="{
+												path:'PDECH',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingSeparator:',',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="4" hAlign="Center" width="4rem">
+						<table:Column headerSpan="10,2,1" hAlign="End" width="7rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Propios" />
+								<Label text="TN" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'PPCHI',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingSeparator:',',
+													groupingEnabled:true
+												}
+											}"/>
+							</table:template>
+						</table:Column>
+						<table:Column  hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Propios" />
+								<Label text="%" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'PORC_DECL_CHI_PROP',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													preserveDecimals:false,
+													maxFractionDigits:0,
+													minFractionDigits:0,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}
+											}"/>
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="10,2,1" hAlign="Center" width="7rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Terceros" />
+								<Label text="TN" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'PTCHI',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingSeparator:',',
+													groupingEnabled:true
+												}
+											}"/>
+							</table:template>
+						</table:Column>
+						<table:Column  width="4rem" hAlign="End">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Pesca Terceros" />
+								<Label text="%" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'PORC_DECL_CHI_TERC',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													preserveDecimals:false,
+													maxFractionDigits:0,
+													minFractionDigits:0,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}
+											}"/>
+							</table:template>
+						</table:Column>
+
+						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Prop" textAlign="Center" />
 								<Label text="Tn/Ep" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{EFIC_PROP}"/>
+								<Text text="{=${EFIC_PROP} > 10000 ? null : ${EFIC_PROP}}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Terc" />
 								<Label text="Tn/Ep" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{EFIC_TERC}"/>
+								<Text text="{=${EFIC_TERC}>10000?null:${EFIC_TERC}}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Prop" textAlign="Center" />
+								<Label text="EP" textAlign="Center" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'CNEMP',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingSeparator:',',
+													groupingEnabled:true
+												}
+											}"/>
+							</table:template>
+						</table:Column>
+						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
+							<table:multiLabels>
+								<Label text="Pesca declarada" />
+								<Label text="Terc" />
+								<Label text="EP" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'CNEMT',
+												type:'sap.ui.model.type.Integer',
+												formatOptions:{
+													groupingSeparator:',',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
 
 
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+
+						<table:Column headerSpan="5,3,1" hAlign="Center" width="6rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label text="Planta propia" />
 								<Label text="Pesc prop" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNEMP}"/>
+								<Text text="{
+												path:'PSPRO',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													minFractionDigits:3,
+													maxFractionDigits:3,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column hAlign="End" width="6rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label text="Planta propia" />
 								<Label text="Pesc terc" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNEMT}"/>
+								<Text text="{
+												path:'PSTER',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													minFractionDigits:3,
+													maxFractionDigits:3,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}	
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="4" hAlign="End" width="4rem">
+						<table:Column hAlign="End" width="6rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label text="Planta propia" />
 								<Label text="Total pesca" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PSPRO}"/>
+								<Text text="{
+												path:'PESC_DESC_CHI',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													minFractionDigits:3,
+													maxFractionDigits:3,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
 
 
-						<table:Column headerSpan="2" hAlign="Center">
+						<table:Column headerSpan="5,2,1" hAlign="Center" width="6rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />	
-								<Label text="" />
+								<Label visible="false"/>
 								<Label text="Planta terceros" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PSTER}"/>
+								<Text text="{
+												path:'PSTER',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													minFractionDigits:3,
+													maxFractionDigits:3,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="2">
+						<table:Column width="6rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
-								<Label text="" />
+								<Label visible="false" />
 								<Label text="CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{PSPRO}"/>
+								<Text text="{
+												path:'PSCHD',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													minFractionDigits:3,
+													maxFractionDigits:3,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column >
+
+						<table:Column width="4rem" hAlign="End">
 							<table:multiLabels>
-								<Label text="" />
-								<Label text="" />
+								<Label visible="false" />
+								<Label text="Difer" />
 								<Label text="%" />
 							</table:multiLabels>
 							<table:template>
-								<Button icon="sap-icon://show" />
+								<Text text="{
+												path:'PORC_DIFER',
+												type:'sap.ui.model.type.Float',
+												constraints:{
+													maximum:1
+												},
+												formatOptions:{
+													preserveDecimals:false,
+													maxFractionDigits:0,
+													minFractionDigits:0,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}
+											}"/>
 							</table:template>
 						</table:Column>
 					</table:columns>
 				</table:Table>
-
-				<layout:HorizontalLayout>
-					<layout:layoutData>
-						<layout:GridData span="XL12 L12 M12 S12"/>
-					</layout:layoutData>
-					<!-- Graficos -->
-					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
+					<HBox
+						alignContent="SpaceBetween"
+						class="sapUiMediumMarginTop">
 						<items>
-							<chart:InteractiveBarChart bars="{/PORC_PESC_DECL}" labelWidth="25%" displayedBars="3" selectionChanged="selectionChanged" press="press">
-								<chart:bars>
-									<chart:InteractiveBarChartBar label="{descripcion}" value="{value}" color="Critical"/>
-								</chart:bars>
-							</chart:InteractiveBarChart>
-						</items>
-					</FlexBox>
-<!-- 
-					<layout:flexContent>
-						<viz:Popover id="idPopOver"></viz:Popover>
-						<viz:VizFrame id="idVizFrameTnEp" uiConfig="{applicationSet:'fiori'}"
-							height='100%' width="100%" vizType='line'>
-							<viz:dataset>
-								<viz.data:FlattenedDataset data="{/TN_EP}">
-									<viz.data:dimensions>
-										<viz.data:DimensionDefinition name="Week"
-											value="{fecha}" />
-									</viz.data:dimensions>
-									<viz.data:measures>
-										<viz.data:MeasureDefinition name="Revenue"
-											value="{prop}" />
-										<viz.data:MeasureDefinition name="Cost"
-											value="{terc}" />
-									</viz.data:measures>
-								</viz.data:FlattenedDataset>
-							</viz:dataset>
+							<FlexBox 
+								width="40%"
+								justifyContent="SpaceAround" 
+								class="sapUiSmallMargin">
+								<items>
+									<chart:InteractiveBarChart 
+										bars="{/dataGraficPorc}" 
+										labelWidth="25%" 
+										displayedBars="2">
+										<chart:bars>
+											<chart:InteractiveBarChartBar 
+												label="{descripcion}" 
+												value="{
+															path:'value',
+															type:'sap.ui.model.type.Float',
+															formatOptions:{
+																preserveDecimals:false,
+																maxFractionDigits:1,
+																minFractionDigits:1,
+																decimalSeparator: '.'
+															}
+														}" 
+												color="Good"/>
+										</chart:bars>
+									</chart:InteractiveBarChart>
+								</items>
+							</FlexBox>
 
-							<viz:feeds>
-								<viz.feeds:FeedItem id='valueAxisFeed' uid="valueAxis" type="Measure"
-									values="Revenue" />
-								<viz.feeds:FeedItem id='categoryAxisFeed' uid="categoryAxis" type="Dimension"
-									values="Week" />
-							</viz:feeds>
-						</viz:VizFrame>
-					</layout:flexContent> -->
-
-					<FlexBox items="{/PESCA_TN_EP}" width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
-						<items>
-							<chart:LineMicroChart color="Good"
-							leftTopLabel=""
-							showPoints="true" lines="{lines}">
-								<chart:lines>
-									<chart:LineMicroChartLine color="Critical" type="Solid" showPoints="true" points="{points}">
-										<chart:LineMicroChartPoint
-											x="{min}"
-											y="{max}"
-										>
-											
-										</chart:LineMicroChartPoint>
-									</chart:LineMicroChartLine>
-								</chart:lines>
-								<chart:points>
-								</chart:points>
-							</chart:LineMicroChart>
+							<FlexBox
+								width="100%" 
+								alignItems="Center" 
+								justifyContent="SpaceAround" 
+								class="sapUiSmallMargin">
+								<!-- <items> -->
+									<viz:VizFrame
+										height="20rem"
+										vizType='line'
+										uiConfig="{applicationSet:'fiori'}"
+										vizProperties="{
+											title:{text:'Tn/Ep'}
+										}">
+										<viz:dataset>
+											<viz.data:FlattenedDataset 
+												data="{
+														path:'/STR_DL',
+														sorter:{
+															path:'FECCONMOV',
+															descending:false
+														}
+													}">
+												<viz.data:dimensions>
+													<viz.data:DimensionDefinition 
+														name="Fecha"
+														value="{FECCONMOV}" />
+												</viz.data:dimensions>
+												<viz.data:measures>
+													<viz.data:MeasureDefinition name="Propios"
+														value="{=${EFIC_PROP}>10000?null:${EFIC_PROP}}" />	
+													<viz.data:MeasureDefinition name="Terceros"
+														value="{=${EFIC_TERC}>10000?null:${EFIC_TERC}}" />
+												</viz.data:measures>
+											</viz.data:FlattenedDataset>
+										</viz:dataset>
+										<viz:feeds>
+											<viz.feeds:FeedItem id='valueAxisFeed' uid="valueAxis" type="Measure"
+												values="Propios,Terceros" />
+											<viz.feeds:FeedItem id='categoryAxisFeed' uid="categoryAxis" type="Dimension"
+												values="Fecha" />
+										</viz:feeds>
+									</viz:VizFrame>
+								<!-- </items> -->
+							</FlexBox>
 						</items>
-					</FlexBox>
-				</layout:HorizontalLayout>
-			</layout:Grid>
+					</HBox>
+				</items>
+			</VBox>
 		</semantic:content>
 
 

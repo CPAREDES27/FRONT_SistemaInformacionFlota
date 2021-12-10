@@ -2,12 +2,19 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",
 	"sap/m/library",
+	"sap/base/Log",
+	"sap/ui/core/BusyIndicator",
 	"../model/formatter"
-], function (Controller, UIComponent, mobileLibrary, formatter) {
+], function (Controller,
+	UIComponent,
+	library,
+	Log,
+	BusyIndicator,
+	formatter) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
-	var URLHelper = mobileLibrary.URLHelper;
+	// var URLHelper = mobileLibrary.URLHelper;
 	var mainUrlRest = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com/api/';
 
 	return Controller.extend("com.tasa.pembarcacion.controller.BaseController", {
@@ -51,17 +58,30 @@ sap.ui.define([
 		},
 
 		/**
-		 * Event handler when the share by E-Mail button has been clicked
-		 * @public
+		 * Método para consumir servicio tabla principal
+		 * @param {object} oService 
 		 */
-		onShareEmailPress: function () {
-			var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));
-			URLHelper.triggerEmail(
-				null,
-				oViewModel.getProperty("/shareSendEmailSubject"),
-				oViewModel.getProperty("/shareSendEmailMessage")
-			);
+		getDataService: async function(oService){
+			try {
+				BusyIndicator.show(0);
+				let oGetData= await fetch(oService.PATH,{
+					method:'POST',
+					body:JSON.stringify(oService.param)
+				});
+				if(oGetData.status===200){
+					this.iCount++;
+					let oData = await oGetData.json();
+					if(this.iCount===this.iCountService) BusyIndicator.hide();
+					return oData;
+				}
+			} catch (error) {
+				BusyIndicator.hide();
+				Log.error(error);
+				this.getMessageDialog("Error","Hubo problemas de conexión")
+				return null;
+			}
 		},
+
 		getDominios: async function (listDomNames) {
 			const dominios = listDomNames.map(dom => {
 				return {
@@ -136,6 +156,27 @@ sap.ui.define([
 				.catch(error => console.log("Error de consumo de servicio"));
 
 			return listPescasEmbarcacion;
+		},
+		getMessageDialog:function(sTypeDialog,sMessage){
+			let oMessageDialog;
+			if (!oMessageDialog) {
+				oMessageDialog = new sap.m.Dialog({
+					type: sap.m.DialogType.Message,
+					title: "Mensaje",
+					state: sTypeDialog,
+					content: new sap.m.Text({ text: sMessage }),
+					beginButton: new sap.m.Button({
+						type: sap.m.ButtonType.Emphasized,
+						text: "OK",
+						press: function () {
+							// BusyIndicator.show(0);
+							oMessageDialog.close();
+						}.bind(this)
+					})
+				});
+			}
+
+			oMessageDialog.open();
 		}
 	});
 

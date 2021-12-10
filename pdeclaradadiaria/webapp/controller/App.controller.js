@@ -1,7 +1,8 @@
 sap.ui.define([
 	"./BaseController",
-	"sap/ui/model/json/JSONModel"
-], function (BaseController, JSONModel) {
+	"sap/ui/model/json/JSONModel",
+	"../model/formatter",
+], function (BaseController, JSONModel,formatter) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.pdeclaradadiaria.controller.App", {

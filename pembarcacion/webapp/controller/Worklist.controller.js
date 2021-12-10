@@ -5,10 +5,20 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	'sap/ui/export/library',
-	'sap/ui/export/Spreadsheet'
-], function (BaseController, JSONModel, formatter, Filter, FilterOperator, exportLibrary, Spreadsheet) {
+	'sap/ui/export/Spreadsheet',
+	"sap/ui/core/BusyIndicator"
+], function (BaseController,
+	JSONModel,
+	formatter,
+	Filter,
+	FilterOperator,
+	exportLibrary,
+	Spreadsheet,
+	BusyIndicator) {
 	"use strict";
 	var EdmType = exportLibrary.EdmType;
+	const HOST = "https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com";
+	const HOST2 = "https://tasaqas.launchpad.cfapps.us10.hana.ondemand.com";
 
 	return BaseController.extend("com.tasa.pembarcacion.controller.Worklist", {
 
@@ -38,11 +48,15 @@ sap.ui.define([
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
 				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
-				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
-				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
-				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
 				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
-				tableBusyDelay: 0
+				tableBusyDelay: 0,
+				// valores iniciales para Inputs temporada/fecha
+				enabledTempInput: true,
+				enabledDateInput: false,
+				// valores iniciales para columnas
+				visibleColCuota: true,
+				visibleColTM:false,
+				visibleColDias:true
 			});
 			this.setModel(oViewModel, "worklistView");
 
@@ -55,7 +69,7 @@ sap.ui.define([
 			});
 
 			//Llenado de selectores
-			this.loadData();
+			// this.loadData();
 		},
 
 		/* =========================================================== */
@@ -127,6 +141,98 @@ sap.ui.define([
 		},
 
 		/**
+		 * metodo para habilitar busqueda por temporada/fecha
+		 * @param {event} oEvent 
+		 */
+		onSelectRadioButton:function(oEvent){
+			let oSelectedIndex = oEvent.getParameter("selectedIndex"),
+			oViewModel = this.getModel("worklistView"),
+			oModel = this.getModel(); 
+			if(oSelectedIndex===0) { // seleccion de temporada
+				oViewModel.setProperty("/enabledTempInput",true);
+				oViewModel.setProperty("/enabledDateInput",false);
+				oViewModel.setProperty("/visibleColCuota",true);
+				oViewModel.setProperty("/visibleColTM",false);
+				oViewModel.setProperty("/visibleColDias",true);
+
+				oModel.setProperty("/formSearch/fecha","");
+				oModel.setProperty("/PESCAS_EMBARCACION",[]);
+				
+			}else{
+				oViewModel.setProperty("/enabledTempInput",false);
+				oViewModel.setProperty("/enabledDateInput",true);
+				oViewModel.setProperty("/visibleColCuota",false);
+				oViewModel.setProperty("/visibleColTM",true);
+				oViewModel.setProperty("/visibleColDias",false);
+
+
+				oModel.setProperty("/formSearch/startDate",null);
+				oModel.setProperty("/formSearch/endDate",null);
+				oModel.setProperty("/formSearch/tempDesc",null);
+				oModel.setProperty("/PESCAS_EMBARCACION",[]);
+			}
+				
+		},
+
+		/**
+		 * se llama Ayuda de busqueda de temporadas
+		 * @param {event} oEvent 
+		 */
+		onSearchHelp:function(oEvent){
+			let that = this,
+			oView = this.getView(),
+			oModel = this.getModel(),
+			sUrl = HOST2 + "/10f4c59e-35e6-4d6a-88ef-e0267faac0ab.AyudasBusqueda.comtasabusqtemporada-1.0.0",
+			nameComponent = "com.tasa.busqtemporada",
+			idComponent = "com.tasa.busqtemporada";
+
+			if(!that.DialogComponent){
+				that.DialogComponent = new sap.m.Dialog({
+					title:"Búsqueda Temporada de Pesca Cuota Nacional",
+					icon:"sap-icon://search",
+					state:"Information",
+					endButton:new sap.m.Button({
+						icon:"sap-icon://decline",
+						text:"Cerrar",
+						type:"Reject",
+						press:function(oEvent){
+							that.onCloseDialog(oEvent);
+						}.bind(that)
+					})
+				});
+				oView.addDependent(that.DialogComponent);
+				oModel.setProperty("/idDialogComp",that.DialogComponent.getId());
+			}
+
+			let compCreateOk = function(){
+				BusyIndicator.hide()
+			}
+			if(that.DialogComponent.getContent().length===0){
+				BusyIndicator.show(0);
+				const oContainer = new sap.ui.core.ComponentContainer({
+					id: idComponent,
+					name: nameComponent,
+					url: sUrl,
+					settings: {},
+					componentData: {},
+					propagateModel: true,
+					componentCreated: compCreateOk,
+					height: '100%',
+					// manifest: true,
+					async: false
+				});
+				that.DialogComponent.addContent(oContainer);
+			}
+
+			that.DialogComponent.open();
+
+		},
+
+		onCloseDialog:function(oEvent){
+			oEvent.getSource().getParent().close();
+		},
+
+		/**
 		 * Event handler for refresh event. Keeps filter, sort
 		 * and group settings and refreshes the list binding.
 		 * @public
@@ -134,6 +240,77 @@ sap.ui.define([
 		onRefresh: function () {
 			var oTable = this.byId("table");
 			oTable.getBinding("items").refresh();
+		},
+
+		onExport: function () {
+			var aCols, oRowBinding, oSettings, oSheet, oTable;
+
+			if (!this._oTable) {
+				this._oTable = this.byId('table');
+			}
+
+			oTable = this._oTable;
+			oRowBinding = oTable.getBinding('rows');
+			aCols = this._createColumnConfig();
+
+			oSettings = {
+				workbook: {
+					columns: aCols,
+					hierarchyLevel: 'Level'
+				},
+				dataSource: oRowBinding,
+				fileName: 'Table export sample.xlsx',
+				worker: false // We need to disable worker because we are using a MockServer as OData Service
+			};
+
+			oSheet = new Spreadsheet(oSettings);
+			oSheet.build().finally(function () {
+				oSheet.destroy();
+			});
+		},
+
+		/**
+		 * Metodo que consume servicio para para tabla
+		 */
+		onPescaSearch: async function(){
+			let oModel = this.getModel(),
+			sStartDate = oModel.getProperty("/formSearch/startDate"),
+			sEndDate = oModel.getProperty("/formSearch/endDate"),
+			sDateRange = oModel.getProperty("/formSearch/fecha"),
+			sTipEmb = oModel.getProperty("/formSearch/tipoEmb"),
+			sCodPort = oModel.getProperty("/formSearch/codPort"),
+			oService={};
+
+			sStartDate ? sStartDate=formatter.setFormatDateYYYYMMDD(sStartDate) : "";
+			sEndDate ? sEndDate=formatter.setFormatDateYYYYMMDD(sEndDate) : "";
+
+			if(!sStartDate) sStartDate=formatter.setFormatDateYYYYMMDD(sDateRange.split("-")[0].trim());
+			if(!sEndDate) sEndDate=formatter.setFormatDateYYYYMMDD(sDateRange.split("-")[1].trim());
+
+			oService.PATH = HOST+"/api/sistemainformacionflota/PescaPorEmbarcacion";
+			oService.param = {
+				fieldstr_pem: [],
+				p_cdpcn: sDateRange ? "" : sCodPort,
+				p_cdtem: sTipEmb,
+				p_fcfin: sEndDate,
+				p_fcini: sStartDate,
+				p_user: ""
+			};
+			this.iCount=0;
+			this.iCountService=1;
+			let oPescData = await this.getDataService(oService);
+
+			if(oPescData){
+				oModel.setProperty("/PESCAS_EMBARCACION",oPescData["str_pem"])
+			}
+		},
+
+		/**
+		 * Limpiar contenido de los controles de busqueda
+		 */
+		onClearSearch:function(){
+			let oModel = this.getModel();
+			oModel.setProperty("/formSearch",{});
 		},
 
 		/* =========================================================== */
@@ -241,7 +418,7 @@ sap.ui.define([
 
 			this.getModel().setProperty("/PESCAS_EMBARCACION", listPescasEmbarcacion);
 		},
-		createColumnConfig: function () {
+		_createColumnConfig: function () {
 			var aCols = [];
 
 			aCols.push({
@@ -389,32 +566,6 @@ sap.ui.define([
 			});
 
 			return aCols;
-		},
-		onExport: function () {
-			var aCols, oRowBinding, oSettings, oSheet, oTable;
-
-			if (!this._oTable) {
-				this._oTable = this.byId('table');
-			}
-
-			oTable = this._oTable;
-			oRowBinding = oTable.getBinding('rows');
-			aCols = this.createColumnConfig();
-
-			oSettings = {
-				workbook: {
-					columns: aCols,
-					hierarchyLevel: 'Level'
-				},
-				dataSource: oRowBinding,
-				fileName: 'Table export sample.xlsx',
-				worker: false // We need to disable worker because we are using a MockServer as OData Service
-			};
-
-			oSheet = new Spreadsheet(oSettings);
-			oSheet.build().finally(function () {
-				oSheet.destroy();
-			});
 		}
 	});
 });

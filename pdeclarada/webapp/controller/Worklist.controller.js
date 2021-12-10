@@ -7,7 +7,7 @@ sap.ui.define([
 ], function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
 	"use strict";
 
-	var mainUrlRest = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com/api/';
+	const HOST = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com';
 
 	return BaseController.extend("com.tasa.pdeclarada.controller.Worklist", {
 
@@ -36,9 +36,6 @@ sap.ui.define([
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
 				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
-				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
-				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
-				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
 				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
 				tableBusyDelay: 0
 			});
@@ -53,21 +50,22 @@ sap.ui.define([
 			});
 
 			//Obtener los motivos de marea
-			fetch(`${mainUrlRest}dominios/Listar`, {
-				method: 'POST',
-				body: JSON.stringify({
-					dominios: [
-						{
-							domname: "MOTIVOMAREA_RPDC",
-							status: "A"
-						}
-					]
-				})
-			}).then(resp => resp.json()).then(data => {
-				this.getModel("worklistView").setProperty("/motivos", data.data[0].data);
-			});
+			// fetch(`${mainUrlRest}dominios/Listar`, {
+			// 	method: 'POST',
+			// 	body: JSON.stringify({
+			// 		dominios: [
+			// 			{
+			// 				domname: "MOTIVOMAREA_RPDC",
+			// 				status: "A"
+			// 			}
+			// 		]
+			// 	})
+			// }).then(resp => resp.json()).then(data => {
+			// 	this.getModel("worklistView").setProperty("/motivos", data.data[0].data);
+			// });
 
-			this.getDataTable(new Date, undefined);
+			// this.getDataTable(new Date, undefined);
+			
 		},
 
 		/* =========================================================== */
@@ -160,7 +158,7 @@ sap.ui.define([
 		 */
 		_showObject: function (oItem) {
 			this.getRouter().navTo("object", {
-				objectId: oItem.getBindingContext().getProperty("ProductID")
+				objectId: oItem.getBindingContext().getPath().split("/")[2]
 			});
 		},
 
@@ -178,139 +176,28 @@ sap.ui.define([
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 			}
 		},
-		getDataTable: async function (fecha, motivoMarea) {
-			const listPescaDeclarada = await this.getListPescaDeclarada(fecha, motivoMarea);
-			const listPescaDeclaradaForGraphs = JSON.parse(JSON.stringify(listPescaDeclarada));
 
-			if (listPescaDeclarada) {
-				this.getModel().setProperty("/STR_TP", listPescaDeclarada.str_tp);
-				this.getModel().setProperty("/STR_TE", listPescaDeclarada.str_te);
-				this.calcularTotales();
+		onBuscarPescaDescargada: function () {
+			const oModel = this.getModel(),
+			oFormData = oModel.getProperty("/form"),
+			oParam = new Object;
 
-				//Modelo para los gráficos
-				const str_tp_graph = listPescaDeclaradaForGraphs.str_tp.map(s => {
-					return {
-						descripcion: s.DESCR,
-						value: s.PORC_PESC_DECL
-					};
-				});
-
-				const currentDate = new Date();
-				const hours = currentDate.getHours();
-				const minutes = currentDate.getMinutes();
-				const seconds = currentDate.getSeconds();
-				const horaActual = `${hours >= 10 ? hours : `0${hours}`}:${minutes >= 10 ? minutes : `0${minutes}`}:${seconds >= 10 ? seconds : `0${seconds}`}`;
-
-				this.getModel().setProperty("/STR_TP_GRAPHICS", str_tp_graph);
-				this.getModel().setProperty("/Hora", horaActual);
-
-				this.setTableClass();
-			}
+			this.count = 0;
+			this.servicesLenght = 1;
+			oParam.cdmma= oFormData.cdmma;
+			oParam.fecon= formatter.formatDateInverse(oFormData.fecon);
+			this.getDataMainTable(oModel, oParam);
 		},
-		calcularTotales: function () {
-			let oModel = this.getModel();
-			let listPescaDeclarada = oModel.getProperty("/STR_TP");
 
-			/**
-			 * Copia del primer elemento para obtener su modelo
-			 */
-			let pescaDeclaradaTotal = { ...listPescaDeclarada[0] };
-
-			/**
-			 * Cálculos de totales de algunos campos
-			 */
-			let total_CEMBA = 0;
-			let total_CEMBP = 0;
-			let total_CEMBI = 0;
-			let total_CEMBO = 0;
-			let total_CNPDS = 0;
-			let total_TOT_PESC_DECL = 0;
-			let total_TOT_NUM_EMBA = 0;
-			let total_CNPEP = 0;
-			let total_NEMBP = 0;
-			let total_CNPET = 0;
-			let total_NEMBT = 0;
-			let total_PROM_PESC_PROP = 0;
-			let total_PROM_PESC_TERC = 0;
-			let total_TOTED = 0;
-
-			listPescaDeclarada.forEach(p => {
-				total_CEMBA += p.CEMBA;
-				total_CEMBP += p.CEMBP;
-				total_CEMBI += p.CEMBI;
-				total_CEMBO += p.CEMBO;
-				total_CNPDS += p.CNPDS;
-				total_TOT_PESC_DECL += p.TOT_PESC_DECL;
-				total_TOT_NUM_EMBA += p.TOT_NUM_EMBA;
-				total_CNPEP += p.CNPEP;
-				total_NEMBP += p.NEMBP;
-				total_CNPET += p.CNPET;
-				total_NEMBT += p.NEMBT;
-				total_PROM_PESC_PROP += p.PROM_PESC_PROP;
-				total_PROM_PESC_TERC += p.PROM_PESC_TERC;
-				total_TOTED += p.TOTED;
-			});
-
-			/**
-			 * Limpieza y asignación de totales
-			 */
-			Object.keys(pescaDeclaradaTotal).forEach(k => {
-				pescaDeclaradaTotal[k] = null;
-			});
-
-			pescaDeclaradaTotal.CEMBA = total_CEMBA;
-			pescaDeclaradaTotal.CEMBP = total_CEMBP;
-			pescaDeclaradaTotal.CEMBI = total_CEMBI;
-			pescaDeclaradaTotal.CEMBO = total_CEMBO;
-			pescaDeclaradaTotal.CNPDS = total_CNPDS;
-			pescaDeclaradaTotal.TOT_PESC_DECL = total_TOT_PESC_DECL;
-			pescaDeclaradaTotal.TOT_NUM_EMBA = total_TOT_NUM_EMBA;
-			pescaDeclaradaTotal.CNPEP = total_CNPEP;
-			pescaDeclaradaTotal.NEMBP = total_NEMBP;
-			pescaDeclaradaTotal.CNPET = total_CNPET;
-			pescaDeclaradaTotal.NEMBT = total_NEMBT;
-			pescaDeclaradaTotal.PROM_PESC_PROP = total_PROM_PESC_PROP;
-			pescaDeclaradaTotal.PROM_PESC_TERC = total_PROM_PESC_TERC;
-			pescaDeclaradaTotal.TOTED = total_TOTED;
-
-			listPescaDeclarada.push(pescaDeclaradaTotal);
-
-			//Totales genéricos
-			this.getModel().setProperty("/totalGenPescDecl", pescaDeclaradaTotal.TOT_PESC_DECL);
-			this.getModel().setProperty("/totalGenNumEmba", pescaDeclaradaTotal.TOT_NUM_EMBA);
-			this.getModel().setProperty("/totalGenPescDesc", pescaDeclaradaTotal.CNPDS);
-			this.getModel().setProperty("/totalGenNumEmbaDesc", pescaDeclaradaTotal.TOTED);
-		},
-		buscarPescaDescargada: function () {
-			let fechaValue = this.byId("fechaPescaDeclarada").getValue();
-			let motivoMarea = this.byId("motivoPescaDeclarada").getSelectedKey();
-
-			if (motivoMarea === 'A') {
-				motivoMarea = "";
-			}
-			const fecha = fechaValue ? new Date(`${fechaValue}T00:00:00`) : new Date();
-			this.getDataTable(fecha, motivoMarea);
-		},
-		setTableClass: function () {
-			let oTable = this.byId("tablePescaDeclarada");
-			let aColumns = oTable.getColumns();
-			let aItems = oTable.getRows();
-			const COLORS = {
-				BADVALUE_MEDIUM: "BADVALUE_MEDIUM",
-				CRITICALVALUE_LIGHT: "CRITICALVALUE_LIGHT",
-				KEY_MEDIUM: "KEY_MEDIUM",
-				POSITIVE: "POSITIVE",
-			}
-			const COLOR_DEFAULT = "SinColor";
-			/* let sColor, Path;
-			aItems.forEach(oItem => {
-				Path = this.getView().getModel().getProperty("/STR_TP");
-				sColor = Path.color;
-				oItem.getAg
-				oItem.getParent().addStyleClass(COLORS[sColor] || COLOR_DEFAULT);
-			}); */
-			aColumns.flatMap(column => {
-				column.getTemplate().addStyleClass('BADVALUE_MEDIUM')
+		onCleanFilter:function(){
+			let oModel = this.getModel(),
+			oDate = new Date,
+			oDateFormat= formatter.formatDateDDMMYYYY(oDate);
+			oDate ;
+			oModel.setProperty("/form",{
+				fecon:oDateFormat,
+				cdmma:"A",
+				hora:formatter.formatHours(oDate)
 			})
 		}
 	});

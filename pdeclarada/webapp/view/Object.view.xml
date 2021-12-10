@@ -13,24 +13,223 @@
 
 		<semantic:titleHeading>
 			<Title
-				text="{ProductID}"
-				level="H2"/>
+				text="Detalle de Pesca declarada planta {DESCR}"
+				level="H4"/>
 		</semantic:titleHeading>
 
-		<semantic:headerContent>
-			<ObjectNumber
-				number="{
-					path: 'UnitPrice',
-					formatter: '.formatter.numberUnit'
-				}"
-				unit="{QuantityPerUnit}"
-			/>
-		</semantic:headerContent>
+		<semantic:content>
+			<IconTabBar
+				selectedKey="{objectView>/selectedKey}"
+				select="onFilterSelect">
+				<content>
+					<Table
+						id="detailTableId"
+						items="{path:'/str_te'}"
+						noDataText="Sin datos"
+						updateFinished="onUpdateFinished">
+						<headerToolbar>
+							<OverflowToolbar>
+								<Title text="{objectView>/detailViewTitle}" level="H4" />
+							</OverflowToolbar>
+						</headerToolbar>
+						<columns>
+							<Column width="10rem">
+								<Text text="Embarcación" />
+								<footer>
+									<ObjectStatus
+										icon="sap-icon://add-process"
+										state="Warning"
+										text="Total"/>
+								</footer>
+							</Column>
+							<Column hAlign="End">
+								<Text text="CBOD" />
+								<footer>
+									<Text text="{
+													path:'/totalCBOD',
+													type:'sap.ui.model.type.Float',
+													formatOptions:{
+														minIntegerDigits:1,
+														minFractionDigits:3,
+														maxFractionDigits:3,
+														groupingEnabled:true,
+														groupingSeparator: ',',
+														decimalSeparator: '.'
+													}
+												}"/>
+								</footer>
+							</Column>
+							<Column hAlign="End">
+								<Text text="Pesca declarada" />
+								<footer>
+									<Text text="{
+													path:'/totalPescDecl',
+													type:'sap.ui.model.type.Integer',
+													formatOptions:{
+														groupingEnabled:true,
+														groupingSeparator: ','
+													}	
+												}"/>
+								</footer>
+							</Column>
+							<Column hAlign="End">
+								<Text text="Pesca Descargada" />
+								<footer>
+									<Text text="{
+													path:'/totalPescDesc',
+													type:'sap.ui.model.type.Float',
+													formatOptions:{
+														minIntegerDigits:1,
+														minFractionDigits:3,
+														maxFractionDigits:3,
+														groupingEnabled:true,
+														groupingSeparator: ',',
+														decimalSeparator: '.'
+													}
+												}"/>
+								</footer>
+							</Column>
+							<Column hAlign="End">
+								<Text text="Total Calas" />
+								<footer>
+									<Text text="{
+													path:'/totalCalas',
+													type:'sap.ui.model.type.Integer',
+													formatOptions:{
+														groupingEnabled:true,
+														groupingSeparator: ','
+													}
+												}"/>
+								</footer>
+							</Column>
+							<Column>
+								<Text text="Estado" />
+							</Column>
+							<Column width="25rem">
+								<Text text="Observaciones" />
+							</Column>
+						</columns>
+						<items>
+							<ColumnListItem>
+								<cells>
+									<Link text="{NMEMB}" press="onGetEmbarcacion"  />
+									<Text text="{
+													path:'CPPMS',
+													type:'sap.ui.model.type.Float',
+													formatOptions:{
+														minIntegerDigits:1,
+														minFractionDigits:3,
+														maxFractionDigits:3,
+														groupingEnabled:true,
+														groupingSeparator: ',',
+														decimalSeparator: '.'
+													}
+												}" />
+									<Text text="{
+													path:'CNPCM',
+													type:'sap.ui.model.type.Integer',
+													formatOptions:{
+														groupingEnabled:true,
+														groupingSeparator: ','
+													}
+												}" />
+									<Text text="{
+													path:'CNPDS',
+													type:'sap.ui.model.type.Float',
+													formatOptions:{
+														minIntegerDigits:1,
+														minFractionDigits:3,
+														maxFractionDigits:3,
+														groupingEnabled:true,
+														groupingSeparator: ',',
+														decimalSeparator: '.'
+													}
+												}" />
+									<Text text="{
+													path:'CNTCL',
+													type:'sap.ui.model.type.Float',
+													formatOptions:{
+														groupingEnabled:true,
+														groupingSeparator: ','
+													}
+												}" />
+									<Text text="{DSEEC}" />
+									<Text text="{KMEVN}" />
+								</cells>
+							</ColumnListItem>
+						</items>
+					</Table>
+					
+				</content>
+				<items>
+					<IconTabFilter
+						key="P"
+						text="Propias"
+						icon="sap-icon://badge"/>
+					<IconTabSeparator/>
+					<IconTabFilter
+						key="T"
+						text="Terceras"
+						icon="sap-icon://initiative"
+						iconColor="Positive"/>
+				</items>
+			</IconTabBar>
+			<!-- <VBox>
+				<items>
 
-		<semantic:sendEmailAction>
-			<semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
-		</semantic:sendEmailAction>
+					<Table
+						items="{path:'terceras'}"
+						noDataText="Sin datos">
+						<headerToolbar>
+							<OverflowToolbar>
+								<Title text="Embarcaciones terceras ({cantTerceras})" level="H4"  />
+							</OverflowToolbar>
+						</headerToolbar>
+						<columns>
+							<Column>
+								<Text text="Embarcación" />
+							</Column>
+							<Column>
+								<Text text="CBOD" />
+							</Column>
+							<Column>
+								<Text text="Pesca declarada" />
+							</Column>
+							<Column>
+								<Text text="Pesca Descargada" />
+							</Column>
+							<Column>
+								<Text text="Total Calas" />
+							</Column>
+							<Column>
+								<Text text="Estado" />
+							</Column>
+							<Column>
+								<Text text="Observaciones" />
+							</Column>
+						</columns>
+						<items>
+							<ColumnListItem>
+								<cells>
+									<Link text="{NMEMB}" press="onGetEmbarcacion"  />
+									<Text text="{CPPMS}" />
+									<Text text="{CNPCM}" />
+									<Text text="{CNPDS}" />
+									<Text text="{CNTCL}" />
+									<Text text="{DSEEC}" />
+									<Text text="KMEVN" />
+								</cells>
+							</ColumnListItem>
+						</items>
+					</Table>
+				</items>
+			</VBox> -->
 
+		</semantic:content>
+
+		<semantic:closeAction>
+			<semantic:CloseAction press="onNavBack" />
+		</semantic:closeAction>
 
 	</semantic:SemanticPage>
 

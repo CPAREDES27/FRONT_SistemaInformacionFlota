@@ -2,8 +2,9 @@ sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/routing/History",
-	"../model/formatter"
-], function (BaseController, JSONModel, History, formatter) {
+	"sap/ui/model/Filter",
+	"../model/formatter",
+], function (BaseController, JSONModel, History, Filter, formatter) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.pdeclarada.controller.Object", {
@@ -33,7 +34,7 @@ sap.ui.define([
 			// Store original busy indicator delay, so it can be restored later on
 			iOriginalBusyDelay = this.getView().getBusyIndicatorDelay();
 			this.setModel(oViewModel, "objectView");
-			this.getOwnerComponent().getModel().metadataLoaded().then(function () {
+			this.getOwnerComponent().getModel().dataLoaded().then(function () {
 					// Restore original busy indicator delay for the object view
 					oViewModel.setProperty("/delay", iOriginalBusyDelay);
 				}
@@ -73,12 +74,62 @@ sap.ui.define([
 		 */
 		_onObjectMatched : function (oEvent) {
 			var sObjectId =  oEvent.getParameter("arguments").objectId;
-			this.getModel().metadataLoaded().then( function() {
-				var sObjectPath = this.getModel().createKey("Products", {
-					ProductID :  sObjectId
-				});
-				this._bindView("/" + sObjectPath);
+			this.getModel().dataLoaded().then( function() {
+				// var sObjectPath = this.getModel().createKey("Products", {
+				// 	ProductID :  sObjectId
+				// });
+				this._bindView("/str_tp/" + sObjectId);
 			}.bind(this));
+		},
+
+		onUpdateFinished:function(oEvent){
+			let sTitle,
+			iTotalItems = oEvent.getParameter("total"),
+			oViewModel = this.getModel("objectView"),
+			oTable = this.getView().byId("detailTableId"),
+			oBindingTable = oTable.getBinding("items"),
+			sPath = oBindingTable.getPath(),
+			oModel = oBindingTable.getModel(),
+			aIndices = oBindingTable.aIndices,
+			sTipEmb = oViewModel.getProperty("/selectedKey"),
+			oItem;
+
+			if(aIndices.length>0){
+				let sTotCBOD = 0, sTotPescDecl =0, sTotPescDes=0,sTotCalas=0;
+				aIndices.forEach(indice=>{
+					oItem = oModel.getProperty(sPath+"/"+indice);
+					sTotCBOD += oItem["CPPMS"];
+					sTotPescDecl += oItem["CNPCM"];
+					sTotPescDes += oItem["CNPDS"];
+					sTotCalas += oItem["CNTCL"];
+				})
+				oModel.setProperty("/totalCBOD", sTotCBOD.toFixed(3));
+				oModel.setProperty("/totalPescDecl", sTotPescDecl.toFixed(0));
+				oModel.setProperty("/totalPescDesc", sTotPescDes.toFixed(3));
+				oModel.setProperty("/totalCalas", sTotCalas.toFixed(0));
+			}else{
+				oModel.setProperty("/totalCBOD", 0);
+				oModel.setProperty("/totalPescDecl", 0);
+				oModel.setProperty("/totalPescDesc", 0);
+				oModel.setProperty("/totalCalas", 0);
+			}
+			// only update the counter if the length is final
+			if (oBindingTable.isLengthFinal()) {
+				if (sTipEmb==="P") {
+					sTitle = this.getResourceBundle().getText("embPropias", [iTotalItems]);
+				} else {
+					//Display 'Line Items' instead of 'Line items (0)'
+					sTitle = this.getResourceBundle().getText("embTerceras",[iTotalItems]);
+				}
+				oViewModel.setProperty("/detailViewTitle", sTitle);
+			}
+		},
+
+		onFilterSelect:function(oEvent){
+			let sKey = oEvent.getParameter("key"),
+			oObject = oEvent.getSource().getBindingContext().getObject();
+
+			this._applyFilters(oObject,sKey);
 		},
 
 		/**
@@ -89,14 +140,19 @@ sap.ui.define([
 		 */
 		_bindView : function (sObjectPath) {
 			var oViewModel = this.getModel("objectView"),
-				oDataModel = this.getModel();
+			oView = this.getView(),
+			oModel = this.getModel(),
+			oObject = oModel.getProperty(sObjectPath);
+			this._applyFilters(oObject,"P");
 
-			this.getView().bindElement({
+			oViewModel.setProperty("/busy", false);
+			oViewModel.setProperty("/selectedKey", "P");
+			oView.bindElement({
 				path: sObjectPath,
 				events: {
-					change: this._onBindingChange.bind(this),
+					// change: this._onBindingChange.bind(this),
 					dataRequested: function () {
-						oDataModel.metadataLoaded().then(function () {
+						oModel.dataLoaded().then(function () {
 							// Busy indicator on view should only be set if metadata is loaded,
 							// otherwise there may be two busy indications next to each other on the
 							// screen. This happens because route matched handler already calls '_bindView'
@@ -111,30 +167,20 @@ sap.ui.define([
 			});
 		},
 
-		_onBindingChange : function () {
-			var oView = this.getView(),
-				oViewModel = this.getModel("objectView"),
-				oElementBinding = oView.getElementBinding();
+		_applyFilters:function(oObject,sKey){
+			let oView = this.getView(),
+			sCodPlanta = oObject["CDPTA"],
+			oTable = oView.byId("detailTableId"),
+			oBindingTable = oTable.getBinding("items"),
+			aFilters = new Array,
+			oFilter = new Object;
 
-			// No data for the binding
-			if (!oElementBinding.getBoundContext()) {
-				this.getRouter().getTargets().display("objectNotFound");
-				return;
-			}
-
-			var oResourceBundle = this.getResourceBundle(),
-				oObject = oView.getBindingContext().getObject(),
-				sObjectId = oObject.ProductID,
-				sObjectName = oObject.ProductID;
-
-			oViewModel.setProperty("/busy", false);
-
-			oViewModel.setProperty("/shareSendEmailSubject",
-			oResourceBundle.getText("shareSendEmailObjectSubject", [sObjectId]));
-			oViewModel.setProperty("/shareSendEmailMessage",
-			oResourceBundle.getText("shareSendEmailObjectMessage", [sObjectName, sObjectId, location.href]));
+			oFilter = new Filter([new Filter("CDPTA","EQ",sCodPlanta),new Filter("INPRP","EQ",sKey)],true);
+			aFilters.push(oFilter);
+			oBindingTable.filter(aFilters);
 		}
 
+		
 	});
 
 });

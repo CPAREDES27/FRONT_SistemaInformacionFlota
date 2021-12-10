@@ -2,13 +2,14 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",
 	"sap/m/library",
-	"../model/formatter"
-], function (Controller, UIComponent, mobileLibrary, formatter) {
+	"../model/formatter",
+	"sap/ui/core/BusyIndicator"
+], function (Controller, UIComponent, mobileLibrary, formatter,BusyIndicator) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
 	var URLHelper = mobileLibrary.URLHelper;
-	var mainUrlRest = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com/api/';
+	var HOST = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com';
 
 	return Controller.extend("com.tasa.pdeclaradadiaria.controller.BaseController", {
 		/**
@@ -49,37 +50,66 @@ sap.ui.define([
 		getResourceBundle: function () {
 			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
 		},
+		// getListPescaDeclaradaDiaria: async function (fechaInicio, fechaFin) {
+		// 	const fechaInicioFormat = formatter.formatDateYYYYMMDD(fechaInicio);
+		// 	const fechaFinFormat = formatter.formatDateYYYYMMDD(fechaFin);
 
-		/**
-		 * Event handler when the share by E-Mail button has been clicked
-		 * @public
-		 */
-		onShareEmailPress: function () {
-			var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));
-			URLHelper.triggerEmail(
-				null,
-				oViewModel.getProperty("/shareSendEmailSubject"),
-				oViewModel.getProperty("/shareSendEmailMessage")
-			);
+		// 	let listPescaDeclaradaDiaria = await fetch(`${mainUrlRest}sistemainformacionflota/PescaDeclaradaDiara`, {
+		// 		method: 'POST',
+		// 		body: JSON.stringify({
+		// 			fieldstr_dl: [],
+		// 			p_fefin: fechaFinFormat,
+		// 			p_feini: fechaInicioFormat,
+		// 			p_user: ""
+		// 		})
+		// 	})
+		// 		.then(resp => resp.json())
+		// 		.then(data => data)
+		// 		.catch(error => console.log("Error de llamado al servicio"));
+
+		// 	return listPescaDeclaradaDiaria;
+		// },
+
+		getDataService: async function(sUrl,param){
+			BusyIndicator.show(0);
+			try {
+				let oResponseData = await fetch(sUrl,{
+					method:'POST',
+					body:JSON.stringify(param)
+				});
+				if(oResponseData.ok) {
+					BusyIndicator.hide();
+					return oResponseData.json();
+				}else{
+					return null;
+				}
+			} catch (error) {
+				BusyIndicator.hide();
+				Log.error(error);
+				this.getMessageDialog("Error", "Se produjo un error de conexión")
+				return null;
+			}
 		},
-		getListPescaDeclaradaDiaria: async function (fechaInicio, fechaFin) {
-			const fechaInicioFormat = formatter.formatDateYYYYMMDD(fechaInicio);
-			const fechaFinFormat = formatter.formatDateYYYYMMDD(fechaFin);
+		getMessageDialog:function(sTypeDialog,sMessage){
+			let oMessageDialog;
+			if (!oMessageDialog) {
+				oMessageDialog = new sap.m.Dialog({
+					type: sap.m.DialogType.Message,
+					title: "Mensaje",
+					state: sTypeDialog,
+					content: new sap.m.Text({ text: sMessage }),
+					beginButton: new sap.m.Button({
+						type: sap.m.ButtonType.Emphasized,
+						text: "OK",
+						press: function () {
+							// BusyIndicator.show(0);
+							oMessageDialog.close();
+						}.bind(this)
+					})
+				});
+			}
 
-			let listPescaDeclaradaDiaria = await fetch(`${mainUrlRest}sistemainformacionflota/PescaDeclaradaDiara`, {
-				method: 'POST',
-				body: JSON.stringify({
-					fieldstr_dl: [],
-					p_fefin: fechaFinFormat,
-					p_feini: fechaInicioFormat,
-					p_user: ""
-				})
-			})
-				.then(resp => resp.json())
-				.then(data => data)
-				.catch(error => console.log("Error de llamado al servicio"));
-
-			return listPescaDeclaradaDiaria;
+			oMessageDialog.open();
 		}
 	});
 
