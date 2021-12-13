@@ -1,12 +1,12 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",
-	"sap/m/library"
-], function (Controller, UIComponent, mobileLibrary) {
+	"sap/ui/core/BusyIndicator"
+], function (
+	Controller,
+	UIComponent,
+	BusyIndicator) {
 	"use strict";
-
-	// shortcut for sap.m.URLHelper
-	var URLHelper = mobileLibrary.URLHelper;
 
 	return Controller.extend("com.tasa.pcomptproduce.controller.BaseController", {
 		/**
@@ -48,17 +48,47 @@ sap.ui.define([
 			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
 		},
 
-		/**
-		 * Event handler when the share by E-Mail button has been clicked
-		 * @public
-		 */
-		onShareEmailPress : function () {
-			var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));
-			URLHelper.triggerEmail(
-				null,
-				oViewModel.getProperty("/shareSendEmailSubject"),
-				oViewModel.getProperty("/shareSendEmailMessage")
-			);
-		}	});
+		getDataService: async function(oService){
+			try {
+				BusyIndicator.show(0);
+				this.count++;
+				let oFetch = await fetch(oService.path,{
+					method:'POST',
+					body:JSON.stringify(oService.param)
+				});
+				if(oFetch.status===200){
+					if(this.count === this.countService) BusyIndicator.hide();
+					return await oFetch.json();
+				}else{
+					BusyIndicator.hide();
+					return null;
+				}
+			} catch (error) {
+				BusyIndicator.hide();
+				this.getMessageDialog("Error","No se pudo conectar")
+			}
+		},
+		getMessageDialog:function(sTypeDialog,sMessage){
+			let oMessageDialog;
+			if (!oMessageDialog) {
+				oMessageDialog = new sap.m.Dialog({
+					type: sap.m.DialogType.Message,
+					title: "Mensaje",
+					state: sTypeDialog,
+					content: new sap.m.Text({ text: sMessage }),
+					beginButton: new sap.m.Button({
+						type: sap.m.ButtonType.Emphasized,
+						text: "OK",
+						press: function () {
+							// BusyIndicator.show(0);
+							oMessageDialog.close();
+						}.bind(this)
+					})
+				});
+			}
+
+			oMessageDialog.open();
+		}
+	});
 
 });

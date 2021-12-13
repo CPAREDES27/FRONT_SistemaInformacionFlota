@@ -1,13 +1,13 @@
-<mvc:View
+<mvc:View  
 	controllerName="com.tasa.pcomptproduce.controller.Worklist"
 	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
 	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:table="sap.ui.table"
+	xmlns:form="sap.ui.layout.form"
 	xmlns:semantic="sap.f.semantic">
 
-	<semantic:SemanticPage
-		id="page"
-		headerPinnable="false"
-		toggleHeaderOnTitleClick="false">
+	<semantic:SemanticPage id="page">
 
 		<semantic:titleHeading>
 			<Title
@@ -15,8 +15,234 @@
 				level="H2"/>
 		</semantic:titleHeading>
 
+		<semantic:headerContent>
+			<form:Form 
+				title="Datos de selección"
+				editable="true"
+				binding="{ path: '/searchForm'}">
+				<form:formContainers>
+					<form:FormContainer>
+						<form:formElements>
+							<form:FormElement label="Opción empresa">
+								<form:fields>
+									<RadioButtonGroup 
+										select="onSelectEmpresa" 
+										valueState="Information"
+										columns="2"
+										selectedIndex="{worklistView>/empresaIndex}">
+										<RadioButton 
+											text="Armador"
+											class="sapUiSmallMarginEnd" />
+										<RadioButton 
+											text="Receptor" />
+									</RadioButtonGroup>
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement label="Opción fecha">
+								<form:fields  >
+									<RadioButtonGroup 
+										select="onSelectFecha"
+										columns="2"
+										valueState="Information"
+										selectedIndex="{worklistView>/fechaIndex}">
+										<RadioButton 
+											text="Temporadas"
+											class="sapUiSmallMarginEnd" />
+										<RadioButton 
+											text="Fechas" />
+									</RadioButtonGroup>
+								</form:fields>
+							</form:FormElement>
+						</form:formElements>
+					</form:FormContainer>
+					<form:FormContainer>
+						<form:formElements>
+						<form:FormElement 
+								label="Temporadas"
+								visible="{=${worklistView>/fechaIndex}===0?true:false}">
+								<form:fields>
+									<Input 
+										value="{
+													parts:[
+															{path:'/help/FHITM'},
+															{path:'/help/FHFTM'},
+															{path:'/help/DSPCN'}
+													]
+												}" 
+										showValueHelp="true"
+										tooltip="{/help/DSPCN}"
+										valueHelpRequest="onShowSearchHelpTemporadas"/>
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement 
+								label="Fecha"
+								visible="{=${worklistView>/fechaIndex}===1?true:false}">
+								<form:fields>
+									<DateRangeSelection
+										value="{dateRange}"
+										valueFormat="dd/MM/yyyy"
+										displayFormat="dd/MM/yyyy" />
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement 
+								label="Zona"
+								visible="{=%{worklistView>/fechaIndex}===1?true:false}">
+								<form:fields>
+									<Select
+										items="{path:'/1ZONAAREA'}"
+										selectedKey="{zonaId}"
+										forceSelection="false">
+										<core:Item key="{id}" text="{descripcion}" />
+									</Select>
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement 
+								label="Categoría"
+								visible="{=%{worklistView>/empresaIndex}===0?true:false}">
+								<form:fields>
+									<Select
+										items="{path:'/CATEGORIA'}"
+										selectedKey="{categoriaId}"
+										forceSelection="false">
+										<core:Item key="{id}" text="{descripcion}" />
+									</Select>
+								</form:fields>
+							</form:FormElement>
+						</form:formElements>
+					</form:FormContainer>
+					<form:FormContainer>
+						<form:formElements>
+							<form:FormElement 
+								label="Grupo empresarial"
+								visible="{=%{worklistView>/empresaIndex}===0?true:false}">
+								<form:fields>
+									<Input
+										value="{
+											parts:[
+												{path:''},
+												{path:''}
+											]
+										}"
+										valueState="Information"
+										showSuggestion="true"
+										suggestionRows="{path:'/grupo'}"
+										showTableSuggestionValueHelp="false">
+										<suggestionColumns>
+											
+										</suggestionColumns>
+										<suggestionRows>
+											<ColumnListItem
+												press="onSelectGrupoEmpresarial">
+												<cells>
+													
+												</cells>
+											</ColumnListItem>
+										</suggestionRows>
+									</Input>
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement 
+								label="Empresa receptora"
+								visible="{=%{worklistView>/empresaIndex}===1?true:false}">
+								<form:fields>
+									<Input
+										value="{empresaCod}"
+										description="{empresaDesc}"
+										placeholder="Seleccione empresa receptora"
+										valueState="Information"
+										showSuggestion="true"
+										suggestionRows="{path:'/BSQEMPRESA'}"
+										valueStateText="Seleccione Empresa receptora"
+										showTableSuggestionValueHelp="false"
+										suggestionItemSelected="onSelectedEmpresaRecep"
+										tooltip="{empresaDesc}">
+										<suggestionColumns>
+											<Column width="8rem">
+												<Label text="Cod. Empresa" />
+											</Column>
+											<Column width="8rem">
+												<Label text="Descripción" />
+											</Column>
+											<Column width="8rem">
+												<Label text="R.U.C." />
+											</Column>
+										</suggestionColumns>
+										<suggestionRows>
+											<ColumnListItem
+												press="onSelectEmpresaReceptora">
+												<cells>
+													<ObjectStatus 
+														text="{LIFNR}"
+														state="Indication06" />
+													<Text text="{NAME1}"/>
+													<Text text="{STCD1}" />
+												</cells>
+											</ColumnListItem>
+										</suggestionRows>
+									</Input>
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement 
+								label="Embarcación"
+								visible="{=%{worklistView>/empresaIndex}===0?true:false}">
+								<form:fields>
+									<Input
+										value="{
+											parts:[
+												{path:'/help/CDEMB'},
+												{path:'/help/NMEMB'}
+											]
+										}"
+										showValueHelp="true"
+										valueHelpRequest="onShowSearchHelpEmb"
+										tooltip="{/help/NMEMB}"/>
+								</form:fields>
+							</form:FormElement>
+						</form:formElements>
+					</form:FormContainer>
+					<form:FormContainer>
+						<form:formElements>
+							<form:FormElement>
+								<form:fields>
+									<Button 
+										text="Buscar" 
+										icon="sap-icon://search" 
+										type="Emphasized" 
+										press="onSearchTable"/>
+									<Button 
+										text="Limpiar" 
+										icon="sap-icon://clear-filter" 
+										type="Ghost" 
+										press="onclearFilter"/>
+								</form:fields>
+							</form:FormElement>
+						</form:formElements>
+					</form:FormContainer>
+				</form:formContainers>
+				<form:layout>
+					<form:ResponsiveGridLayout
+						adjustLabelSpan="true"
+						breakpointL="1024"
+						breakpointM="600"
+						breakpointXL="1440"
+						columnsL="3"
+						columnsM="2"
+						columnsXL="-1"
+						emptySpanL="0"
+						emptySpanM="0"
+						emptySpanS="0"
+						emptySpanXL="-1"
+						labelSpanL="4"
+						labelSpanM="2"
+						labelSpanS="12"
+						labelSpanXL="-1"
+						singleContainerFullSize="true"/>
+				</form:layout>
+			</form:Form>
+		</semantic:headerContent>
+
 		<semantic:content>
-			<Table
+			<!-- <Table
 				id="table"
 				width="auto"
 				items="{
@@ -77,7 +303,102 @@
 						</cells>
 					</ColumnListItem>
 				</items>
-			</Table>
+			</Table> -->
+			<IconTabBar
+				selectedKey="{worklistView>/mainSelectedKey}"
+				stretchContentHeight="true"
+				backgroundDesign="Translucent">
+				<content>
+					<IconTabBar
+						items="{
+							path:'/tableItems/str_zlt'
+						}"
+						selectedKey="{worklistView>/puertosSelectedkey}"
+						stretchContentHeight="true">
+						<content>
+							<Table
+								items="{
+											path:'/tableItems/str_gre',
+											sorter:{
+												path: 'CTGRA',
+												descending:false
+											}
+										}"
+								growing="true"
+								growingThreshold="5">
+								<columns>
+									<Column>
+										<footer>
+											<List >
+												<StandardListItem
+													info = "Total"
+													infoState="Information"/>
+												<StandardListItem 
+													info="Distr. Nacional(%)"/>
+												<StandardListItem 
+													info="Distr. TASA(%)"/>
+											</List>
+										</footer>
+										<header>
+											<Label text="GRUPO EMPRESARIAL" />
+										</header>
+									</Column>
+									<Column >
+										<Label text="Pesca" />
+									</Column>
+									<Column >
+										<Label text="Emba" />
+									</Column>
+									<Column >
+										<Label text="NDes" />
+									</Column>
+									<Column >
+										<Label text="t/NDes" />
+									</Column>
+									<Column ></Column>
+								</columns>
+								<items>
+									<ColumnListItem>
+										<cells>
+											<Link text="{DSGRE}"/>
+											<Text />
+											<Text />
+											<Text />
+											<Text />
+											<Text />
+											<Text />
+											<Text />
+											<Text />
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+						</content>
+						<items>
+							<IconTabFilter 
+								key="{ZCDZAR}"
+								text="{DSZLT}"/>
+							<!-- <IconTabSeparator/> -->
+						</items>
+					</IconTabBar>
+				</content>
+				<items>
+					<IconTabFilter
+						showAll="true"
+						text="Todos"
+						key="TO"/>
+					<IconTabSeparator />
+					<IconTabFilter
+						icon="sap-icon://hint"
+						text="Propios"
+						key="PP"/>
+					<IconTabSeparator />
+					<IconTabFilter
+						icon="sap-icon://hint"
+						text="Terceros"
+						key="TR"/>
+				</items>
+			</IconTabBar>
 		</semantic:content>
 
 	</semantic:SemanticPage>
