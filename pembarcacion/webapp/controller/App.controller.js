@@ -97,16 +97,10 @@ sap.ui.define([
 			if(oTemporadaData.data.length>0){
 				let aData = oTemporadaData["data"];
 				aData.sort((a,b) => formatter.setFormatDate(b.FHITM) - formatter.setFormatDate(a.FHITM));
-				let oLastTemp = aData[0],
-				sStartDate = oLastTemp["FHITM"],
-				sEndDate = oLastTemp["FHFTM"],
-				sDescTemp = oLastTemp["DSPCN"],
-				sCodPort = oLastTemp["CDPCN"];
-				
-				oModel.setProperty("/formSearch/startDate",sStartDate);
-				oModel.setProperty("/formSearch/endDate",sEndDate);
-				oModel.setProperty("/formSearch/tempDesc",sDescTemp);
-				oModel.setProperty("/formSearch/codPort",sCodPort);
+				let help = aData[0];
+				help.tipoEmb = "001";
+				oModel.setProperty("/help",help);
+				// oModel.setProperty("/help/",help.ZCDZAR);
 			}else{
 				this.getMessageDialog("Information","No se econtraron registros de temporadas")
 			}

@@ -33,24 +33,27 @@ sap.ui.define([
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
 			let oModel = this.getModel();
-			oModel.setProperty("/searchForm", {
-				empresaCod:undefined,
-				empresaDesc:undefined
+			oModel.setProperty("/help", {
+				empresaCod:"",
+				empresaDesc:""
 			});
 
 			// Consumiendo servicios inciales
-			this.countService = 3;
-			this.count = 0;
+			this.Count = 0;
+			this.CountService = 5;
 			this.getDominiosService(oModel);
+			this.getDataEmpresaReceptora(oModel);
 			this.getDataGrupoEmpresarial(oModel);
 			this.getTemporadasService(oModel);
+			this.getSearchingHelpId(oModel);
 		},
 
 		getDominiosService: async function(oModel){
 			let oService = {},
 			oDominiosData;
 
-			oService.path = HOST+"/api/dominios/Listar";
+			oService.serviceName = "Dominios"
+			oService.url = this.getHostService() + "/api/dominios/Listar";
 			oService.param = {
 				dominios:[
 					{
@@ -60,6 +63,10 @@ sap.ui.define([
 					{
 						domname:"CATEGORIA",
 						status:"A"
+					},
+					{
+						domname:"ZINPRP",
+						status:"A"
 					}
 				]
 			};
@@ -67,38 +74,61 @@ sap.ui.define([
 			oDominiosData = await this.getDataService(oService);
 			oDominiosData.data.forEach(oDom => {
 				if(oDom.data.length>0){
-					oModel.setProperty(`/${oDom.dominio}`,oDom["data"]);
+					if(oDom.dominio === "ZINPRP"){
+						oModel.setProperty(`/INPRP`,oDom["data"]);
+					} else{
+						oModel.setProperty(`/${oDom.dominio}`,oDom["data"]);
+					}
 				}else{
-					this.getMessageDialog("Information",`No se econtraron registros en ${oDom.dominios} `);
+					this.setAlertMessage("information",`No se econtraron registros en ${oDom.dominio} `);
 				}
 			});
 		},
-		getDataGrupoEmpresarial: async function(oModel){
-			let oData,oService={};
-			oService.path=HOST +"/api/General/AyudasBusqueda/";
+
+		getDataEmpresaReceptora: async function(oModel){
+			let oUser = await this.getCurrentUser(), 
+			oData,oService={};
+
+			oService.serviceName = "Empresas";
+			oService.url= this.getHostService() +"/api/General/AyudasBusqueda/";
 			oService.param={
-				nombreAyuda: "BSQEMPRESA",
-				p_user: "FGARCIA"
+				nombreAyuda: "BSQEMPRESAREC",
+				p_user: oUser.name
 			}
 			oData = await this.getDataService(oService);
 			if(oData){
-				oModel.setProperty("/BSQEMPRESA",oData["data"]);
+				oModel.setProperty("/BSQEMPRESAREC",oData["data"]);
 			}else{
-				this.getMessageDialog("Information",`No se econtraron registros en empresas`);
+				this.setAlertMessage("Information",`No se econtraron registros en empresas`);
 			}
 		},
-		getDataEmpresaReceptora:function(oModel){
-			let oService;
+
+		getDataGrupoEmpresarial: async function(oModel){
+			let oUser = await this.getCurrentUser(), 
+			oData,oService={};
+
+			oService.serviceName = "Grupos empresariales";
+			oService.url= this.getHostService() +"/api/General/AyudasBusqueda/";
 			oService.param={
-				nombreAyuda: "",
-				p_user: ""
-			  }
+				nombreAyuda: "BSQGRPEMPR",
+				p_user: oUser.name
+			}
+			oData = await this.getDataService(oService);
+			if(oData){
+				oModel.setProperty("/BSQGRPEMPR",oData["data"]);
+			}else{
+				this.setAlertMessage("Information",`No se econtraron registros en empresas`);
+			}
 		},
 
 		getTemporadasService: async function(oModel){
-			let oService = {},
+			let oUser = await this.getCurrentUser(),
+			oHelp = oModel.getProperty("/help") || {}, 
+			oService = {},
 			oTemporadaData;
-			oService.path = HOST + "/api/General/Read_Table";
+
+			oService.serviceName = "Temporadas"
+			oService.url = this.getHostService() + "/api/General/Read_Table";
 			oService.param = {
 				delimitador: "|",
 				fields: ["CDPCN", "DSPCN", "FHITM", "FHFTM", "CTNAC", "ZCDZAR", "ZDSZAR"],
@@ -124,8 +154,8 @@ sap.ui.define([
 			if(oTemporadaData.data.length>0){
 				let aData = oTemporadaData["data"];
 				aData.sort((a,b) => formatter.setFormatDate(b.FHITM) - formatter.setFormatDate(a.FHITM));
-				let oLastTemp = aData[0],
-				oHelp = {};
+				let oLastTemp = aData[0];
+
 				oHelp.FHITM = oLastTemp["FHITM"],
 				oHelp.FHFTM = oLastTemp["FHFTM"],
 				oHelp.FHFTM = oLastTemp["FHFTM"],
@@ -134,8 +164,76 @@ sap.ui.define([
 				
 				oModel.setProperty("/help",oHelp);
 			}else{
-				this.getMessageDialog("Information","No se econtraron registros de temporadas")
+				this.setAlertMessage("Information","No se econtraron registros de temporadas")
 			}
+		},
+
+		getSearchingHelpId: async function(oModel){
+			let oUser = await this.getCurrentUser(),
+			sAyudaBusqUrl = this.getHostService() +"/api/General/ConsultaGeneral/",
+			oAyudaBusqService = {                                         // parametros para Ayudas de Busqueda
+                name : "Ayuda de Búsqueda",
+                url : sAyudaBusqUrl,
+                param : {
+                    nombreConsulta: "CONSGENCONST",
+                    p_user: oUser.name,
+                    parametro1: this.getHostSubaccount().param,
+                    parametro2: "",
+                    parametro3: "",
+                    parametro4: "",
+                    parametro5: "",
+                    parametro6: ""
+                }
+            },
+			oAyudaBusqData = await this.getDataService(oAyudaBusqService);
+
+			if(oAyudaBusqData){
+                let aAyudaBusqData = oAyudaBusqData.data;
+                if(aAyudaBusqData.length > 0){
+                    oModel.setProperty("/ayudaBusqId",aAyudaBusqData[0].LOW);
+					oModel.setProperty("/user",oUser);
+					this.getSerachingHelpComponents(oModel,aAyudaBusqData[0].LOW);
+                }else{
+                    this.setAlertMessage("information","No existen registros de la Ayuda de Búsqueda")
+                }
+            };
+
+		},
+
+		getSerachingHelpComponents:function(oModel,sAyudaBusqId){
+			let sUrlSubaccount = this.getHostSubaccount().url,
+			aSearchingHelp = ["busqtemporada","busqembarcaciones"],
+			// iCountF = aSearchingHelp.length,
+			// iCount = 0,
+			oComponent,
+			nameComponent,
+			idComponent,
+			urlComponent;
+			
+			// BusyIndicator.show(0);
+			aSearchingHelp.forEach(elem=>{
+				// let comCreateOk = function(oEvent){
+				// 	if(iCountF === iCount) BusyIndicator.hide();
+				// };
+				oComponent = {};
+				nameComponent = elem;
+				idComponent = elem;
+				urlComponent = `${sUrlSubaccount}/${sAyudaBusqId}.AyudasBusqueda.${elem}-1.0.0`;
+				oComponent = new sap.ui.core.ComponentContainer({
+					id:idComponent,
+					name:nameComponent,
+					url:urlComponent,
+					settings:{},
+					componentData:{},
+					propagateModel:true,
+					// componentCreated:comCreateOk,
+					height:'100%',
+					// manifest:true,
+					async:false
+				});
+				oModel.setProperty(`/${elem}`,oComponent)
+				// iCount++
+			});
 		}
 	});
 

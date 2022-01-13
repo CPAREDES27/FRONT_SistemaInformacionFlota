@@ -5,8 +5,8 @@
     {
       "source": "^/V2/(.*)$",
       "target": "/V2/$1",
-      "destination": "none",
-      "authenticationType": "xsuaa",
+      "destination": "Northwind",
+      "authenticationType": "none",
       "csrfProtection": false
     },
     {

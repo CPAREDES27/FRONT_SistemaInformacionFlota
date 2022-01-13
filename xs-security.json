@@ -14,5 +14,12 @@
       "description": "UAA",
       "scope-references": ["uaa.user"]
     }
-  ]
+  ],
+  "oauth2-configuration": {
+    "redirect-uris": [
+        "http://localhost:8080/**",
+        "https://*.eu10.applicationstudio.cloud.sap/**",
+        "https://*.cfapps.eu10.hana.ondemand.com/**"
+    ]
+}
 }

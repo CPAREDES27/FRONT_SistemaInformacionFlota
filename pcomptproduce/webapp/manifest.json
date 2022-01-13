@@ -15,6 +15,13 @@
                 "uri": "/V2/Northwind/Northwind.svc/",
                 "type": "OData",
                 "settings": {
+                    "odataVersion": "2.0"
+                }
+            },
+            "odataserv": {
+                "uri": "/erp/odata/SAP/ZFLCDS_C_EMB_CDS;v=1/ZFLCDS_C_EMB",
+                "type": "OData",
+                "settings": {
                     "odataVersion": "2.0",
                     "localUri": "localService/metadata.xml"
                 }
@@ -81,6 +88,9 @@
             "": {
                 "type": "sap.ui.model.json.JSONModel",
                 "preload": true
+            },
+            "prueba":{
+                "dataSource": "mainService"
             }
         },
         "routing": {

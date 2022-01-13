@@ -10,8 +10,7 @@
 
 	<semantic:SemanticPage
 		id="page"
-		headerPinnable="false"
-		toggleHeaderOnTitleClick="false">
+		class="sapUiNoContentPadding">
 
 		<semantic:titleHeading>
 			<Title
@@ -21,18 +20,29 @@
 
 		<!-- Header Content -->
 		<semantic:headerContent>
-			<f:Form id="idFormHeader" >
+			<f:Form 
+				editable ="true"
+				binding = "{/help}" >
 				<f:formContainers>
 					<f:FormContainer >
 						<f:formElements>
 							<f:FormElement label="Fecha">
 								<f:fields>
-									<DateRangeSelection id="dateRangePescaDescargada" />
+									<DateRangeSelection 
+										dateValue="{dateFrom}"
+										secondDateValue ="{dateTo}"
+										displayFormat = "dd/MM/yyyy" 
+										valueFormat = "dd/MM/yyyy"/>
 								</f:fields>
 							</f:FormElement>
-							<f:FormElement >
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer >
+						<f:formElements>
+							<f:FormElement label="" >
 								<f:fields>
-									<Button text="Buscar" type="Emphasized" press="buscarPescaDescargada"/>
+									<Button text="Buscar" type="Emphasized" icon="sap-icon://search" press="onSearchPescaDescargada"/>
+									<Button text="Limpiar" type="Ghost" icon="sap-icon://clearFilter" press="onCleanSearch"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -51,15 +61,15 @@
 						emptySpanS="0"
 						columnsXL="2"
 						columnsL="2"
-						columnsM="1"
+						columnsM="2"
 						singleContainerFullSize="false" />
 				</f:layout>
 			</f:Form>
 		</semantic:headerContent>
 
 		<semantic:content>
-			<layout:Grid defaultSpan="XL12 L12 M12 S12" >
-				<table:Table id="table" 
+			<layout:Grid defaultSpan="XL12 L12 M12 S12" class="sapUiSmallMarginTop">
+				<!-- <table:Table id="table" 
 					rows="{/STR_DSD}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					rowsUpdated=".onUpdateFinished"
@@ -150,26 +160,58 @@
 							</table:template>
 						</table:Column>
 					</table:columns>
-				</table:Table>
-
+				</table:Table> -->
+				<Table
+					id="table"
+					columns = "{
+						path:'/columns'
+					}"
+					items = "{
+						path:'/items',
+						factory:'.createItems'
+					}"
+					showNoData="true"
+					noDataText="{worklistView>/tableNoDataText}"
+					busyIndicatorDelay="{worklistView>/tableBusyDelay}">
+					<columns>
+						<Column hAlign="{align}" styleClass="{styleClass}" >
+							<Text text="{header}" />
+							<footer>
+								<Text text="{
+									path:'footer',
+									formatter:'.formatter.formatFloat'
+								}" />
+							</footer>
+						</Column>
+					</columns>
+				</Table>
 				<layout:HorizontalLayout>
 					<layout:layoutData>
 						<layout:GridData span="XL12 L12 M12 S12"/>
 					</layout:layoutData>
 					<!-- Graficos -->
-					<Text text="Pesca descargada por día" />
-					<FlexBox width="20rem" height="10rem" alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
+					<FlexBox width="25rem" height="35rem" direction="Column" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
-							<chart:InteractiveBarChart bars="{/STR_TOTALES_DIAS}" labelWidth="25%" selectionChanged="selectionChanged" press="press">
+							<ObjectStatus 
+								text="Pesca descargada por día"
+								state="Indication06" />
+							<chart:InteractiveBarChart 
+								bars="{/items}" 
+								labelWidth="25%" 																																																																																																																																																		
+								selectionChanged="selectionChanged" 
+								press="press"
+								displayedBars="{=${/items}.length}">
 								<chart:bars>
-									<chart:InteractiveBarChartBar label="{FIDES}" value="{CNPDS}" color="Critical"/>
+									<chart:InteractiveBarChartBar 
+										label="{FIDES}" 
+										value="{CNPDS}" 
+										color="Critical"/>
 								</chart:bars>
 							</chart:InteractiveBarChart>
 						</items>
 					</FlexBox>
 
-					<Text text="Pesca descargada por planta" />
-					<FlexBox width="20rem" height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+					<FlexBox width="20rem" height="10rem" direction="Column" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
 							<!-- <chart:InteractiveDonutChart selectionChanged="onSelectionChanged">
 								<chart:segments>
@@ -178,9 +220,17 @@
 									<chart:InteractiveDonutChartSegment label="Test Phase" value="38.5" displayedValue="38.5%" color="Good"/>
 								</chart:segments>
 							</chart:InteractiveDonutChart> -->
-							<chart:ColumnMicroChart columns="{/STR_TOTALES_PLANTA}" size="M" press="press" class="sapUiSmallMargin">
+							<ObjectStatus 
+								text="Pesca descargada por planta"
+								state="Indication06" />
+							<chart:ColumnMicroChart 
+								columns="{/plantas}" 
+								size="L" 
+								press="press" 
+								class="sapUiSmallMargin"
+								allowColumnLabels="true">
 								<chart:columns>
-									<chart:ColumnMicroChartData label="{planta}" value="{descarga}" color="Error"/>
+									<chart:ColumnMicroChartData label="{label}" value="{value}" color="Good"/>
 								</chart:columns>
 							</chart:ColumnMicroChart>
 						</items>

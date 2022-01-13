@@ -1,4 +1,8 @@
-sap.ui.define([], function () {
+sap.ui.define([
+	"sap/ui/core/format/NumberFormat"
+], function (
+	NumberFormat
+) {
 	"use strict";
 
 	return {
@@ -22,6 +26,12 @@ sap.ui.define([], function () {
 
 			return `${year}${month >= 10 ? month : `0${month}`}${day >= 10 ? day : `0${day}`}`;
 		},
+
+		/**
+		 * Inrega objeto Date y retorna strinf dd/mm/yyyy
+		 * @param {Date} oDate 
+		 * @returns 
+		 */
 		formatDateDDMMYYYY:function(oDate){
 			if(oDate){
 				let sDate = oDate.getDate(),
@@ -62,6 +72,36 @@ sap.ui.define([], function () {
 				return sNewDate;
 			}else{
 				return "";
+			}
+		},
+		/**
+		 * Formatea numero sin digitos decimales
+		 * @param {string} sNumber 
+		 */
+		 formatFloat:function(sNumber){
+			if(!isNaN(Number(sNumber))){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:0,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				return oFloatNumber.format(sNumber);
+			}else{
+				return sNumber;
+			}
+		},
+
+		/**
+		 * Formatea numero alto
+		 * @param {string} sNumber 
+		 */
+		 formatBigNumber:function(sNumber){
+			if(sNumber){
+				if(sNumber>10000) return null;
+				return sNumber;
+			}else{
+				return null;
 			}
 		}
 

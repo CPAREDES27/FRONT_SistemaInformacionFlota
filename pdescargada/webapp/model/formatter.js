@@ -1,4 +1,8 @@
-sap.ui.define([], function () {
+sap.ui.define([
+	"sap/ui/core/format/NumberFormat"
+], function (
+	NumberFormat
+	) {
 	"use strict";
 
 	return {
@@ -27,6 +31,42 @@ sap.ui.define([], function () {
 			var index = this.getBindingContext().getPath().split("/")[2];
 			// (an example of path value here is "/modelData/0")
 			return parseInt(index) + 1;
+		},
+
+		/**
+		 * Formatea numero sin digitos decimales
+		 * @param {string} sNumber 
+		 */
+		 formatFloat:function(sNumber){
+			if(!isNaN(Number(sNumber))){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:0,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				return oFloatNumber.format(sNumber);
+			}else{
+				return sNumber;
+			}
+		},
+
+		/**
+		 * Formatea numero con 2 digitos decimales
+		 * @param {string} sNumber 
+		 */
+		 formatFloat2:function(sNumber){
+			if(sNumber){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:2,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				return oFloatNumber.format(sNumber);
+			}else{
+				return "0";
+			}
 		}
 	};
 

@@ -116,13 +116,13 @@ sap.ui.define([
 			if(iLastStartIndex>0){
 				if(this.iLastStartIndex===iLastStartIndex) return;
 				this.iLastStartIndex=iLastStartIndex;
-				let aDataRows = oRowBinding.oList,
-				oDataLastRow = aDataRows[iLastStartIndex],
+				let aDataRowsTot = oRowBinding.oList,
+				aDataRows = aDataRowsTot.slice(0,iLastStartIndex),
 				aRows = oTable.getRows(),
 				iFixedRowCount = oTable.getVisibleRowCount(),
 				oRowLast = aRows[iFixedRowCount-1];
-				this._setTotals(oRowLast);
-				this._setDataGraphics(oDataLastRow);
+				this._setTotals(oRowLast,aDataRows);
+				this._setDataGraphics(oRowLast,aDataRows);
 			}
 		},
 
@@ -261,7 +261,7 @@ sap.ui.define([
 			
 		},
 
-		_setTotals:function(oRowLast){
+		_setTotals:function(oRowLast,aDataRows){
 			let oModel = this.getModel(),
 			aCells = oRowLast.getCells(),
 			oFechaCell = aCells[0],
@@ -269,7 +269,13 @@ sap.ui.define([
 			oTnProp = aCells[3],
 			oPorcProp = aCells[4],
 			oTnTerc = aCells[5],
-			oPorcTerc = aCells[6];
+			oPorcTerc = aCells[6],
+			oTnEpProp = aCells[7],
+			oTnEpTerc = aCells[8],
+			oEpProp = aCells[9],
+			oEpTerc = aCells[10],
+			oTotalPesca = aCells[13],
+			oDifer = aCells[16];
 
 			// columna total
 			oFechaCell.setText("Total");
@@ -277,29 +283,87 @@ sap.ui.define([
 			oFechaCell.setEmphasized(true);
 
 			// % Pesca propios
-			let iValueProp = parseFloat(oTnProp.getText())/parseFloat(oHarCell.getText());
-			oPorcProp.setText(iValueProp*100);
+			let sValTnProp = oTnProp.getText().split(",").join(""),
+			sValHar = oHarCell.getText().split(",").join(""),
+			iValueProp = parseFloat(sValHar)>0 ? parseFloat(sValTnProp)/parseFloat(sValHar):0;
+			oPorcProp.setText((iValueProp*100).toFixed(0));
 
 			// % Pesca Terceros
-			let iValueTerc = parseFloat(oTnTerc.getText())/parseFloat(oHarCell.getText());
-			oPorcTerc.setText(iValueTerc*100);
+			let sValTnTerc = oTnTerc.getText().split(",").join(""),
+			iValueTerc = parseFloat(sValHar)>0 ? parseFloat(sValTnTerc)/parseFloat(sValHar):0;
+			oPorcTerc.setText((iValueTerc*100).toFixed(0));
+
+			let iCountHar = 0;
+			aDataRows.forEach(oRow => {
+				if(oRow["PESC_DECL_CHI"]>0) iCountHar++;
+			});
+
+			// Tn/Ep Propio
+			let sValTnEpProp = 0;
+			aDataRows.forEach(oRow => {
+				if(oRow["EFIC_PROP"]>0 && oRow["EFIC_PROP"]<10000) sValTnEpProp += oRow["EFIC_PROP"];
+			});
+			let sTotalTnEpProp = (sValTnEpProp/iCountHar);
+			oTnEpProp.setText(sTotalTnEpProp.toFixed(0));
+
+			// Tn/Ep Tercero
+			let sValTnEpTerc = 0;
+			aDataRows.forEach(oRow=>{
+				if(oRow["EFIC_TERC"]>0 && oRow["EFIC_TERC"]<10000) sValTnEpTerc += oRow["EFIC_TERC"];
+			});
+			let sTotalTnEpTerc = (sValTnEpTerc/iCountHar);
+			oTnEpTerc.setText(sTotalTnEpTerc.toFixed(0));
+
+			// Ep Propio
+			let sValEpProp = aDataRows.reduce((acc,obj)=>{
+				return acc + obj.CNEMP;
+			},0),
+			sTotalValEpProp = (sValEpProp/iCountHar);
+			oEpProp.setText(Math.trunc(sTotalValEpProp));
+
+			// Ep Tercero
+			let sValEpTerc = aDataRows.reduce((acc,obj)=>{
+				return acc + obj.CNEMT;
+			},0),
+			sTotalValEpTerc = (sValEpTerc/iCountHar);
+			oEpTerc.setText(Math.trunc(sTotalValEpTerc));
+
+			// Difer
+			let sValPesca = oTotalPesca.getText().split(",").join(""),
+			sValTotalDifer = parseFloat(sValHar)>0 ? ((parseFloat(sValHar) - parseFloat(sValPesca))*100)/parseFloat(sValHar):0;
+			oDifer.setText(sValTotalDifer.toFixed(0));
 			
 		},
 		
-		_setDataGraphics:function(oDataLastRow){
+		_setDataGraphics:function(oRowLast,aDataRows){
 			let oModel = this.getModel(),
+			aDataViz = [],
+			aCells = oRowLast.getCells(),
+			oPropCell = aCells[4],
+			oTercCell = aCells[6],
+			iValueProp = parseInt(oPropCell.getText()),
+			iValueTerc = parseInt(oTercCell.getText()),
 			aGraphData=[
 				{
 					descripcion:"Propios",
-					value:oDataLastRow["PORC_DECL_CHI_PROP"]
+					value:iValueProp
 				},
 				{
 					descripcion:"Terceros",
-					value:oDataLastRow["PORC_DECL_CHI_TERC"]
+					value:iValueTerc
 				}
 			];
 
+			aDataRows.forEach(oRow=>{ 
+				let fecha = formatter.formatDateYYYYMMDDstr(oRow.FECCONMOV);
+				aDataViz.push({
+					fecha:fecha,
+					propio:oRow.EFIC_PROP,
+					tercero:oRow.EFIC_TERC
+				})
+			});
 			oModel.setProperty("/dataGraficPorc", aGraphData);
+			oModel.setProperty("/dataViz", aDataViz);
 		},
 		
 		_getDetailData: async function(sDate){

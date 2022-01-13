@@ -1,0 +1,35 @@
+.colHar{
+    background-color: #BDCFE9  /*rgba(189, 207, 233, 1); */;
+}
+
+.colPescaProp{
+    background-color: #FDBB71 /*rgba(253, 187, 113, 1) */;
+}
+
+.colPescaTerc{
+    background-color: #BAEE9A /*rgba(186, 238, 154, 1) */;
+}
+
+.colTnEp{
+    background-color: #FF8073 /*rgba(255, 128, 115, 1) */;
+}
+
+.colEp{
+    background-color: #A6E5E0 /*rgba(166, 229, 244, 1) */;
+}
+
+.colTotal{
+    background-color: #C6F9C1 /*rgba(198, 249, 193, 1) */;
+}
+
+.colHar, .colPescaProp,.colPescaTerc, .colTnEp,.colEp, .colTotal,.colTotal{
+    display: block;
+    padding: 10px;
+}
+
+.colSinColor{
+    display: block;
+}
+/* .sapUiTableDataCell>.sapUiTableCellInner, .sapUiTableCreationRow .sapUiTableCreationRowForm .sapUiTableCell>.sapUiTableCellInner{
+    padding: 0;
+} */

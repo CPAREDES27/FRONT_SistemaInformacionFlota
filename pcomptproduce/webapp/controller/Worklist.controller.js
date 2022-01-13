@@ -5,7 +5,8 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/core/Fragment",
-	"sap/ui/core/BusyIndicator"
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/Popup"
 ], function (
 	BaseController,
 	JSONModel,
@@ -13,11 +14,9 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	Fragment,
-	BusyIndicator) {
+	BusyIndicator,
+	Popup) {
 	"use strict";
-	
-	const HOST = "https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com";
-	const HOST2 = "https://tasaqas.launchpad.cfapps.us10.hana.ondemand.com/9acc820a-22dc-4d66-8d69-bed5b2789d3c.AyudasBusqueda";
 
 	return BaseController.extend("com.tasa.pcomptproduce.controller.Worklist", {
 
@@ -45,11 +44,13 @@ sap.ui.define([
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
-				worklistTableTitle : this.getResourceBundle().getText("worklistTableTitle"),
-				tableNoDataText : this.getResourceBundle().getText("tableNoDataText"),
-				tableBusyDelay : 0,
-				empresaIndex:1,
-				fechaIndex:0,
+				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
+				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
+				tableBusyDelay: 0,
+				empresaIndex: 1,
+				fechaIndex: 0,
+				tempState: "None",
+				fechaState: "None",
 				selectedArmador: false,
 				selectedReceptor: true,
 				selectedFecha:false,
@@ -93,6 +94,26 @@ sap.ui.define([
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
 			this.getModel("worklistView").setProperty("/worklistTableTitle", sTitle);
+		},
+
+		onRowsDataChange:function(oEvent){
+			let oRowBinding = oEvent.getSource(),
+			iTotalRows = oRowBinding.iLength,
+			oViewModel = this.getModel("worklistView"),
+			sTitle;
+			oViewModel.setProperty("/tabCount","")
+			if(iTotalRows && oRowBinding.isLengthFinal()){
+				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalRows]);
+				oViewModel.setProperty("/tabCount",iTotalRows)
+			} else {
+				sTitle = this.getResourceBundle().getText("worklistTableTitle");
+			}
+			oViewModel.setProperty("/worklistTableTitle", sTitle);
+
+		},
+
+		onSort:function(oEvent){
+			console.log(oEvent.getParameters())
 		},
 
 		/**
@@ -150,7 +171,25 @@ sap.ui.define([
 		 * @param {event} oEvent 
 		 */
 		onSelectEmpresa:function(oEvent){
-
+			let iEmpresaIndex = oEvent.getParameter("selectedIndex"),
+			oModel = this.getModel();
+			if(iEmpresaIndex === 0) {
+				oModel.setProperty("/help",{
+					CDEMP: "",
+					DSEMP: "",
+					RUCPRO: ""
+				});
+			}else{
+				oModel.setProperty("/help",{
+					sKeyCateg: "",
+					CTGRA: "",
+					CDGRE: "",
+					DSGRE: "",
+					CDEMP: "",
+					DSEMP: "",
+					RUCPRO: ""
+				});
+			}
 		},
 
 		/**
@@ -158,7 +197,24 @@ sap.ui.define([
 		 * @param {event} oEvent 
 		 */
 		onSelectFecha:function(oEvent){
-
+			let iFechaIndex = oEvent.getParameter("selectedIndex"),
+			oModel = this.getModel();
+			if(iFechaIndex === 0) {
+				oModel.setProperty("/help",{
+					dateRange: "",
+					ZCDZAR: "",
+					CDEMP: "",
+					DSEMP: "",
+					RUCPRO: ""
+				});
+			}else{
+				oModel.setProperty("/help/FHITM","");
+				oModel.setProperty("/help/FHFTM","");
+				oModel.setProperty("/help/DSPCN","");
+				oModel.setProperty("/help/CDEMP","");
+				oModel.setProperty("/help/DSEMP","");
+				oModel.setProperty("/help/RUCPRO","");
+			}
 		},
 
 		/**
@@ -166,11 +222,12 @@ sap.ui.define([
 		 * @param {event} oEvent 
 		 */
 		 onShowSearchHelpEmb: async function(oEvent){
-			let oView = this.getView(),
+			let sIdInput = oEvent.getSource().getId(),
+			oView = this.getView(),
 			oModel = this.getModel(),
-			sUrl = HOST2 + ".busqembarcaciones-1.0.0",
-			nameComponent = "busqembarcaciones",
-			idComponent = "busqembarcaciones";
+			oContainer = oModel.getProperty("/busqembarcaciones"),
+			oInput = oView.byId(sIdInput);
+			oModel.setProperty("/input",oInput);
 
 			if(!this.DialogComponent){
 				this.DialogComponent = await Fragment.load({
@@ -178,26 +235,10 @@ sap.ui.define([
 					controller:this
 				});
 				oView.addDependent(this.DialogComponent);
+				oModel.setProperty("/idDialogComp",this.DialogComponent.getId());
 			}
-			oModel.setProperty("/idDialogComp",this.DialogComponent.getId());
 			
-			let compCreateOk = function(){
-				BusyIndicator.hide()
-			}
 			if(this.DialogComponent.getContent().length===0){
-				BusyIndicator.show(0);
-				const oContainer = new sap.ui.core.ComponentContainer({
-					id: idComponent,
-					name: nameComponent,
-					url: sUrl,
-					settings: {},
-					componentData: {},
-					propagateModel: true,
-					componentCreated: compCreateOk,
-					height: '100%',
-					// manifest: true,
-					async: false
-				});
 				this.DialogComponent.addContent(oContainer);
 			}
 
@@ -212,9 +253,7 @@ sap.ui.define([
 		onShowSearchHelpTemporadas: async function(oEvent){
 			let oView = this.getView(),
 			oModel = this.getModel(),
-			sUrl = HOST2 + ".busqtemporada-1.0.0",
-			nameComponent = "busqtemporada",
-			idComponent = "busqtemporada";
+			oContainer = oModel.getProperty("/busqtemporada");
 
 			if(!this.DialogComponentTemp){
 				this.DialogComponentTemp = await Fragment.load({
@@ -222,26 +261,13 @@ sap.ui.define([
 					controller:this
 				});
 				oView.addDependent(this.DialogComponentTemp);
+				oModel.setProperty("/idDialogComp",this.DialogComponentTemp.getId());
 			}
-			oModel.setProperty("/idDialogComp",this.DialogComponentTemp.getId());
 
-			let compCreateOk = function(){
-				BusyIndicator.hide()
-			}
+			// let compCreateOk = function(){
+			// 	BusyIndicator.hide()
+			// }
 			if(this.DialogComponentTemp.getContent().length===0){
-				BusyIndicator.show(0);
-				const oContainer = new sap.ui.core.ComponentContainer({
-					id: idComponent,
-					name: nameComponent,
-					url: sUrl,
-					settings: {},
-					componentData: {},
-					propagateModel: true,
-					componentCreated: compCreateOk,
-					height: '100%',
-					// manifest: true,
-					async: false
-				});
 				this.DialogComponentTemp.addContent(oContainer);
 			}
 
@@ -257,32 +283,59 @@ sap.ui.define([
 			oContext = oSelectedRow.getBindingContext(),
 			oObject = oContext.getObject(),
 			oModel = oContext.getModel(),
-			sEmpresaCod = oObject["LIFNR"],
-			sEmpresaDesc = oObject["NAME1"];
+			sEmpresaDesc = oObject["DSEMP"];
 			// oModel.setProperty("/searchForm/empresaCod", sEmpresaCod);
-			oModel.setProperty("/searchForm/empresaDesc", sEmpresaDesc); 
+			oModel.setProperty("/help/DSEMP", sEmpresaDesc); 
 		},
 
-		onSelectGrupoEmpresarial:function(){
-
+		onSelectGrupoEmpresarial:function(oEvent){
+			let oSelectedRow = oEvent.getParameter("selectedRow"),
+			oContext = oSelectedRow.getBindingContext(),
+			oObject = oContext.getObject(),
+			oModel = oContext.getModel(),
+			sGrupoaDesc = oObject["DSGRE"],
+			sGrupoCat = oObject["CTGRA"];
+			oModel.setProperty("/help/CTGRA", sGrupoCat);
+			oModel.setProperty("/help/DSGRE", sGrupoaDesc); 
 		},
 
 		/**
 		 * Event handler for 'Boton de Busqueda'
 		 */
-		onSearchTable:function(){
+		onSearchTable: async function(){
 			let oModel = this.getModel(),
-			oService = {},
-			oFormData = oModel.getProperty("/searchForm");
+			oViewModel = this.getModel("worklistView"),
+			sFechaIndex = oViewModel.getProperty("/fechaIndex"),
+			sEmpresaIndex = oViewModel.getProperty("/empresaIndex"),
+			oFormData = oModel.getProperty("/help"),
+			sFecha = oFormData["dateRange"],
+			sFHITM = oFormData["FHITM"],
+			sValueStateFecha = oViewModel.getProperty("/fechaState"),
+			sValueStateTemp = oViewModel.getProperty("/tempState");
+
+			if(sFechaIndex === 1) {
+				if(!sFecha) {
+					oViewModel.setProperty("/fechaState","Error");
+					return;
+				}
+				if(sValueStateFecha === "Error") oViewModel.setProperty("/fechaState","Success");
+			}else{
+				if(!sFHITM) {
+					oViewModel.setProperty("/tempState","Error");
+					return;
+				}
+				if(sValueStateTemp === "Error") oViewModel.setProperty("/tempState","Success");
+			}
+
+			let oService = {};
 			oModel.setProperty("/itemsTab",[
 				{key:"01",text:"Uno"},
 				{key:"02",text:"Dos"},
 			]);
-			this.count = 0; 
-			this.countService = 1;
-			let oTemp = oModel.getProperty("/help")
+			this.Count = 0; 
+			this.CountService = 1;
 			let param={
-				cdusr: "",
+				cdusr: await this.getCurrentUser(),
 				fieldstr_emp: [],
 				fieldstr_epp: [],
 				fieldstr_gre: [],
@@ -294,21 +347,21 @@ sap.ui.define([
 				fieldstr_zlt: [],
 				fieldstr_zpl: [],
 				p_cdgre: "",
-				p_cdpcn: /*oTemp["CDPCN"]*/"0000000047",
+				// p_cdpcn: oTemp["CDPCN"],
 				p_ctgra: "",
-				p_emba: oTemp["CDEMB"]?"E":"",
-				p_empeb: oTemp["CDEMB"],
-				p_fefin: /*formatter.setFormatDateYYYYMMDD(oTemp.FHFTM)*/"20210423",
-				p_feini: /*formatter.setFormatDateYYYYMMDD(oTemp.FHITM)*/"20210731",
+				// p_emba: oTemp["CDEMB"]?"E":"",
+				// p_empeb: oTemp["CDEMB"],
+				// p_fefin: formatter.setFormatDateYYYYMMDD(oTemp.FHFTM),
+				p_feini: formatter.setFormatDateYYYYMMDD(oTemp.FHITM),
 				p_grueb: "",
 				p_options: [],
 				p_tcons: "P",
 				p_zcdzar: ""
 			  };
-			oService.path = HOST+ "/api/sistemainformacionflota/PescaCompetenciaProduce";
-			oService.model = oModel;
-			  oService.param = param;
-			  this._getDataMainTable(oService);
+			oService.url = this.getHostService() +  "/api/sistemainformacionflota/PescaCompetenciaProduce";
+			oService.serviceName = "Pesca de competencia produce";
+			oService.param = param;
+			this._getDataMainTable(oService);
 		},
 
 		/**
@@ -316,7 +369,8 @@ sap.ui.define([
 		 */
 		onclearFilter:function(){
 			let oModel = this.getModel();
-			oModel.setProperty("/searchForm", {})
+			oModel.setProperty("/help", {});
+			oModel.setProperty("/tableItems", {})
 		},
 
 		/**
@@ -326,6 +380,31 @@ sap.ui.define([
 		onCloseDialog:function(oEvent){
 			let oDialog = oEvent.getSource().getParent();
 			oDialog.close();
+		},
+
+		onAbrirZonas: async function(oEvent){
+			
+			var oButton = oEvent.getSource(),
+			oView = this.getView(),
+			sTableId = oView.byId("table");
+			Popup.setWithinArea(sTableId);
+			
+			// Create popover
+			if (!this._pListPopover) {
+				this._pListPopover = await Fragment.load({
+					id: oView.getId(),
+					name: "com.tasa.pcomptproduce.view.fragments.PuertosZona",
+					controller: this
+				});
+
+				oView.addDependent(this._pListPopover);
+				// this._pListPopover.bindElement("/tableItems");
+			}
+			this._pListPopover.openBy(oButton);
+		},
+
+		onSeleccionarPuerto:function(oEvent){
+			this._pListPopover.close();
 		},
 
 
@@ -360,7 +439,7 @@ sap.ui.define([
 			}
 		},
 
-		_getDataMainTable:async function(oService){
+		_getDataMainTable: async function(oService){
 			let oDataTable = await this.getDataService(oService),
 			oModel = this.getModel();
 			if(oDataTable){

@@ -20,10 +20,10 @@
 }
 
 .classTable td:nth-child(2){
-background-color: #ff8073; /*rgba(255, 128, 115, 1)  || rgba(255, 152, 140, 1) */
+background-color: #ff8073; /*rgba(255, 128, 115, 1)  || rgba(255, 152, 140, 1) || periodo */
 }
 .classTable td:nth-child(3){
-    background-color: #FDBB71; /* rgba(253, 187, 113, 1)  // rgba(254, 204, 142, 1)*/
+    background-color: #FECC8E; /* rgba(254, 204, 142, 1)  // rgba(254, 204, 142, 1) || avance*/
 }
 .classTable td:nth-child(4){
     background-color: #bdcfe9  ; /* rgba(189, 207, 233, 1) || rgba(189, 207, 233, 1)*/
@@ -65,5 +65,48 @@ background-color: #ff8073; /*rgba(255, 128, 115, 1)  || rgba(255, 152, 140, 1) *
 .classTable td:nth-child(16){
     background-color: #BAEE9A; /*rgba(186, 238, 154, 1)*/
 }
+
+.classCBOD{
+    display: block;
+    text-align: end;
+}
+.classPeriod{
+    background-color: #ff8073;
+}
+
+
+.classAvance{
+    background-color: #FECC8E;
+}
+
+.classCenNor{
+    background-color: #BDCFE9;  /*rgba(189, 207, 233, 1)*/
+}
+
+.classSur{
+    background-color: #FDBB71;  /*rgba(253, 187, 113, 1)*/
+}
+
+.classCHD{
+    background-color: #FF8073;  /*rgba(255, 128, 115, 1)*/
+}
+
+.classfalt{
+    background-color: #BAEE9A;
+}
+
+.classRend{
+    background-color: #BAEE9A;
+}
+
+.classAvance, .classPeriod, .classCenNor,.classfalt,.classRend,
+.classSur,.classCHD{
+    display: block;
+    text-align: end;
+    margin: 0px;
+    padding: 10px;
+}
+
+
   
   

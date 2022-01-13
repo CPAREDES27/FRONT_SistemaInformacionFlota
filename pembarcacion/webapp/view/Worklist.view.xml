@@ -7,7 +7,8 @@
 	xmlns:table="sap.ui.table">
 
 	<semantic:SemanticPage
-		id="page">
+		id="page"
+		class="sapUiNoContentPadding">
 
 		<semantic:titleHeading>
 			<Title
@@ -20,13 +21,13 @@
 			<f:Form 
 				id="idFormHeader" 
 				editable="true"
-				binding="{/formSearch}">
+				binding="{/help}">
 				<f:formContainers>
 					<f:FormContainer >
 						<f:formElements>
 							<f:FormElement label="Opción">
 								<f:fields>
-									<RadioButtonGroup columns="2" valueState="Error" select="onSelectRadioButton" >
+									<RadioButtonGroup columns="2" valueState="Information" select="onSelectRadioButton" >
 										<RadioButton text="Temporada" class="sapUiMediumMarginEnd" />
 										<RadioButton text="Fecha" />
 									</RadioButtonGroup>
@@ -38,17 +39,17 @@
 										id="txtTemporadas"
 										value="{
 											parts:[
-												{path:'startDate'},
-												{path:'endDate'},
-												{path:'tempDesc'}
+												{path:'FHITM'},
+												{path:'FHFTM'},
+												{path:'DSPCN'}
 											]
 										}"
 										placeholder="Seleccione temporada"
 										showValueHelp="true"
 										valueHelpRequest="onSearchHelp"
 										enabled="{worklistView>/enabledTempInput}"
-										change="updateDateRange"
-										tooltip="{tempDesc}"/>
+										change="onUpdateDateRange"
+										tooltip="{DSPCN}"/>
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement label="Fecha">
@@ -70,7 +71,8 @@
 								<f:fields>
 									<Select 
 										id="tipoEmbarcacion" 
-										selectedKey="{tipoEmb}"
+										selectedKey="{/help/tipoEmb}"
+										forceSelection="false"
 										items="{ path: '/tipoEmbarcacion' }" >
 										<core:Item key="{id}" text="{descripcion}" />
 									</Select>
@@ -82,12 +84,12 @@
 										text="Buscar" 
 										type="Emphasized"
 										icon="sap-icon://search" 
-										press="onPescaSearch"/>
-										<Button 
-											text="Limpiar" 
-											type="Ghost"
-											icon="sap-icon://clear-filter" 
-											press="onClearSearch"/>
+										press="onPescaSearch('1')"/>
+									<Button 
+										text="Limpiar" 
+										type="Ghost"
+										icon="sap-icon://clear-filter" 
+										press="onClearSearch"/>
 								</f:fields>
 							</f:FormElement>
 						</f:formElements>
@@ -110,24 +112,33 @@
 						singleContainerFullSize="false" />
 				</f:layout>
 			</f:Form>
-			<FlexBox justifyContent="End" >
+			<!-- <FlexBox justifyContent="End" >
 				<items>
 					
 				</items>
-			</FlexBox>
+			</FlexBox> -->
 		</semantic:headerContent>
 
 		<semantic:content>
-			<table:Table id="table" 
+			<VBox>
+			<!-- <ScrollContainer
+				height="70vh" vertical="true"> -->
+				<table:Table 
+					id="table" 
 					rows="{/PESCAS_EMBARCACION}"
 					fixedColumnCount="1"
 					selectionMode="None"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					rowsUpdated=".onUpdateFinished"
 					fixedBottomRowCount="1"
-					class="classTable">
+					class="classTable1">
 					<table:extension>
 						<OverflowToolbar style="Clear">
+							<Title text = "{worklistView>/worklistTableTitle}" />
+							<ToolbarSeparator visible="{=${/pagination/title} ? true : false}" />
+							<ObjectStatus
+								text = "{/pagination/title}"
+								state = "Indication06"/>
 							<ToolbarSpacer />
 							<Button 
 								text="Exportar"
@@ -137,7 +148,8 @@
 						</OverflowToolbar>
 					</table:extension>
 					<table:columns>
-						<table:Column width="12rem">
+
+						<table:Column width="15rem">
 							<table:multiLabels>
 								<Label text="" />
 								<Label text="Embarcación" />
@@ -147,208 +159,299 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column width="4rem">
+
+						<table:Column width="5rem" hAlign="Center">
 							<table:multiLabels>
 								<Label text="" />
 								<Label text="CBOD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CPPMS}"/>     
+								<Text text="{
+												path:'CPPMS',
+												formatter:'.formatter.formatFloat'	
+											}"
+										class = "classCBOD"
+										textAlign="End"/>     
 							</table:template>
 						</table:Column>
 						
+
 						<table:Column 
 							headerSpan="2,1" 
 							hAlign="Center" 
 							width="5rem" 
-							visible="{worklistView>/visibleColCuota}">
+							visible="{worklistView>/visibleTemp}">
 							<table:multiLabels>
 								<Label text="CUOTA" textAlign="Center" />
 								<Label text="Periodo" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CPRNC}"/>
+								<Text text="{
+												path:'CPRNC',
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="classPeriod"/>
 							</table:template>
 						</table:Column>
 						<table:Column 
 							headerSpan="2,1" 
 							hAlign="End" 
 							width="6rem"
-							visible="{worklistView>/visibleColCuota}">
+							visible="{worklistView>/visibleTemp}">
 							<table:multiLabels>
 								<Label text="CUOTA" />
 								<Label text="Avance(%)" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{= ${CAVNC} * 100}"/>
+								<Text text="{
+												path:'= ${CAVNC} * 100',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classAvance"
+										textAlign="End"/>
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="4,1" hAlign="Center" width="7rem">
+
+
+						<table:Column 
+							headerSpan="4,1" 
+							hAlign="Center" 
+							width="7rem"
+							visible="{=${/help/ZCDZAR} === '001' || ${worklistView>/visibleFecha}}">
 							<table:multiLabels>
 								<Label text="Pesca TM" />
 								<Label text="Centro Norte" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNDCN}"/>
-							</table:template>
-						</table:Column>
-						<table:Column 
-							headerSpan="4,1" 
-							hAlign="End" 
-							width="4rem"
-							visible="{worklistView>/visibleColTM}">
-							<table:multiLabels>
-								<Label text="Pesca TM" />
-								<Label text="Sur" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{CNDSU}"/>
+								<Text text="{
+												path:'CNDCN',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classCenNor"
+									    textAlign="End"/>
 							</table:template>
 						</table:Column>
 						<table:Column 
 							headerSpan="4,1" 
 							hAlign="Center" 
-							width="4rem"
-							visible="{worklistView>/visibleColTM}">
+							width="7rem"
+							visible="{=${/help/ZCDZAR} === '002' || ${worklistView>/visibleFecha}}">
+							<table:multiLabels>
+								<Label text="Pesca TM" />
+								<Label text="Sur" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'CNDSU',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classSur"
+									    textAlign="End"/>
+							</table:template>
+						</table:Column>
+						<table:Column 
+							headerSpan="4,1" 
+							hAlign="Center" 
+							width="7rem"
+							visible="{worklistView>/visibleFecha}">
 							<table:multiLabels >
 								<Label text="Pesca TM" />
 								<Label text="CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNDHD}"/>
+								<Text text="{
+												path:'CNDHD',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classCHD"
+									    textAlign="End"/>
 							</table:template>
 						</table:Column>
 						<table:Column 
-							headerSpan="4,1" 
-							width="4rem"
-							visible="{worklistView>/visibleColTM}">
+							headerSpan="4,1"
+							hAlign="Center" 
+							width="7rem"
+							visible="{worklistView>/visibleFecha}">
 							<table:multiLabels>
 								<Label text="Pesca TM" />
 								<Label text="Total" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{CNDTO}"/>
+								<Text text="{
+												path:'CNDTO',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classfalt"
+									    textAlign="End"/>
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="7,1" hAlign="Center" width="7rem">
+
+
+						<table:Column 
+							headerSpan="7,1" 
+							hAlign="Center" 
+							width="7rem"
+							visible="{=${/help/ZCDZAR} === '001' || ${worklistView>/visibleFecha} }">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Centro Norte" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{DIPCN}"/>
-							</table:template>
-						</table:Column>
-						<table:Column 
-							headerSpan="7,1" 
-							width="4rem"
-							hAlign="End"
-							visible="{worklistView>/visibleColTM}">
-							<table:multiLabels>
-								<Label text="Días de Pesca" />
-								<Label text="Sur" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{DIPSU}"/>
-							</table:template>
-						</table:Column>
-						<table:Column 
-							headerSpan="4" 
-							width="4rem"
-							hAlign="End"
-							visible="{worklistView>/visibleColTM}">
-							<table:multiLabels>
-								<Label text="Días de Pesca" />
-								<Label text="CHD" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{DIPHD}"/>
+								<Text text="{
+												path:'DIPCN',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classCenNor"
+									    textAlign="End"/>
 							</table:template>
 						</table:Column>
 						<table:Column 
 							headerSpan="7,1" 
 							width="7rem"
-							hAlign="End"
-							visible="{worklistView>/visibleColTM}">
+							hAlign="Center"
+							visible="{=${/help/ZCDZAR} === '002' ||  ${worklistView>/visibleFecha}}">
+							<table:multiLabels>
+								<Label text="Días de Pesca" />
+								<Label text="Sur" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'DIPSU',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classSur"
+									    textAlign="End"/>
+							</table:template>
+						</table:Column>
+						<table:Column 
+							headerSpan="4" 
+							width="7rem"
+							hAlign="Center"
+							visible="{worklistView>/visibleFecha}">
+							<table:multiLabels>
+								<Label text="Días de Pesca" />
+								<Label text="CHD" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'DIPHD',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classCHD"
+									    textAlign="End"/>
+							</table:template>
+						</table:Column>
+						<table:Column 
+							headerSpan="7,1" 
+							width="7rem"
+							hAlign="Center"
+							visible="{worklistView>/visibleFecha}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Sin Pesca Sur" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{DSPSU}"/>
+								<Text text="{
+												path:'DSPSU',
+												formatter:'.formatter.formatFloat'
+											}"/>
 							</table:template>
 						</table:Column>
 						<table:Column 
 							headerSpan="2" 
-							hAlign="End" 
-							width="8rem"
-							visible="{worklistView>/visibleColTM}">
+							hAlign="Center" 
+							width="7rem"
+							visible="{worklistView>/visibleFecha}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Sin Pesca CHD" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{DSPHD}"/>
+								<Text text="{
+												path:'DSPHD',
+												formatter:'.formatter.formatFloat'
+											}"/>
 							</table:template>
 						</table:Column>
 						<table:Column 
 							headerSpan="7,1" 
-							width="4rem"
-							hAlign="End"
-							visible="{worklistView>/visibleColTM}">
+							width="7rem"
+							hAlign="Center"
+							visible="{worklistView>/visibleFecha}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Veda" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{DIVED}"/>
+								<Text text="{
+												path:'DIVED',
+												formatter:'.formatter.formatFloat'
+											}"/>
 							</table:template>
 						</table:Column>
 						<table:Column 
 							headerSpan="7,1" 
 							hAlign="Center" 
-							width="6rem"
-							visible="{worklistView>/visibleColTM}">
+							width="7rem"
+							visible="{worklistView>/visibleFecha}">
 							<table:multiLabels>
 								<Label text="Días de Pesca" />
 								<Label text="Total" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{TOTDI}"/>
+								<Text text="{
+												path:'TOTDI',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classfalt"
+									    textAlign="End"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column 
 							headerSpan="1" 
-							width="6rem"
-							hAlign="End"
-							visible="{worklistView>/visibleColDias}">
+							width="7rem"
+							hAlign="Center"
+							visible="{worklistView>/visibleTemp}">
 							<table:multiLabels>
 								<Label text="Dias" />
 								<Label text="Faltantes" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{DIFAL}"/>
+								<Text text="{
+												path:'DIFAL',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classfalt"
+									    textAlign="End"/>
 							</table:template>
 						</table:Column>
 
 						<table:Column 
 							headerSpan="1" 
 							hAlign="Center" 
-							width="6rem"
-							visible="{worklistView>/visibleColDias}">
+							width="7rem"
+							visible="{worklistView>/visibleTemp}">
 							<table:multiLabels>
 								<Label text="" />
 								<Label text="Rend(%)" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{= ${RENEM} * 100}"/>
+								<Text text="{
+												path:'= ${RENEM} * 100',
+												formatter:'.formatter.formatFloat'
+											}"
+										class="classRend"
+									    textAlign="End"/>
 							</table:template>
 						</table:Column>
 					</table:columns>
 				</table:Table>
+			<!-- </ScrollContainer> -->
+			</VBox>
 		</semantic:content>
 
 	</semantic:SemanticPage>

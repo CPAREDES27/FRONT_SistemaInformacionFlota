@@ -29,6 +29,37 @@ sap.ui.define([
 
 			// apply content density mode to root view
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+			let oModel = this.getModel();
+			oModel.setProperty("/help",{
+				dateFrom:new Date(),
+				dateTo:new Date()
+			});
+			oModel.setProperty("/columns",[
+				{
+					id:"FIDES",
+					header:"Fecha",
+					footer:"Total",
+					align:"Begin"
+				},
+				{
+					id:"CNPDS",
+					header:"Pesca",
+					footer:"",
+					align:"End",
+					styleClass:"colPesca"
+				},
+				{
+					id:"CORREL",
+					header:"Días",
+					styleClass:"colDias"
+				},
+				{
+					id:"PROMCNPDS",
+					header:"Promedio",
+					styleClass:"colProm"
+				}
+			]);
 		}
 	});
 

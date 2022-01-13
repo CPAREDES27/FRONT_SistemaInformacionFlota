@@ -4,8 +4,15 @@ sap.ui.define([
 	"../model/formatter",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator"
-], function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
+], function (
+	BaseController, 
+	JSONModel, 
+	formatter, 
+	Filter, 
+	FilterOperator) {
 	"use strict";
+
+	const HOST = "https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com";
 
 	return BaseController.extend("com.tasa.pdescargada.controller.Worklist", {
 
@@ -35,8 +42,6 @@ sap.ui.define([
 			oViewModel = new JSONModel({
 				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
 				shareOnJamTitle: this.getResourceBundle().getText("worklistTitle"),
-				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
-				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
 				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
 				tableBusyDelay: 0
 			});
@@ -50,11 +55,11 @@ sap.ui.define([
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
 
-			let currentDate = new Date();
-			let firstDateOfMonth = new Date();
-			firstDateOfMonth.setDate(1);
+			// let currentDate = new Date();
+			// let firstDateOfMonth = new Date();
+			// firstDateOfMonth.setDate(1);
 
-			this.getDataTable(firstDateOfMonth, currentDate);
+			// this.getDataTable(firstDateOfMonth, currentDate);
 		},
 
 		/* =========================================================== */
@@ -135,6 +140,55 @@ sap.ui.define([
 			oTable.getBinding("items").refresh();
 		},
 
+		onCleanSearch:function(){
+			this._resetControls();
+		},
+
+		onSearchPescaDescargada: async function(oEvent){
+			this.iCount = 0;
+			this.iCountService = 1;
+			this._resetControls();
+			let oService = {},
+			oModel = this.getModel(),
+			aItems = [],
+			sFides = oModel.getProperty("/help/dateFrom"),
+			sFfdes = oModel.getProperty("/help/dateTo"),
+			sUrl = HOST + "/api/sistemainformacionflota/PescaDescargadaDiaResum",
+			body = {
+				fieldstr_pta: [],
+				fielstr_dsd: [],
+				fielstr_dsddia: [],
+				fielstr_dsdtot: [],
+				p_ffdes: this.formatter.formatDateYYYYMMDD(sFfdes),
+				p_fides: this.formatter.formatDateYYYYMMDD(sFides),
+				p_user: ""
+			};
+
+			oService.PATH = sUrl;
+			oService.param = body;
+			let oDataPescaDesc = await this.getDataService(oService);
+			if(oDataPescaDesc){
+				let aPlantas = oDataPescaDesc.str_pta,
+				descargas = oDataPescaDesc.str_dsd,
+				descargasDias = oDataPescaDesc.str_dsddia,
+				totalesDescargas = oDataPescaDesc.str_dsdtot;
+
+				this._buildTableItems(oDataPescaDesc);
+				// aPlantas.forEach(oPlanta => {
+				// 	aColumns.push({
+				// 		header:oPlanta.DESCR
+				// 	});
+				// });
+				// aColumns.forEach(aCol=>{
+				// 	aItems.push({
+				// 		FIDES:
+				// 	});
+				// });
+				// oModel.setProperty("/dataPescaDesc",oDataPescaDesc);
+				// oModel.setProperty("/columns",aColumns);
+			}
+		},
+
 		/* =========================================================== */
 		/* internal methods                                            */
 		/* =========================================================== */
@@ -165,61 +219,188 @@ sap.ui.define([
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 			}
 		},
-		buscarPescaDescargada: function () {
-			let fechaInicio = this.byId("dateRangePescaDescargada").getDateValue();
-			let fechaFin = this.byId("dateRangePescaDescargada").getSecondDateValue();
-			this.getDataTable(fechaInicio, fechaFin);
+
+		_resetControls:function(){
+			let oModel = this.getModel(),
+			aColumns = [
+				{
+					id:"FIDES",
+					header:"Fecha",
+					footer:"Total",
+					align:"Begin"
+				},
+				{
+					id:"CNPDS",
+					header:"Pesca",
+					footer:"",
+					align:"End",
+					styleClass:"colPesca"
+				},
+				{
+					id:"CORREL",
+					header:"Días",
+					align:"End",
+					styleClass:"colDias"
+				},
+				{
+					id:"PROMCNPDS",
+					header:"Promedio",
+					align:"End",
+					styleClass:"colProm"
+				}
+			];
+			oModel.setProperty("/columns",aColumns);
+			oModel.setProperty("/items",[]);
+			oModel.setProperty("/plantas",[]);
+			oModel.refresh(true);
 		},
-		getDataTable: async function (fechaInicio, fechaFin) {
-			let listPescaDescargada = await this.getListPescaDescargadaDiaResum(fechaInicio, fechaFin);
 
-			if (listPescaDescargada) {
-				let plantas = listPescaDescargada.str_pta;
-				let descargas = listPescaDescargada.str_dsd;
-				let descargasDias = listPescaDescargada.str_dsddia;
-				let totalesDescargas = listPescaDescargada.str_dsdtot;
+		_buildTableItems:function(oData){
+			let oTable = this.getView().byId("table"),
+			aPlantas = oData.str_pta,
+			aItems = oData.str_dsddia,
+			aTotal = oData.str_dsdtot,
+			aPlantasData = oData.str_dsd,
+			oModel = this.getModel(),
+			aColumns = oModel.getProperty("/columns"),
+			aCells = [],
+			aPlantasGraph=[],
+			oColumnListItem = new sap.m.ColumnListItem({
+				cells:aCells
+			});
 
-				//Copiar un elemento de la lista de descargas por días
-				let totales = { ...descargasDias[0] };
-
-				// Adición de campos dinámicos de las plantas
-				let totalesDescargasDias = descargasDias.map(descDias => {
-					const fecha = descDias.FIDES;
-					descargas.filter(desc => desc.FIDES === fecha).forEach(desc => {
-						descDias[`CNPDS${desc.CDPTA}`] = desc.CNPDS;
-					});
-
-					return descDias;
+			aPlantas.forEach(oPlant => {
+				aColumns.push({
+					id:oPlant.CDPTA,
+					header:oPlant.DESCR,
+					align:"End",
 				});
-
-				//Adicionar la fila de totales
-				totalesDescargas.filter(totalesDesc => totalesDesc.CDPTA !== 'TT').forEach(totalesDesc => {
-					totales[`CNPDS${totalesDesc.CDPTA}`] = totalesDesc.TOTALCNPDS;
+			});
+			aColumns.forEach(oCol => {
+				aTotal.forEach(total=>{
+					if(total.CDPTA === oCol.id){
+						oCol.footer = total.TOTALCNPDS
+					}else if(oCol.id === "CNPDS"){
+						oCol.footer = total.TOTALCNPDS
+					}
 				});
-				totales.CNPDS = totalesDescargas.find(totalesDesc => totalesDesc.CDPTA === 'TT').TOTALCNPDS;
-				totales.FIDES = null;
-				totales.CORREL = null;
-				totales.PROMCNPDS = null;
+			});
+			aItems.forEach(oItem=>{
+				aPlantasData.forEach(oPlant => {
+					if(oItem.FIDES ===  oPlant.FIDES){
+						oItem.CDPTA = oPlant.CDPTA;
+						oItem[`${oPlant.CDPTA}-CNPDS`] = oPlant.CNPDS;
+					}
+					
+				});
+			});
 
-				//Unir los totales de descargas por días con las plantas
-				let totalesDescargasDiasPlantas = totalesDescargas.map(totalDescarga => {
-					const planta = plantas.find(planta => planta.CDPTA === totalDescarga.CDPTA);
-					if (planta) {
-						return {
-							planta: planta.DESCR,
-							descarga: totalDescarga.TOTALCNPDS
+			aPlantas.forEach(oPlant=>{
+				aTotal.forEach(total=>{
+					if(total.CDPTA===oPlant.CDPTA){
+						aPlantasGraph.push({
+							label:oPlant.DESCR ,
+							value:total.TOTALCNPDS
+						})
+					}
+				});
+			});
+			oModel.setProperty("/columns",aColumns);
+			oModel.setProperty("/items",aItems);
+			oModel.setProperty("/plantas",aPlantasGraph);
+
+			// oTable.bindAggregation("items",{
+			// 	path:'/dataPescaDesc',
+			// 	template:oColumnListItem
+			// });
+		},
+		
+		createItems:function(sId,oContext){
+			let oObject = oContext.getObject(),
+			oModel = oContext.getModel(),
+			aColumns = oModel.getProperty("/columns"),
+			aKeys = Object.keys(oObject),
+			aCells = [],
+			sPath;
+			aColumns.forEach(oCol=>{
+				sPath = oCol.id + "-CNPDS";
+				if(isNaN(Number(oCol.id))) sPath = oCol.id;
+				aCells.push(new sap.m.Text({
+					text:{
+						path:sPath,
+						formatter:(sPath)=>{
+							if(isNaN(Number(sPath))){
+								return sPath;
+							} else {
+								if(oCol.id === "PROMCNPDS"){
+									return this.formatter.formatFloat2(sPath);
+								}else{
+									return this.formatter.formatFloat(sPath);
+								}
+							}
 						}
 					}
-				}).filter(totalDescargaDiaPlanta => totalDescargaDiaPlanta !== undefined);
-
-
-				totalesDescargasDias.push(totales);
-
-				this.getModel().setProperty("/STR_DSD", totalesDescargasDias);
-				this.getModel().setProperty("/STR_TOTALES_DIAS", descargasDias);
-				this.getModel().setProperty("/STR_TOTALES_PLANTA", totalesDescargasDiasPlantas);
-			}
+				}));
+			});
+			return new sap.m.ColumnListItem({
+				cells:aCells
+			})
 		}
+		// buscarPescaDescargada: function () {
+		// 	let fechaInicio = this.byId("dateRangePescaDescargada").getDateValue();
+		// 	let fechaFin = this.byId("dateRangePescaDescargada").getSecondDateValue();
+		// 	this.getDataTable(fechaInicio, fechaFin);
+		// },
+		// getDataTable: async function (fechaInicio, fechaFin) {
+		// 	let listPescaDescargada = await this.getListPescaDescargadaDiaResum(fechaInicio, fechaFin);
+
+		// 	if (listPescaDescargada) {
+		// 		let plantas = listPescaDescargada.str_pta;
+		// 		let descargas = listPescaDescargada.str_dsd;
+		// 		let descargasDias = listPescaDescargada.str_dsddia;
+		// 		let totalesDescargas = listPescaDescargada.str_dsdtot;
+
+		// 		//Copiar un elemento de la lista de descargas por días
+		// 		let totales = { ...descargasDias[0] };
+
+		// 		// Adición de campos dinámicos de las plantas
+		// 		let totalesDescargasDias = descargasDias.map(descDias => {
+		// 			const fecha = descDias.FIDES;
+		// 			descargas.filter(desc => desc.FIDES === fecha).forEach(desc => {
+		// 				descDias[`CNPDS${desc.CDPTA}`] = desc.CNPDS;
+		// 			});
+
+		// 			return descDias;
+		// 		});
+
+		// 		//Adicionar la fila de totales
+		// 		totalesDescargas.filter(totalesDesc => totalesDesc.CDPTA !== 'TT').forEach(totalesDesc => {
+		// 			totales[`CNPDS${totalesDesc.CDPTA}`] = totalesDesc.TOTALCNPDS;
+		// 		});
+		// 		totales.CNPDS = totalesDescargas.find(totalesDesc => totalesDesc.CDPTA === 'TT').TOTALCNPDS;
+		// 		totales.FIDES = null;
+		// 		totales.CORREL = null;
+		// 		totales.PROMCNPDS = null;
+
+		// 		//Unir los totales de descargas por días con las plantas
+		// 		let totalesDescargasDiasPlantas = totalesDescargas.map(totalDescarga => {
+		// 			const planta = plantas.find(planta => planta.CDPTA === totalDescarga.CDPTA);
+		// 			if (planta) {
+		// 				return {
+		// 					planta: planta.DESCR,
+		// 					descarga: totalDescarga.TOTALCNPDS
+		// 				}
+		// 			}
+		// 		}).filter(totalDescargaDiaPlanta => totalDescargaDiaPlanta !== undefined);
+
+
+		// 		totalesDescargasDias.push(totales);
+
+		// 		this.getModel().setProperty("/STR_DSD", totalesDescargasDias);
+		// 		this.getModel().setProperty("/STR_TOTALES_DIAS", descargasDias);
+		// 		this.getModel().setProperty("/STR_TOTALES_PLANTA", totalesDescargasDiasPlantas);
+		// 	}
+		// }
 
 	});
 });

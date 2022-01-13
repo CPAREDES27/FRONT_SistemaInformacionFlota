@@ -54,9 +54,8 @@ sap.ui.define([
 				enabledTempInput: true,
 				enabledDateInput: false,
 				// valores iniciales para columnas
-				visibleColCuota: true,
-				visibleColTM:false,
-				visibleColDias:true
+				visibleTemp: true,
+				visibleFecha:false,
 			});
 			this.setModel(oViewModel, "worklistView");
 
@@ -89,15 +88,30 @@ sap.ui.define([
 			// update the worklist's object counter after the table update
 			var sTitle,
 				oTable = oEvent.getSource(),
-				iTotalItems = oEvent.getParameter("total");
-			// only update the counter if the length is final and
-			// the table is not empty
-			if (iTotalItems && oTable.getBinding("items").isLengthFinal()) {
-				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems]);
-			} else {
-				sTitle = this.getResourceBundle().getText("worklistTableTitle");
+				sTableId = oEvent.getParameter("id"),
+				oModel = this.getModel(),
+				oRowBinding = oTable.getBinding("rows"),
+				iTotalItems = oRowBinding.getCount(),
+				sTotalPagination;
+
+			if(this.iTotalItems !== iTotalItems){
+				this.iTotalItems = iTotalItems;
+				
+				// only update the counter if the length is final and
+				// the table is not empty
+				if (iTotalItems && oTable.getBinding("rows").isLengthFinal()) {
+					sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems-1]);
+					sTotalPagination = oModel.getProperty("/pagination/total")
+					this._addPagination(sTableId,sTotalPagination,1);
+					if(!this.bFlag){
+						this._calcularTotales(oRowBinding);
+					}
+				} else {
+					sTitle = this.getResourceBundle().getText("worklistTableTitle");
+				}
+				this.getModel("worklistView").setProperty("/worklistTableTitle", sTitle);
+
 			}
-			this.getModel("worklistView").setProperty("/worklistTableTitle", sTitle);
 		},
 
 		/**
@@ -148,29 +162,28 @@ sap.ui.define([
 			let oSelectedIndex = oEvent.getParameter("selectedIndex"),
 			oViewModel = this.getModel("worklistView"),
 			oModel = this.getModel(); 
+			this.iTotalItems = 0;
+			this.bFlag = false;
+			oModel.setProperty("/PESCAS_EMBARCACION",[]);
+			oModel.setProperty("/help",{});
 			if(oSelectedIndex===0) { // seleccion de temporada
 				oViewModel.setProperty("/enabledTempInput",true);
 				oViewModel.setProperty("/enabledDateInput",false);
-				oViewModel.setProperty("/visibleColCuota",true);
-				oViewModel.setProperty("/visibleColTM",false);
-				oViewModel.setProperty("/visibleColDias",true);
-
-				oModel.setProperty("/formSearch/fecha","");
-				oModel.setProperty("/PESCAS_EMBARCACION",[]);
+				oViewModel.setProperty("/visibleTemp",true);
+				oViewModel.setProperty("/visibleFecha",false);
+				oModel.setProperty("/help/ZCDZAR","001");
 				
-			}else{
+			}else{  // seleccion de fecha
 				oViewModel.setProperty("/enabledTempInput",false);
 				oViewModel.setProperty("/enabledDateInput",true);
-				oViewModel.setProperty("/visibleColCuota",false);
-				oViewModel.setProperty("/visibleColTM",true);
-				oViewModel.setProperty("/visibleColDias",false);
-
-
-				oModel.setProperty("/formSearch/startDate",null);
-				oModel.setProperty("/formSearch/endDate",null);
-				oModel.setProperty("/formSearch/tempDesc",null);
-				oModel.setProperty("/PESCAS_EMBARCACION",[]);
-			}
+				oViewModel.setProperty("/visibleTemp",false);
+				oViewModel.setProperty("/visibleFecha",true);
+			};
+			oModel.setProperty("/help/tipoEmb","001");
+			this._destroyControl("selectPage");
+			this._destroyControl("vbox1");
+			this._destroyControl("hbox1");
+			this._destroyControl("hboxPagination");
 				
 		},
 
@@ -182,7 +195,7 @@ sap.ui.define([
 			let that = this,
 			oView = this.getView(),
 			oModel = this.getModel(),
-			sUrl = HOST2 + "/10f4c59e-35e6-4d6a-88ef-e0267faac0ab.AyudasBusqueda.comtasabusqtemporada-1.0.0",
+			sUrl = HOST2 + "/9acc820a-22dc-4d66-8d69-bed5b2789d3c.AyudasBusqueda.busqtemporada-1.0.0",
 			nameComponent = "com.tasa.busqtemporada",
 			idComponent = "com.tasa.busqtemporada";
 
@@ -259,7 +272,7 @@ sap.ui.define([
 					hierarchyLevel: 'Level'
 				},
 				dataSource: oRowBinding,
-				fileName: 'Table export sample.xlsx',
+				fileName: 'Pesca por embarcacion.xlsx',
 				worker: false // We need to disable worker because we are using a MockServer as OData Service
 			};
 
@@ -272,14 +285,24 @@ sap.ui.define([
 		/**
 		 * Metodo que consume servicio para para tabla
 		 */
-		onPescaSearch: async function(){
+		onPescaSearch: async function(sPage){
 			let oModel = this.getModel(),
-			sStartDate = oModel.getProperty("/formSearch/startDate"),
-			sEndDate = oModel.getProperty("/formSearch/endDate"),
-			sDateRange = oModel.getProperty("/formSearch/fecha"),
-			sTipEmb = oModel.getProperty("/formSearch/tipoEmb"),
-			sCodPort = oModel.getProperty("/formSearch/codPort"),
+			oHelp = oModel.getProperty("/help"),
+			oViewModel = this.getView().getModel("worklistView"),
+			bEnabledTempInput = oViewModel.getProperty("/enabledTempInput"),
+			sStartDate = oHelp.FHITM,
+			sEndDate = oHelp.FHFTM,
+			sCodPort = oHelp.CDPCN,
+			sCodZona = oHelp.ZCDZAR,
+			sDateRange = oModel.getProperty("/help/fecha"),
+			sTipEmb = oModel.getProperty("/help/tipoEmb"),
 			oService={};
+			if(!sDateRange && !sStartDate){
+				let sMessage = "rango de fechas";
+				if(bEnabledTempInput) sMessage = "temporada"
+				this.getMessageDialog("Warning","Ingrese "+sMessage);
+				return;
+			}
 
 			sStartDate ? sStartDate=formatter.setFormatDateYYYYMMDD(sStartDate) : "";
 			sEndDate ? sEndDate=formatter.setFormatDateYYYYMMDD(sEndDate) : "";
@@ -294,6 +317,7 @@ sap.ui.define([
 				p_cdtem: sTipEmb,
 				p_fcfin: sEndDate,
 				p_fcini: sStartDate,
+				p_pag: sPage || "1",
 				p_user: ""
 			};
 			this.iCount=0;
@@ -301,7 +325,12 @@ sap.ui.define([
 			let oPescData = await this.getDataService(oService);
 
 			if(oPescData){
-				oModel.setProperty("/PESCAS_EMBARCACION",oPescData["str_pem"])
+				oModel.setProperty("/PESCAS_EMBARCACION",oPescData["str_pem"]);
+				let sTotalPagination = oPescData["p_totalpag"];
+				oModel.setProperty("/pagination",{
+					title:`Pag ${sPage} de ${sTotalPagination}`,
+					total:sTotalPagination
+				});
 			}
 		},
 
@@ -310,7 +339,29 @@ sap.ui.define([
 		 */
 		onClearSearch:function(){
 			let oModel = this.getModel();
-			oModel.setProperty("/formSearch",{});
+			oModel.setProperty("/help",{});
+			oModel.setProperty("/help/ZCDZAR","001");
+		},
+
+		/**
+		 * Event Handler for Temporadas Input
+		 * @param {event} oEvent 
+		 */
+		onUpdateDateRange: function (oEvent) {
+			// const codTemporada = oEvent.getParameter('value');
+
+			// let temporada = this.getModel().getProperty("/SUGGESTION_TEMPORADAS").find(temp => temp.CDPCN === codTemporada);
+
+			// if (temporada) {
+			// 	const fechaInicio = this.formatter.getDateFromString(temporada.FHITM);
+			// 	const fechaFin = this.formatter.getDateFromString(temporada.FHFTM);
+
+			// 	this.byId("dateRangePescaEmbarcacion").setDateValue(fechaInicio);
+			// 	this.byId("dateRangePescaEmbarcacion").setSecondDateValue(fechaFin);
+			// }
+
+			/* this.byId("dateRangePescaEmbarcacion").setDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHITM));
+			this.byId("dateRangePescaEmbarcacion").setSecondDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHFTM)); */
 		},
 
 		/* =========================================================== */
@@ -343,81 +394,34 @@ sap.ui.define([
 				oViewModel.setProperty("/tableNoDataText", this.getResourceBundle().getText("worklistNoDataWithSearchText"));
 			}
 		},
-		loadData: async function () {
-			const listDomNames = ["TIPOEMBARCACION", "OPCIONFECHA_RPEB"];
-			let listDominios = await this.getDominios(listDomNames);
-			let listTemporadas = await this.getTemporadas();
+		
+		// buscarPescasPorEmbarcacion: async function () {
+		// 	const opcionFecha = this.byId("opcionFecha").getSelectedKey();
+		// 	const fechaInicial = this.byId("dateRangePescaEmbarcacion").getDateValue();
+		// 	const fechaFinal = this.byId("dateRangePescaEmbarcacion").getSecondDateValue();
+		// 	const temporada = opcionFecha === 'T' ? this.byId("txtTemporadas").getValue() : undefined;
+		// 	const tipoEmbarcacion = this.byId("tipoEmbarcacion").getSelectedKey();
 
-			//Llenado de selectores
-			if (listDominios) {
-				const listTiposEmbarcacion = listDominios.data.find(dom => dom.dominio === "TIPOEMBARCACION").data;
-				const listOpcionFecha = listDominios.data.find(dom => dom.dominio === "OPCIONFECHA_RPEB").data;
+		// 	let result = await this.getListPescasEmbarcacion(temporada, tipoEmbarcacion, fechaInicial, fechaFinal);
 
-				this.getModel().setProperty("/TIPOS_EMBARCACION", listTiposEmbarcacion);
-				this.getModel().setProperty("/OPCIONES_FECHA", listOpcionFecha);
-			}
+		// 	let listPescasEmbarcacion = result.str_pem;
+		// 	/**
+		// 	 * Calcular totales
+		// 	 */
+		// 	let totales = listPescasEmbarcacion.reduce((pemAcum, pem) => {
+		// 		return {
+		// 			CPRNC: pem.CPRNC + pemAcum.CPRNC,
+		// 			CAVNC: pem.CAVNC + pemAcum.CAVNC,
+		// 			CPRSU: pem.CPRSU + pemAcum.CPRSU,
+		// 			CAVSU: pem.CAVSU + pemAcum.CAVSU,
+		// 		}
+		// 	});
 
-			//Llenado de sugerencia de temporadas
-			if (listTemporadas) {
-				//Ordenar temporadas por fecha fin
-				listTemporadas.data.sort((a, b) => {
-					return -(this.formatter.getDateFromString(a.FHFTM) - this.formatter.getDateFromString(b.FHFTM));
-				});
-				//Establecer la primera temporada como seleccionada
-				const mostRecentTemporada = listTemporadas.data[0];
-				this.byId("txtTemporadas").setValue(mostRecentTemporada.CDPCN);
-				this.byId("dateRangePescaEmbarcacion").setDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHITM));
-				this.byId("dateRangePescaEmbarcacion").setSecondDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHFTM));
-
-				this.getModel().setProperty("/SUGGESTION_TEMPORADAS", listTemporadas.data);
-			}
-
-			//Establecer la primera temporada como seleccionada
-
-		},
-		updateDateRange: function (oEvent) {
-			const codTemporada = oEvent.getParameter('value');
-
-			let temporada = this.getModel().getProperty("/SUGGESTION_TEMPORADAS").find(temp => temp.CDPCN === codTemporada);
-
-			if (temporada) {
-				const fechaInicio = this.formatter.getDateFromString(temporada.FHITM);
-				const fechaFin = this.formatter.getDateFromString(temporada.FHFTM);
-
-				this.byId("dateRangePescaEmbarcacion").setDateValue(fechaInicio);
-				this.byId("dateRangePescaEmbarcacion").setSecondDateValue(fechaFin);
-			}
-
-			/* this.byId("dateRangePescaEmbarcacion").setDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHITM));
-			this.byId("dateRangePescaEmbarcacion").setSecondDateValue(this.formatter.getDateFromString(mostRecentTemporada.FHFTM)); */
-		},
-		buscarPescasPorEmbarcacion: async function () {
-			const opcionFecha = this.byId("opcionFecha").getSelectedKey();
-			const fechaInicial = this.byId("dateRangePescaEmbarcacion").getDateValue();
-			const fechaFinal = this.byId("dateRangePescaEmbarcacion").getSecondDateValue();
-			const temporada = opcionFecha === 'T' ? this.byId("txtTemporadas").getValue() : undefined;
-			const tipoEmbarcacion = this.byId("tipoEmbarcacion").getSelectedKey();
-
-			let result = await this.getListPescasEmbarcacion(temporada, tipoEmbarcacion, fechaInicial, fechaFinal);
-
-			let listPescasEmbarcacion = result.str_pem;
-			/**
-			 * Calcular totales
-			 */
-			let totales = listPescasEmbarcacion.reduce((pemAcum, pem) => {
-				return {
-					CPRNC: pem.CPRNC + pemAcum.CPRNC,
-					CAVNC: pem.CAVNC + pemAcum.CAVNC,
-					CPRSU: pem.CPRSU + pemAcum.CPRSU,
-					CAVSU: pem.CAVSU + pemAcum.CAVSU,
-				}
-			});
-
-			listPescasEmbarcacion.push(totales);
+		// 	listPescasEmbarcacion.push(totales);
 
 
-			this.getModel().setProperty("/PESCAS_EMBARCACION", listPescasEmbarcacion);
-		},
+		// 	this.getModel().setProperty("/PESCAS_EMBARCACION", listPescasEmbarcacion);
+		// },
 		_createColumnConfig: function () {
 			var aCols = [];
 
@@ -566,6 +570,269 @@ sap.ui.define([
 			});
 
 			return aCols;
+		},
+
+		/**
+		 * Pagination's methods
+		 */
+		_addPagination:function(idTable,sTotalPag,sPage){
+			var oTable = this.getView().byId(idTable);
+			var oContentHolder = oTable.getParent();
+
+			this._destroyControl("selectPage");
+
+			this._destroyControl("vbox1");
+			var oVBox1 = new sap.m.VBox("vbox1", {
+			});
+
+			this._destroyControl("hbox1");
+			var oHBox1 = new sap.m.HBox("hbox1", {
+				justifyContent: "SpaceBetween",
+				width: "100%"
+			});
+
+			this._destroyControl("hboxPagination");
+			var oHBoxPagination = new sap.m.HBox("hboxPagination", {
+				justifyContent: "Center",
+				width: "75%"
+			});
+
+			oHBoxPagination.setWidth("");
+			oHBox1.setJustifyContent("Center");
+			oHBox1.addItem(oHBoxPagination);
+			oVBox1.addItem(oHBox1);
+			oContentHolder.addItem(oVBox1);
+
+			this._generatePaginator(sTotalPag,sPage);
+		},
+
+		_generatePaginator:function(sTotalPag,sPage){
+			var countPerPage = 10;
+
+			this.oPagination.container = sap.ui.getCore().byId("hboxPagination");
+			this.oPagination.container.destroyItems();
+			this.oPagination.init({
+				size: parseInt(sTotalPag) ,
+				page: parseInt(sPage)||1,
+				step: 5,
+				// table: oTablex,
+				// countTable: countTable,
+				countPerPage: countPerPage,
+				// tableData: aDataTable,
+				// devicePhone: this._devicePhone,
+				// deviceTablet: this._deviceTablet
+				controller:this
+			});
+		},
+
+		oPagination: {
+			container: {},
+			init: function (properties) {
+				this.Extend(properties);
+				this.Start();
+			},
+
+			Extend: function (properties) {
+				properties = properties || {};
+				this.size = properties.size || 1;
+				this.page = properties.page || 1;
+				this.step = properties.step || 5;
+				// this.table = properties.table || {};
+				// this.countTable = properties.countTable || 0;
+				this.countPerPage = properties.countPerPage || 10;
+				// this.tableData = properties.tableData || 10;
+				// this.devicePhone = properties.devicePhone;
+				// this.deviceTablet = properties.deviceTablet;
+				this.controller = properties.controller;
+			},
+
+			Start: function () {
+				this.container.destroyItems();
+				var oSelect = new sap.m.Select("selectPage", {
+					change: this.SelectChange.bind(this),
+				});
+				this.container.addItem(oSelect);
+
+				this.AddNumber(1, this.size + 1);
+
+				this.setFixedButtons();
+				var aSelectItems = oSelect.getItems();
+
+				for (var k = 0; k < aSelectItems.length; k++) {
+					var item = aSelectItems[k];
+					var r = item.getText();
+
+					if (r === this.page.toString()) {
+						oSelect.setSelectedItem(item);
+					}
+				}
+			},
+
+			AddNumber: function (s, f) {
+				for (var i = s; i < f; i++) {
+					sap.ui.getCore().byId("selectPage").addItem(
+						new sap.ui.core.Item({
+							key: i,
+							text: i
+						})
+					);
+				}
+			},
+
+			AddFirstNumber: function () {
+				sap.ui.getCore().byId("selectPage").insertItem(
+					new sap.ui.core.Item({
+						key: 1,
+						text: 1
+					}, 2)
+				);
+			},
+			AddLastNumber: function () {
+				sap.ui.getCore().byId("selectPage").insertItem(
+					new sap.ui.core.Item({
+						key: this.size,
+						text: this.size
+					}, this.size - 3)
+				);
+			},
+			SelectChange: function (oEvent) {
+				this.page = parseInt(oEvent.getParameters().selectedItem.getText());
+				this.Start();
+				this.controller.onPescaSearch(this.page)
+			},
+			ClickNumber: function (oEvent) {
+				this.page = parseInt(oEvent.getSource().getText());
+				this.Start();
+				this.controller.onPescaSearch(this.page)
+			},
+
+			ClickPrev: function () {
+				this.page--;
+				if (this.page < 1) {
+					this.page = 1;
+				}
+				this.Start();
+				this.controller.onPescaSearch(this.page)
+			},
+
+			ClickNext: function () {
+				this.page++;
+				if (this.page > this.size) {
+					this.page = this.size;
+				}
+				this.Start();
+				this.controller.onPescaSearch(this.page)
+			},
+
+			ClickFirst: function () {
+				this.page = 1;
+				if (this.page < 1) {
+					this.page = 1;
+				}
+				this.Start();
+				this.controller.onPescaSearch(this.page)
+			},
+
+			ClickLast: function () {
+				this.page = this.size;
+				if (this.page > this.size) {
+					this.page = this.size;
+				}
+				this.Start();
+				this.controller.onPescaSearch(this.page)
+			},
+
+			setFixedButtons: function (e) {
+				// if (this?.devicePhone || this?.deviceTablet) {
+					var oButton = new sap.m.Button({
+						icon: "sap-icon://close-command-field",
+						type:"Transparent",
+						press: this.ClickFirst.bind(this)
+					});
+					this.container.insertItem(oButton, 0);
+
+					var oButton = new sap.m.Button({
+						icon: "sap-icon://navigation-left-arrow",
+						type:"Transparent",
+						press: this.ClickPrev.bind(this)
+					});
+
+					this.container.insertItem(oButton, 1);
+
+					oButton = new sap.m.Button({
+						icon: "sap-icon://navigation-right-arrow",
+						type:"Transparent",
+						press: this.ClickNext.bind(this)
+					});
+					this.container.insertItem(oButton, this.size + 2);
+
+					var oButton = new sap.m.Button({
+						icon: "sap-icon://open-command-field",
+						type:"Transparent",
+						press: this.ClickLast.bind(this)
+					});
+					this.container.insertItem(oButton, this.size + 3);
+				// }
+				// else {
+
+				// 	var oButton = new sap.m.Button({
+				// 		text: "First",
+				// 		press: this.ClickFirst.bind(this)
+				// 	});
+				// 	this.container.insertItem(oButton, 0);
+
+				// 	oButton = new sap.m.Button({
+				// 		text: "Next",
+				// 		press: this.ClickNext.bind(this)
+				// 	});
+				// 	this.container.insertItem(oButton, 1);
+
+				// 	oButton = new sap.m.Button({
+				// 		text: "Previous",
+				// 		press: this.ClickPrev.bind(this)
+				// 	});
+				// 	this.container.insertItem(oButton, this.size + 2);
+
+				// 	oButton = new sap.m.Button({
+				// 		text: "Last",
+				// 		press: this.ClickLast.bind(this)
+				// 	});
+				// 	this.container.insertItem(oButton, this.size + 3);
+				// }
+			}
+		},
+		_destroyControl: function (id) {
+			let oControl = this.getView().byId(id);
+			if (oControl !== undefined) oControl.destroy();
+
+			oControl = sap.ui.getCore().byId(id);
+			if (oControl !== undefined) oControl.destroy();
+		},
+
+
+		_calcularTotales:function(oRowBinding){
+			let aList = oRowBinding.oList,
+			oModel = this.getModel(),
+			aTableData = oModel.getProperty("/PESCAS_EMBARCACION"),
+			oLastRow={},
+			aKeys=Object.keys(aList[0]),
+			sTotal;
+
+			aKeys.forEach(key=>{
+				sTotal = 0;
+				if(key && key !== "NMEMB") {
+					sTotal = aTableData.reduce((sum,current)=>{
+						return sum + current[key];
+					},0);
+				}
+				oLastRow[key] = sTotal;
+			});
+
+			oLastRow.NMEMB = "Total";
+
+			aTableData.push(oLastRow);
+			oModel.setProperty("/PESCAS_EMBARCACION",aTableData);
+			this.bFlag = true;
 		}
 	});
 });

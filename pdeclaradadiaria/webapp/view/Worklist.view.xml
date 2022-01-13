@@ -78,7 +78,7 @@
 
 		<semantic:content>
 			
-			<VBox>
+			<VBox class="sapUiSmallMarginTop">
 				<items>
 				<table:Table id="table" 
 					rows="{/STR_DL}"
@@ -87,8 +87,7 @@
 					fixedBottomRowCount="1"
 					visibleRowCount="5"
 					fixedColumnCount="1"
-					selectionMode="None"
-					class="classTable">
+					selectionMode="None">
 					<table:columns>
 						<table:Column width="6rem" class="colClass">
 							<table:multiLabels>
@@ -112,15 +111,13 @@
 							<table:template>
 								<Text text="{
 												path:'PESC_DECL_CHI',
-												type:'sap.ui.model.type.Integer',
-												formatOptions:{
-													groupingSeparator:',',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colHar"/>
 							</table:template>
 						</table:Column>
-						<table:Column width="7rem" hAlign="End">
+						<table:Column width="7rem" hAlign="Center">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Total Pesca" />
@@ -129,16 +126,14 @@
 							<table:template>
 								<Text text="{
 												path:'PDECH',
-												type:'sap.ui.model.type.Integer',
-												formatOptions:{
-													groupingSeparator:',',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colHar"/>
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="10,2,1" hAlign="End" width="7rem">
+						<table:Column headerSpan="10,2,1" hAlign="Center" width="7rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Pesca Propios" />
@@ -147,15 +142,13 @@
 							<table:template>
 								<Text text="{
 												path:'PPCHI',
-												type:'sap.ui.model.type.Integer',
-												formatOptions:{
-													groupingSeparator:',',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colPescaProp"/>
 							</table:template>
 						</table:Column>
-						<table:Column  hAlign="End" width="4rem">
+						<table:Column  hAlign="Center" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Pesca Propios" />
@@ -164,16 +157,10 @@
 							<table:template>
 								<Text text="{
 												path:'PORC_DECL_CHI_PROP',
-												type:'sap.ui.model.type.Float',
-												formatOptions:{
-													preserveDecimals:false,
-													maxFractionDigits:0,
-													minFractionDigits:0,
-													groupingSeparator:',',
-													decimalSeparator: '.',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colPescaProp"/>
 							</table:template>
 						</table:Column>
 
@@ -186,12 +173,10 @@
 							<table:template>
 								<Text text="{
 												path:'PTCHI',
-												type:'sap.ui.model.type.Integer',
-												formatOptions:{
-													groupingSeparator:',',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colPescaTerc"/>
 							</table:template>
 						</table:Column>
 						<table:Column  width="4rem" hAlign="End">
@@ -203,16 +188,10 @@
 							<table:template>
 								<Text text="{
 												path:'PORC_DECL_CHI_TERC',
-												type:'sap.ui.model.type.Float',
-												formatOptions:{
-													preserveDecimals:false,
-													maxFractionDigits:0,
-													minFractionDigits:0,
-													groupingSeparator:',',
-													decimalSeparator: '.',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colPescaTerc"/>
 							</table:template>
 						</table:Column>
 
@@ -223,19 +202,31 @@
 								<Label text="Tn/Ep" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{=${EFIC_PROP} > 10000 ? null : ${EFIC_PROP}}"/>
+								<Text text="{
+												path:'EFIC_PROP',
+												formatter:'.formatter.formatBigNumber'
+											}"
+										textAlign="End"
+										class="colTnEp"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
+						<table:Column headerSpan="10,1,1" hAlign="Center" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Terc" />
 								<Label text="Tn/Ep" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{=${EFIC_TERC}>10000?null:${EFIC_TERC}}"/>
+								<Text text="{
+												path:'EFIC_TERC',
+												formatter:'.formatter.formatBigNumber'
+											}"
+										textAlign="End"
+										class="colTnEp"/>
 							</table:template>
 						</table:Column>
+
+
 						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
@@ -245,12 +236,10 @@
 							<table:template>
 								<Text text="{
 												path:'CNEMP',
-												type:'sap.ui.model.type.Integer',
-												formatOptions:{
-													groupingSeparator:',',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colEp"/>
 							</table:template>
 						</table:Column>
 						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
@@ -262,12 +251,10 @@
 							<table:template>
 								<Text text="{
 												path:'CNEMT',
-												type:'sap.ui.model.type.Integer',
-												formatOptions:{
-													groupingSeparator:',',
-													groupingEnabled:true
-												}
-											}"/>
+												formatter:'.formatter.formatFloat'
+											}"
+										textAlign="End"
+										class="colEp"/>
 							</table:template>
 						</table:Column>
 
@@ -277,27 +264,7 @@
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label text="Planta propia" />
-								<Label text="Pesc prop" textAlign="Center" />
-							</table:multiLabels>
-							<table:template>
-								<Text text="{
-												path:'PSPRO',
-												type:'sap.ui.model.type.Float',
-												formatOptions:{
-													minFractionDigits:3,
-													maxFractionDigits:3,
-													groupingSeparator:',',
-													decimalSeparator: '.',
-													groupingEnabled:true
-												}
-											}"/>
-							</table:template>
-						</table:Column>
-						<table:Column hAlign="End" width="6rem">
-							<table:multiLabels>
-								<Label text="Pesca descargada" />
-								<Label text="Planta propia" />
-								<Label text="Pesc terc" />
+								<Label text="Pesc terc" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
 								<Text text="{
@@ -309,11 +276,33 @@
 													groupingSeparator:',',
 													decimalSeparator: '.',
 													groupingEnabled:true
-												}	
+												}
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column hAlign="End" width="6rem">
+						<table:Column hAlign="Center" width="6rem">
+							<table:multiLabels>
+								<Label text="Pesca descargada" />
+								<Label text="Planta propia" />
+								<Label text="Pesc prop" />
+							</table:multiLabels>
+							<table:template>
+								<Text text="{
+												path:'PSPRO',
+												type:'sap.ui.model.type.Float',
+												formatOptions:{
+													minFractionDigits:3,
+													maxFractionDigits:3,
+													groupingSeparator:',',
+													decimalSeparator: '.',
+													groupingEnabled:true
+												}	
+											}"
+										textAlign="End"
+										class="colSinColor"/>
+							</table:template>
+						</table:Column>
+						<table:Column hAlign="Center" width="7rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label text="Planta propia" />
@@ -330,12 +319,14 @@
 													decimalSeparator: '.',
 													groupingEnabled:true
 												}
-											}"/>
+											}"
+										textAlign="End"
+										class="colTotal"/>
 							</table:template>
 						</table:Column>
 
 
-						<table:Column headerSpan="5,2,1" hAlign="Center" width="6rem">
+						<table:Column headerSpan="5,2,1" hAlign="Center" width="8rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />	
 								<Label visible="false"/>
@@ -343,7 +334,7 @@
 							</table:multiLabels>
 							<table:template>
 								<Text text="{
-												path:'PSTER',
+												path:'PDECH',
 												type:'sap.ui.model.type.Float',
 												formatOptions:{
 													minFractionDigits:3,
@@ -352,10 +343,12 @@
 													decimalSeparator: '.',
 													groupingEnabled:true
 												}
-											}"/>
+											}"
+										textAlign="End"
+										class="colSinColor"/>
 							</table:template>
 						</table:Column>
-						<table:Column width="6rem" hAlign="End">
+						<table:Column width="6rem" hAlign="Center">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label visible="false" />
@@ -372,7 +365,9 @@
 													decimalSeparator: '.',
 													groupingEnabled:true
 												}
-											}"/>
+											}"
+										textAlign="End"
+										class="colSinColor"/>
 							</table:template>
 						</table:Column>
 
@@ -419,14 +414,8 @@
 											<chart:InteractiveBarChartBar 
 												label="{descripcion}" 
 												value="{
-															path:'value',
-															type:'sap.ui.model.type.Float',
-															formatOptions:{
-																preserveDecimals:false,
-																maxFractionDigits:1,
-																minFractionDigits:1,
-																decimalSeparator: '.'
-															}
+															path:'value'
+															
 														}" 
 												color="Good"/>
 										</chart:bars>
@@ -450,22 +439,25 @@
 										<viz:dataset>
 											<viz.data:FlattenedDataset 
 												data="{
-														path:'/STR_DL',
+														path:'/dataViz',
 														sorter:{
-															path:'FECCONMOV',
+															path:'fecha',
 															descending:false
 														}
 													}">
 												<viz.data:dimensions>
 													<viz.data:DimensionDefinition 
 														name="Fecha"
-														value="{FECCONMOV}" />
+														value="{
+																	path:'fecha',
+																	formatter:'.formatter.formatDateDDMMYYYY'
+																}" />
 												</viz.data:dimensions>
 												<viz.data:measures>
 													<viz.data:MeasureDefinition name="Propios"
-														value="{=${EFIC_PROP}>10000?null:${EFIC_PROP}}" />	
+														value="{=${propio}>10000?0:${propio}}" />	
 													<viz.data:MeasureDefinition name="Terceros"
-														value="{=${EFIC_TERC}>10000?null:${EFIC_TERC}}" />
+														value="{=${tercero}>10000?0:${tercero}}" />
 												</viz.data:measures>
 											</viz.data:FlattenedDataset>
 										</viz:dataset>

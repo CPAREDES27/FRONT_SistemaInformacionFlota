@@ -24,6 +24,9 @@ server:
       backend:
       - path: /V2
         url: https://services.odata.org
+      - path: /281837f1-b860-43d4-b499-f1e7eeb988c9
+        url : https://tasadev.launchpad.cfapps.us10.hana.ondemand.com
+        destination: DevSubaccountUrl
   - name: fiori-tools-appreload
     afterMiddleware: compression
     configuration:
