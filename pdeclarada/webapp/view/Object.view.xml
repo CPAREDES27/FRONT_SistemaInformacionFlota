@@ -112,7 +112,7 @@
 						<items>
 							<ColumnListItem>
 								<cells>
-									<Link text="{NMEMB}" press="onGetEmbarcacion"  />
+									<Link text="{NMEMB}" press="onNavMarea"  />
 									<Text text="{
 													path:'CPPMS',
 													type:'sap.ui.model.type.Float',

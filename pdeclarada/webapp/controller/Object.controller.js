@@ -4,7 +4,8 @@ sap.ui.define([
 	"sap/ui/core/routing/History",
 	"sap/ui/model/Filter",
 	"../model/formatter",
-], function (BaseController, JSONModel, History, Filter, formatter) {
+	"sap/ui/core/BusyIndicator",
+], function (BaseController, JSONModel, History, Filter, formatter, BusyIndicator) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.pdeclarada.controller.Object", {
@@ -178,6 +179,36 @@ sap.ui.define([
 			oFilter = new Filter([new Filter("CDPTA","EQ",sCodPlanta),new Filter("INPRP","EQ",sKey)],true);
 			aFilters.push(oFilter);
 			oBindingTable.filter(aFilters);
+		},
+
+		onNavMarea: async function (evt) {
+			BusyIndicator.show(0);
+			//console.log(evt.getSource().getParent().getBindingContext("undefined").getObject());
+			var obj = evt.getSource().getParent().getBindingContext("undefined").getObject();
+			if (obj) {
+				var cargarMarea = await this.cargarDatosMarea(obj);
+				if (cargarMarea) {
+					var modelo = this.getOwnerComponent().getModel("DetalleMarea");
+					var modeloConsultaMarea = this.getModel("undefined");
+					var dataModelo = modelo.getData();
+					var dataConsultaMarea = modeloConsultaMarea.getData();
+					var oStore = jQuery.sap.storage(jQuery.sap.storage.Type.Session);
+					oStore.put("DataModelo", dataModelo);
+					oStore.put("PescaDeclarada", dataConsultaMarea);
+					oStore.put("AppOrigin", "pdeclarada");
+					BusyIndicator.hide();
+					var oCrossAppNav = sap.ushell.Container.getService("CrossApplicationNavigation");
+					oCrossAppNav.toExternal({
+						target: {
+							semanticObject: "mareaevento",
+							action: "display"
+						}
+					});
+				} else {
+					BusyIndicator.hide();
+				}
+			}
+
 		}
 
 		

@@ -65,7 +65,7 @@ sap.ui.define([
 			// });
 
 			// this.getDataTable(new Date, undefined);
-			
+
 		},
 
 		/* =========================================================== */
@@ -179,26 +179,28 @@ sap.ui.define([
 
 		onBuscarPescaDescargada: function () {
 			const oModel = this.getModel(),
-			oFormData = oModel.getProperty("/form"),
-			oParam = new Object;
+				oFormData = oModel.getProperty("/form"),
+				oParam = new Object;
 
 			this.count = 0;
 			this.servicesLenght = 1;
-			oParam.cdmma= oFormData.cdmma;
-			oParam.fecon= formatter.formatDateInverse(oFormData.fecon);
+			oParam.cdmma = oFormData.cdmma;
+			oParam.fecon = formatter.formatDateInverse(oFormData.fecon);
 			this.getDataMainTable(oModel, oParam);
 		},
 
-		onCleanFilter:function(){
+		onCleanFilter: function () {
 			let oModel = this.getModel(),
-			oDate = new Date,
-			oDateFormat= formatter.formatDateDDMMYYYY(oDate);
-			oDate ;
-			oModel.setProperty("/form",{
-				fecon:oDateFormat,
-				cdmma:"A",
-				hora:formatter.formatHours(oDate)
+				oDate = new Date,
+				oDateFormat = formatter.formatDateDDMMYYYY(oDate);
+			oDate;
+			oModel.setProperty("/form", {
+				fecon: oDateFormat,
+				cdmma: "A",
+				hora: formatter.formatHours(oDate)
 			})
-		}
+		},
+
+		
 	});
 });

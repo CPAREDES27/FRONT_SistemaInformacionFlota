@@ -28,6 +28,10 @@ sap.ui.define([
 			// set the device model
 			this.setModel(models.createDeviceModel(), "device");
 
+			this.setModel(models.createMareaModel(), "DetalleMarea");
+
+			sap.ui.getCore().setModel(models.createConstantsUtility(), "ConstantsUtility");
+
 			// create the views based on the url/hash
 			this.getRouter().initialize();
 		},
