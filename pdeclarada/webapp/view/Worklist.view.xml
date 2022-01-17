@@ -136,12 +136,16 @@
 						<table:Column width="8rem"  >
 							<table:multiLabels>
 								<Label visible="false" />
-								<Label text="Planta" />
+								<Label text="Planta"/>
 							</table:multiLabels>
 							<table:template  >
 								<ObjectStatus 
 									text="{DESCR}"
-									state="Information" />     
+									state="Information" />
+								<Link
+									text="{DESCR}"
+									press="onNavMarea"
+								/>
 							</table:template>
 						</table:Column>
 
