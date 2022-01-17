@@ -5,7 +5,7 @@
     "scripts": {
         "clean": "rimraf resources mta_archives mta-op*",
         "build": "rimraf resources mta_archives && mbt build --mtar archive",
-        "deploy": "cf deploy mta_archives/sistinfoflota_0.0.1.mtar --retries 1",
+        "deploy": "cf8 deploy mta_archives/sistinfoflota_0.0.1.mtar --retries 1",
         "undeploy": "cf undeploy sistinfoflota --delete-services --delete-service-keys"
     },
     "devDependencies": {

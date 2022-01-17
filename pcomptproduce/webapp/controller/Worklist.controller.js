@@ -100,11 +100,26 @@ sap.ui.define([
 			let oRowBinding = oEvent.getSource(),
 			iTotalRows = oRowBinding.iLength,
 			oViewModel = this.getModel("worklistView"),
-			sTitle;
-			oViewModel.setProperty("/tabCount","")
+			oModel = this.getModel(),
+			sTitle,
+			oStrPgeData,
+			oStrGreData;
+
+			oViewModel.setProperty("/tabCount","");
 			if(iTotalRows && oRowBinding.isLengthFinal()){
 				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalRows]);
-				oViewModel.setProperty("/tabCount",iTotalRows)
+				oViewModel.setProperty("/tabCount",iTotalRows);
+
+				oStrGreData = oRowBinding.oList;
+				oStrPgeData = oModel.getProperty("/tableItems").str_pge;
+				oStrGreData.forEach(row => {
+					oStrPgeData.forEach(row2 => {
+						if(row.CDGRE === row2.CDGRE){
+							Object.assign(row,row2);
+						}
+						
+					});
+				});
 			} else {
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
@@ -174,21 +189,25 @@ sap.ui.define([
 			let iEmpresaIndex = oEvent.getParameter("selectedIndex"),
 			oModel = this.getModel();
 			if(iEmpresaIndex === 0) {
-				oModel.setProperty("/help",{
-					CDEMP: "",
-					DSEMP: "",
-					RUCPRO: ""
-				});
+				oModel.setProperty("/help/CDEMP","");
+				oModel.setProperty("/help/DSEMP","");
+				oModel.setProperty("/help/RUCPRO","");
+				// oModel.setProperty("/help",{
+				// 	CDEMP: "",
+				// 	DSEMP: "",
+				// 	RUCPRO: ""
+				// });
 			}else{
-				oModel.setProperty("/help",{
-					sKeyCateg: "",
-					CTGRA: "",
-					CDGRE: "",
-					DSGRE: "",
-					CDEMP: "",
-					DSEMP: "",
-					RUCPRO: ""
-				});
+				oModel.setProperty("/help/sKeyCateg","");
+				oModel.setProperty("/help/CTGRA","");
+				oModel.setProperty("/help/CDGRE","");
+				oModel.setProperty("/help/DSGRE","");
+				oModel.setProperty("/help/CDEMB","");
+				oModel.setProperty("/help/CDEMP","");
+				oModel.setProperty("/help/KUNNR","");
+				oModel.setProperty("/help/NMEMB","");
+				oModel.setProperty("/help/MREMB","");
+				oModel.setProperty("/help/NAME1","");
 			}
 		},
 
@@ -202,18 +221,18 @@ sap.ui.define([
 			if(iFechaIndex === 0) {
 				oModel.setProperty("/help",{
 					dateRange: "",
-					ZCDZAR: "",
-					CDEMP: "",
-					DSEMP: "",
-					RUCPRO: ""
+					ZCDZAR: ""
 				});
 			}else{
-				oModel.setProperty("/help/FHITM","");
-				oModel.setProperty("/help/FHFTM","");
-				oModel.setProperty("/help/DSPCN","");
-				oModel.setProperty("/help/CDEMP","");
-				oModel.setProperty("/help/DSEMP","");
-				oModel.setProperty("/help/RUCPRO","");
+				oModel.setProperty("/help",{
+					FHITM: "",
+					FHFTM: "",
+					CDPCN: "",
+					DSPCN: "",
+					CDEMP: "",
+					DSEMP: "",
+					ZCDZAR: ""
+				});
 			}
 		},
 
@@ -222,26 +241,31 @@ sap.ui.define([
 		 * @param {event} oEvent 
 		 */
 		 onShowSearchHelpEmb: async function(oEvent){
-			let sIdInput = oEvent.getSource().getId(),
-			oView = this.getView(),
-			oModel = this.getModel(),
-			oContainer = oModel.getProperty("/busqembarcaciones"),
-			oInput = oView.byId(sIdInput);
-			oModel.setProperty("/input",oInput);
-
-			if(!this.DialogComponent){
+			 let sIdInput = oEvent.getSource().getId(),
+			 oView = this.getView(),
+			 oModel = this.getModel(),
+			 oContainer = oModel.getProperty("/busqembarcaciones"),
+			 oInput = oView.byId(sIdInput);
+			 if(!oInput) oInput = sap.ui.getCore().byId(sIdInput);
+			 oModel.setProperty("/input",oInput);
+			 
+			 if(!this.DialogComponent){
+				 BusyIndicator.show(0);
 				this.DialogComponent = await Fragment.load({
 					name:"com.tasa.pcomptproduce.view.fragments.BusqEmbarcacion",
 					controller:this
 				});
 				oView.addDependent(this.DialogComponent);
-				oModel.setProperty("/idDialogComp",this.DialogComponent.getId());
 			}
+			oModel.setProperty("/idDialogComp",this.DialogComponent.getId());
 			
+			oContainer.attachComponentCreated(function(evt){
+				BusyIndicator.hide();
+			});
 			if(this.DialogComponent.getContent().length===0){
 				this.DialogComponent.addContent(oContainer);
 			}
-
+				
 			this.DialogComponent.open();
 		},
 
@@ -254,19 +278,20 @@ sap.ui.define([
 			let oView = this.getView(),
 			oModel = this.getModel(),
 			oContainer = oModel.getProperty("/busqtemporada");
-
+			
 			if(!this.DialogComponentTemp){
+				BusyIndicator.show(0);
 				this.DialogComponentTemp = await Fragment.load({
 					name:"com.tasa.pcomptproduce.view.fragments.BusqTemporadas",
 					controller:this
 				});
 				oView.addDependent(this.DialogComponentTemp);
-				oModel.setProperty("/idDialogComp",this.DialogComponentTemp.getId());
 			}
-
-			// let compCreateOk = function(){
-			// 	BusyIndicator.hide()
-			// }
+			oModel.setProperty("/idDialogComp",this.DialogComponentTemp.getId());
+			
+			oContainer.attachComponentCreated(function(evt){
+				BusyIndicator.hide();
+			});
 			if(this.DialogComponentTemp.getContent().length===0){
 				this.DialogComponentTemp.addContent(oContainer);
 			}
@@ -304,6 +329,7 @@ sap.ui.define([
 		 */
 		onSearchTable: async function(){
 			let oModel = this.getModel(),
+			oUser = await this.getCurrentUser(),
 			oViewModel = this.getModel("worklistView"),
 			sFechaIndex = oViewModel.getProperty("/fechaIndex"),
 			sEmpresaIndex = oViewModel.getProperty("/empresaIndex"),
@@ -311,7 +337,12 @@ sap.ui.define([
 			sFecha = oFormData["dateRange"],
 			sFHITM = oFormData["FHITM"],
 			sValueStateFecha = oViewModel.getProperty("/fechaState"),
-			sValueStateTemp = oViewModel.getProperty("/tempState");
+			sValueStateTemp = oViewModel.getProperty("/tempState"),
+			sPath = "/tableItems/str_gre",
+			sFechaInicio,
+			sFechaFin,
+			sOptionsKeys,
+			sOptionsLowValue;
 
 			if(sFechaIndex === 1) {
 				if(!sFecha) {
@@ -319,12 +350,20 @@ sap.ui.define([
 					return;
 				}
 				if(sValueStateFecha === "Error") oViewModel.setProperty("/fechaState","Success");
+				sFechaInicio = sFecha.split("-")[0].trim();
+				sFechaFin = sFecha.split("-")[1].trim();
+				sOptionsKeys = "EMPTA";
+				sOptionsLowValue = oFormData["CDEMP"]; 
 			}else{
 				if(!sFHITM) {
 					oViewModel.setProperty("/tempState","Error");
 					return;
 				}
 				if(sValueStateTemp === "Error") oViewModel.setProperty("/tempState","Success");
+				sFechaFin = oFormData["FHFTM"];
+				sFechaInicio = sFHITM;
+				sOptionsKeys = "CDEMB"
+				sOptionsLowValue = oFormData["CDEMB"]; 
 			}
 
 			let oService = {};
@@ -335,33 +374,36 @@ sap.ui.define([
 			this.Count = 0; 
 			this.CountService = 1;
 			let param={
-				cdusr: await this.getCurrentUser(),
-				fieldstr_emp: [],
-				fieldstr_epp: [],
-				fieldstr_gre: [],
-				fieldstr_gzp: [],
-				fieldstr_ped: [],
-				fieldstr_pem: [],
-				fieldstr_pge: [],
-				fieldstr_pto: [],
-				fieldstr_zlt: [],
-				fieldstr_zpl: [],
+				cdusr: oUser.name,
 				p_cdgre: "",
-				// p_cdpcn: oTemp["CDPCN"],
-				p_ctgra: "",
-				// p_emba: oTemp["CDEMB"]?"E":"",
-				// p_empeb: oTemp["CDEMB"],
-				// p_fefin: formatter.setFormatDateYYYYMMDD(oTemp.FHFTM),
-				p_feini: formatter.setFormatDateYYYYMMDD(oTemp.FHITM),
+				p_cdpcn: oFormData["CDPCN"] || "",
+				p_ctgra: oFormData["sKeyCateg"] || "",
+				p_emba: oFormData["CDEMB"] ? "E" : "G",
+				p_empeb: oFormData["CDEMP"] || "",
+				p_fefin: formatter.setFormatDateYYYYMMDD(sFechaFin),
+				p_feini: formatter.setFormatDateYYYYMMDD(sFechaInicio),
 				p_grueb: "",
+				p_option: [],
 				p_options: [],
-				p_tcons: "P",
-				p_zcdzar: ""
+				p_tcons: sEmpresaIndex === 0 ? "A" : "P",
+				p_zcdzar: oFormData["ZCDZAR"] || ""
 			  };
+			if(sOptionsLowValue){
+				param.p_options = [
+					{
+						cantidad: "10",
+						control: "INPUT",
+						key: sOptionsKeys,
+						valueHigh: "",
+						valueLow: sOptionsLowValue
+					}
+				];
+			}
 			oService.url = this.getHostService() +  "/api/sistemainformacionflota/PescaCompetenciaProduce";
 			oService.serviceName = "Pesca de competencia produce";
 			oService.param = param;
 			this._getDataMainTable(oService);
+			this._bindRowsTable(sPath);
 		},
 
 		/**
@@ -407,6 +449,21 @@ sap.ui.define([
 			this._pListPopover.close();
 		},
 
+		onSelectioIndPropiedad:function(oEvent){
+			let oIndPropItem = oEvent.getParameter("item"),
+			sKey = oIndPropItem.getKey(),
+			oTable = this.getView().byId("table"),
+			sPath;
+			if(sKey === "D"){
+				sPath = "/tableItems/str_gre"
+			}else if(sKey === "P"){
+				sPath = "/tableItems/str_pge"
+			}else{
+				sPath = "/tableItems/str_epp"
+			}
+			this._bindRowsTable(sPath);
+		},
+
 
 		/* =========================================================== */
 		/* internal methods                                            */
@@ -445,6 +502,22 @@ sap.ui.define([
 			if(oDataTable){
 				oModel.setProperty("/tableItems", oDataTable)
 			}
+		},
+
+		_bindRowsTable:function(sPath){
+			let oTable = this.getView().byId("table"),
+			that = this;
+			oTable.bindRows({
+				path:sPath,
+				events:{
+					change: function(oEvent){
+						that.onRowsDataChange(oEvent);
+					}
+				},
+				key: function(oContext) {
+					return oContext.getProperty("user") + oContext.getProperty("timestamp"); 
+				}
+			})
 		}
 
 	});

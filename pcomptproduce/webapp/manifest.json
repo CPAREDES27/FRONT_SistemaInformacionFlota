@@ -145,7 +145,14 @@
                     "viewId": "notFound"
                 }
             }
-        }
+        },
+        "resources": {
+            "css": [
+              {
+                "uri": "css/style.css"
+              }
+            ]
+          }
     },
     "sap.cloud": {
         "public": true,

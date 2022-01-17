@@ -1,4 +1,4 @@
-sap.ui.define([], function () {
+sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 	"use strict";
 
 	return {
@@ -35,6 +35,25 @@ sap.ui.define([], function () {
 				return sNewDate;
 			}else{
 				return "";
+			}
+		},
+
+		/**
+		 * Formatea a numero de sin decimales
+		 * @param {string} sValue 
+		 * @returns string
+		 */
+		setFormatInteger:function(sValue){
+			if(sValue){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:0,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				return oFloatNumber.format(sValue);
+			}else{
+				return null;
 			}
 		}
 

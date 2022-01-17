@@ -144,7 +144,7 @@ sap.ui.define([
 					}
 				],
 				order: "",
-				p_user: "FGARCIA",
+				p_user: oUser.name,
 				rowcount: 0,
 				rowskips: 0,
 				tabla: "ZV_FLTZ"
@@ -156,13 +156,14 @@ sap.ui.define([
 				aData.sort((a,b) => formatter.setFormatDate(b.FHITM) - formatter.setFormatDate(a.FHITM));
 				let oLastTemp = aData[0];
 
-				oHelp.FHITM = oLastTemp["FHITM"],
-				oHelp.FHFTM = oLastTemp["FHFTM"],
-				oHelp.FHFTM = oLastTemp["FHFTM"],
-				oHelp.CDPCN = oLastTemp["CDPCN"];
-				oHelp.DSPCN = oLastTemp["DSPCN"];
+				// oHelp.FHITM = oLastTemp["FHITM"],
+				// oHelp.FHFTM = oLastTemp["FHFTM"],
+				// oHelp.FHFTM = oLastTemp["FHFTM"],
+				// oHelp.CDPCN = oLastTemp["CDPCN"];
+				// oHelp.DSPCN = oLastTemp["DSPCN"];
+				// oHelp.ZCDZAR = oLastTemp["ZCDZAR"];
 				
-				oModel.setProperty("/help",oHelp);
+				oModel.setProperty("/help",oLastTemp);
 			}else{
 				this.setAlertMessage("Information","No se econtraron registros de temporadas")
 			}
@@ -203,18 +204,12 @@ sap.ui.define([
 		getSerachingHelpComponents:function(oModel,sAyudaBusqId){
 			let sUrlSubaccount = this.getHostSubaccount().url,
 			aSearchingHelp = ["busqtemporada","busqembarcaciones"],
-			// iCountF = aSearchingHelp.length,
-			// iCount = 0,
 			oComponent,
 			nameComponent,
 			idComponent,
 			urlComponent;
 			
-			// BusyIndicator.show(0);
 			aSearchingHelp.forEach(elem=>{
-				// let comCreateOk = function(oEvent){
-				// 	if(iCountF === iCount) BusyIndicator.hide();
-				// };
 				oComponent = {};
 				nameComponent = elem;
 				idComponent = elem;
@@ -231,8 +226,7 @@ sap.ui.define([
 					// manifest:true,
 					async:false
 				});
-				oModel.setProperty(`/${elem}`,oComponent)
-				// iCount++
+				oModel.setProperty(`/${elem}`,oComponent);
 			});
 		}
 	});

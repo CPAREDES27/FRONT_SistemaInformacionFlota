@@ -1,0 +1,641 @@
+<core:FragmentDefinition 
+    xmlns:m="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns="sap.ui.table">
+    <Table
+        id="table"
+        selectionMode="None"
+        fixedColumnCount="1"
+        class="classPrincipalTable">
+        <extension>
+            <m:OverflowToolbar >
+                <m:Title text="{worklistView>/worklistTableTitle}" />
+                <m:SegmentedButton selectedKey="D" selectionChange="onSelectioIndPropiedad" >
+					<m:items>
+						<m:SegmentedButtonItem text="Todos" key="D" />
+						<m:SegmentedButtonItem text="Propios" key="P"/>
+						<m:SegmentedButtonItem text="Terceros" key="T"/>
+					</m:items>
+				</m:SegmentedButton>
+                <m:ToolbarSpacer />
+                <m:Button 
+                    icon="sap-icon://multi-select"
+                    text="Puertos por zona" 
+                    press="onAbrirZonas"
+                    type="Accept"/>
+            </m:OverflowToolbar>
+        </extension>
+        <columns>
+        <!-- Columna Grupo Empresarial -->
+            <Column width="12rem"
+                    hAlign="Begin">
+                <multiLabels>
+                    <m:Label text=""/>
+                    <m:Label text="GRUPO EMPRESARIAL"/>
+                </multiLabels>
+                <template>
+                    <m:Link 
+                        text="{DSGRE}"
+                        press=".onShowEmpresas"
+                        emphasized="true"
+                        enabled="{worklistView>/linkVisible}"/>
+                </template>
+            </Column>
+
+        <!-- Columnas de CUOTA -->
+            <Column width="5rem"
+                    headerSpan="2,1"
+                    hAlign="Center"
+                    visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+                <multiLabels>
+                    <m:Label text="CUOTA" />
+                    <m:Label text="Periodo" />
+                </multiLabels>
+                <template>
+                    <m:Text text="{CPRNC}"  textAlign="End"/>
+                </template>
+            </Column>
+
+            <Column width="6rem"
+                    hAlign="Center"
+                    visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+                <multiLabels>
+                    <m:Label text="CUOTA" />
+                    <m:Label text="Avance(%)" />
+                </multiLabels>
+                <template>
+                    <m:Text text="{CAVNC}" />
+                </template>
+            </Column>
+
+        <!-- COlumnas de totales -->
+
+            <Column width="8rem"
+                    headerSpan="5,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="TOTALES" />
+                    <m:Label text="Pesca" />
+                </multiLabels>
+                <template>
+                    <m:Text text="{}" />
+                </template>
+            </Column>
+
+            <Column width="6rem"
+                    headerSpan="5,1"
+                    hAlign="Center"
+                    visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+                <multiLabels>
+                    <m:Label text="TOTALES" />
+                    <m:Label text="% Ds Tasa" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width="6rem"
+                    headerSpan="5,1"
+                    hAlign="End">
+                <multiLabels>
+                    <m:Label text="TOTALES" />
+                    <m:Label text="Emba"/>
+                </multiLabels>
+                <template>
+                    <m:Text text="{EMBTR}"  />
+                </template>
+            </Column>
+
+            <Column width="6rem"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="TOTALES" />
+                    <m:Label text="NDes" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width="6rem"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="TOTALES" />
+                    <m:Label text="t/NDes" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+        <!-- Columnas de zonas litorales -->
+            <Column width="8rem"
+                    headerSpan="3,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="{/tableItems/str_zlt/0/DSZLT}" />
+                    <m:Label text="Pesca" />
+                </multiLabels>
+                <template>
+                    <m:Text text="{
+                        path:'CNPDS',
+                        formatter:'.formatter.setFormatInteger'
+                    }" 
+                    textAlign="End"/>
+                </template>
+            </Column>
+            <Column width="8rem"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="{/tableItems/str_zlt/0/DSZLT}"/>
+                    <m:Label text="NDes" />
+                </multiLabels>
+                <template>
+                    <m:Text text="{CNDSH}" 
+                        textAlign="End"/>
+                </template>
+            </Column>
+            <Column width="8rem"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="{/tableItems/str_zlt/0/DSZLT}" />
+                    <m:Label text="t/NDes" />
+                </multiLabels>
+                <template>
+                    <m:Text text="{CNPDS}" 
+                        textAlign="End"/>
+                </template>
+            </Column>
+
+            <Column width="8rem"
+                    headerSpan="3,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="{/tableItems/str_zlt/1/DSZLT}"/>
+                    <m:Label text="Pesca"/>
+                </multiLabels>
+                <template>
+                    <m:Text text="{
+                        path:'CNPDS',
+                        formatter:'.formatter.setFormatInteger'
+                    }" 
+                    textAlign="End"/>
+                </template>
+            </Column>
+            <Column width="8rem"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="{/tableItems/str_zlt/1/DSZLT}" />
+                    <m:Label text="NDes" />
+                </multiLabels>
+                <template>
+                    <m:Text text="{CNDSH}" 
+                        textAlign="End"/>
+                </template>
+            </Column>
+            <Column width="8rem"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="{/tableItems/str_zlt/1/DSZLT}" />
+                    <m:Label text="t/NDes" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width="8rem"
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="2,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+
+            <Column width=""
+                    headerSpan="1,1"
+                    hAlign="Center">
+                <multiLabels>
+                    <m:Label text="" textAlign="" />
+                    <m:Label text="" textAlign="" />
+                </multiLabels>
+                <template>
+                    <m:Text text="" />
+                </template>
+            </Column>
+        </columns>
+    </Table>
+</core:FragmentDefinition>

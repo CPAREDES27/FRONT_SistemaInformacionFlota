@@ -7,8 +7,8 @@
 	xmlns:form="sap.ui.layout.form"
 	xmlns:semantic="sap.f.semantic">
 
-	<semantic:SemanticPage id="page">
-
+	<semantic:SemanticPage id="page"
+		class="sapUiContentPadding">
 		<semantic:titleHeading>
 			<Title
 				text="{i18n>worklistTitle}"
@@ -18,7 +18,8 @@
 		<semantic:headerContent>
 			<form:Form 
 				editable="true"
-				binding="{ path: '/help'}" >
+				binding="{ path: '/help'}" 
+				class="formClass">
 				<form:title>
 					<core:Title	text="Datos de selección" icon = "sap-icon://filter"/>
 				</form:title>
@@ -209,10 +210,10 @@
 									<Input
 										value="{
 											parts:[
-												{path:'/help/CDEMB'},
-												{path:'/help/NMEMB'}
+												{path:'/help/CDEMB'}
 											]
 										}"
+										description="{/help/NMEMB}"
 										showValueHelp="true"
 										valueHelpRequest="onShowSearchHelpEmb"
 										tooltip="{/help/NMEMB}"/>
@@ -237,6 +238,7 @@
 				</form:formContainers>
 				<form:layout>
 					<form:ResponsiveGridLayout
+						backgroundDesign="Transparent"
 						adjustLabelSpan="true"
 						breakpointL="1024"
 						breakpointM="600"
@@ -255,6 +257,7 @@
 		</semantic:headerContent>
 
 		<semantic:content>
+			<core:Fragment fragmentName="com.tasa.pcomptproduce.view.fragments.TablaPrincipal" type="XML" />
 			<!-- <Table
 				id="table"
 				width="auto"
@@ -317,7 +320,7 @@
 					</ColumnListItem>
 				</items>
 			</Table> -->
-			<IconTabBar
+			<!-- <IconTabBar
 				selectedKey="{worklistView>/mainSelectedKey}"
 				stretchContentHeight="true"
 				tabDensityMode="Compact"
@@ -413,7 +416,7 @@
 						count="{worklistView>/tabCount}"
 						key="TR"/>
 				</items>
-			</IconTabBar>
+			</IconTabBar> -->
 		</semantic:content>
 
 	</semantic:SemanticPage>
