@@ -17,13 +17,11 @@ sap.ui.define([
 	BusyIndicator) {
 	"use strict";
 	var EdmType = exportLibrary.EdmType;
-	const HOST = "https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com";
-	const HOST2 = "https://tasaqas.launchpad.cfapps.us10.hana.ondemand.com";
 
 	return BaseController.extend("com.tasa.pembarcacion.controller.Worklist", {
 
 		formatter: formatter,
-		dataTableKeys: ['NMEMB', 'CPPMS', 'CPRNC', 'CAVNC', 'CPRSU', 'CAVSU', 'CNDCN', 'CNDSU', 'CNDHD', 'CNDTO', 'DIPCN', 'DIPSU', 'DIPHD', 'DSPSU', 'DSPHD', 'DIVED', 'TOTDI', 'DIFAL', 'RENEM'],
+		// dataTableKeys: ['NMEMB', 'CPPMS', 'CPRNC', 'CAVNC', 'CPRSU', 'CAVSU', 'CNDCN', 'CNDSU', 'CNDHD', 'CNDTO', 'DIPCN', 'DIPSU', 'DIPHD', 'DSPSU', 'DSPHD', 'DIVED', 'TOTDI', 'DIFAL', 'RENEM'],
 
 		/* =========================================================== */
 		/* lifecycle methods                                           */
@@ -101,8 +99,8 @@ sap.ui.define([
 				// the table is not empty
 				if (iTotalItems && oTable.getBinding("rows").isLengthFinal()) {
 					sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems-1]);
-					sTotalPagination = oModel.getProperty("/pagination/total")
-					this._addPagination(sTableId,sTotalPagination,1);
+					// sTotalPagination = oModel.getProperty("/pagination/total")
+					// this._addPagination(sTableId,sTotalPagination,1);
 					if(!this.bFlag){
 						this._calcularTotales(oRowBinding);
 					}
@@ -192,15 +190,13 @@ sap.ui.define([
 		 * @param {event} oEvent 
 		 */
 		onSearchHelp:function(oEvent){
-			let that = this,
-			oView = this.getView(),
+			let oView = this.getView(),
 			oModel = this.getModel(),
-			sUrl = HOST2 + "/9acc820a-22dc-4d66-8d69-bed5b2789d3c.AyudasBusqueda.busqtemporada-1.0.0",
-			nameComponent = "com.tasa.busqtemporada",
-			idComponent = "com.tasa.busqtemporada";
+			oContainer = oModel.getProperty("/busqtemporada");
 
-			if(!that.DialogComponent){
-				that.DialogComponent = new sap.m.Dialog({
+			if(!this.DialogComponentTemp){
+				BusyIndicator.show(0);
+				this.DialogComponentTemp = new sap.m.Dialog({
 					title:"Búsqueda Temporada de Pesca Cuota Nacional",
 					icon:"sap-icon://search",
 					state:"Information",
@@ -209,36 +205,21 @@ sap.ui.define([
 						text:"Cerrar",
 						type:"Reject",
 						press:function(oEvent){
-							that.onCloseDialog(oEvent);
-						}.bind(that)
+							this.onCloseDialog(oEvent);
+						}.bind(this)
 					})
 				});
-				oView.addDependent(that.DialogComponent);
-				oModel.setProperty("/idDialogComp",that.DialogComponent.getId());
+				oView.addDependent(this.DialogComponentTemp);
 			}
+			oModel.setProperty("/idDialogComp",this.DialogComponentTemp.getId());
 
-			let compCreateOk = function(){
-				BusyIndicator.hide()
+			oContainer.attachComponentCreated(function(evt){
+				BusyIndicator.hide();
+			});
+			if(this.DialogComponentTemp.getContent().length===0){
+				this.DialogComponentTemp.addContent(oContainer);
 			}
-			if(that.DialogComponent.getContent().length===0){
-				BusyIndicator.show(0);
-				const oContainer = new sap.ui.core.ComponentContainer({
-					id: idComponent,
-					name: nameComponent,
-					url: sUrl,
-					settings: {},
-					componentData: {},
-					propagateModel: true,
-					componentCreated: compCreateOk,
-					height: '100%',
-					// manifest: true,
-					async: false
-				});
-				that.DialogComponent.addContent(oContainer);
-			}
-
-			that.DialogComponent.open();
-
+			this.DialogComponentTemp.open();
 		},
 
 		onCloseDialog:function(oEvent){
@@ -310,7 +291,7 @@ sap.ui.define([
 			if(!sStartDate) sStartDate=formatter.setFormatDateYYYYMMDD(sDateRange.split("-")[0].trim());
 			if(!sEndDate) sEndDate=formatter.setFormatDateYYYYMMDD(sDateRange.split("-")[1].trim());
 
-			oService.PATH = HOST+"/api/sistemainformacionflota/PescaPorEmbarcacion";
+			oService.PATH = this.getHostService()+"/api/sistemainformacionflota/PescaPorEmbarcacion";
 			oService.param = {
 				fieldstr_pem: [],
 				p_cdpcn: sDateRange ? "" : sCodPort,

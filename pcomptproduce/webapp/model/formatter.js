@@ -55,6 +55,16 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 			}else{
 				return null;
 			}
+		},
+
+		setDivision:function(iPesca, iNdes){
+			if(iPesca && iNdes){
+				if(isNaN(iPesca)) iPesca = Number(iPesca);
+				if(isNaN(iNdes)) iNdes = Number(iNdes);
+				return (iPesca/iNdes).toFixed(1);
+			}else{
+				return "";
+			}
 		}
 
 	};

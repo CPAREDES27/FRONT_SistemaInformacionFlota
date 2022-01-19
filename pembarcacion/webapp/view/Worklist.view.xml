@@ -7,8 +7,7 @@
 	xmlns:table="sap.ui.table">
 
 	<semantic:SemanticPage
-		id="page"
-		class="sapUiNoContentPadding">
+		id="page">
 
 		<semantic:titleHeading>
 			<Title

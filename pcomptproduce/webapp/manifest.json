@@ -88,9 +88,6 @@
             "": {
                 "type": "sap.ui.model.json.JSONModel",
                 "preload": true
-            },
-            "prueba":{
-                "dataSource": "mainService"
             }
         },
         "routing": {
@@ -116,10 +113,17 @@
                     ]
                 },
                 {
-                    "pattern": "Products/{objectId}",
+                    "pattern": "Empresas/{objectId}",
                     "name": "object",
                     "target": [
                         "object"
+                    ]
+                },
+                {
+                    "pattern": "Embarcaciones/{objectId}",
+                    "name": "embarcacion",
+                    "target": [
+                        "embarcacion"
                     ]
                 }
             ],
@@ -135,6 +139,12 @@
                     "viewId": "object",
                     "viewLevel": 2,
                     "title": "{i18n>objectViewTitle}"
+                },
+                "embarcacion": {
+                    "viewName": "Embarcacion",
+                    "viewId": "embarcacion",
+                    "viewLevel": 3,
+                    "title": "{i18n>embarcacionViewTitle}"
                 },
                 "objectNotFound": {
                     "viewName": "ObjectNotFound",

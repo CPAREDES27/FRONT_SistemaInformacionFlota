@@ -6,3 +6,12 @@
 .formClass{
     background-color: #fcfcfc;
 }
+
+.classPesca {
+    background-color: #C6F9C1;  /* rgba(198, 249, 193, 1)*/
+}
+
+.classPesca, .colHeader {
+    display: block;
+    padding: 10px;
+}

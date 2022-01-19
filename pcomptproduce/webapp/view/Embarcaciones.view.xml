@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="com.tasa.pcomptproduce.controller.Object"
+	controllerName="com.tasa.pcomptproduce.controller.Embarcaciones"
 	xmlns:m="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns="sap.ui.table"
@@ -34,7 +34,7 @@
 					<Table 
 						id = "table"
 						rows = "{
-							path:'/str_emp',
+							path:'/tableItems/str_emp',
 							events:{
 								change:'.onRowsDataChange'
 							}

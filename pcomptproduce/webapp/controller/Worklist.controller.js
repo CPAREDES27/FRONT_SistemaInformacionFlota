@@ -101,8 +101,12 @@ sap.ui.define([
 			iTotalRows = oRowBinding.iLength,
 			oViewModel = this.getModel("worklistView"),
 			oModel = this.getModel(),
+			aColumnData = oModel.getProperty("/tableItems/str_zlt"),
 			sTitle,
+			pge,
+			epp,
 			oStrPgeData,
+			oStrEppData,
 			oStrGreData;
 
 			oViewModel.setProperty("/tabCount","");
@@ -110,16 +114,24 @@ sap.ui.define([
 				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalRows]);
 				oViewModel.setProperty("/tabCount",iTotalRows);
 
-				oStrGreData = oRowBinding.oList;
-				oStrPgeData = oModel.getProperty("/tableItems").str_pge;
-				oStrGreData.forEach(row => {
-					oStrPgeData.forEach(row2 => {
-						if(row.CDGRE === row2.CDGRE){
-							Object.assign(row,row2);
-						}
-						
-					});
-				});
+				this._buildColumns(aColumnData);
+				// oStrGreData = oRowBinding.oList;
+				// oStrPgeData = oModel.getProperty("/tableItems").str_pge;
+				// oStrEppData = oModel.getProperty("/tableItems").str_epp;
+				// oStrGreData.forEach(row => {
+				// 	row.pge = [];
+				// 	row.epp = [];
+				// 	oStrPgeData.forEach(rowPge => {
+				// 		if(row.CDGRE === rowPge.CDGRE){
+				// 			row.pge.push(rowPge)
+				// 		}
+				// 	});
+				// 	oStrEppData.forEach(rowEpp => {
+				// 		if(row.CDGRE === rowEpp.CDGRE){
+				// 			row.epp.push(rowEpp)
+				// 		}
+				// 	});
+				// });
 			} else {
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
@@ -338,7 +350,7 @@ sap.ui.define([
 			sFHITM = oFormData["FHITM"],
 			sValueStateFecha = oViewModel.getProperty("/fechaState"),
 			sValueStateTemp = oViewModel.getProperty("/tempState"),
-			sPath = "/tableItems/str_gre",
+			sPath = "/tableItems/str_pge",
 			sFechaInicio,
 			sFechaFin,
 			sOptionsKeys,
@@ -455,7 +467,7 @@ sap.ui.define([
 			oTable = this.getView().byId("table"),
 			sPath;
 			if(sKey === "D"){
-				sPath = "/tableItems/str_gre"
+				sPath = "/tableItems/str_pge"
 			}else if(sKey === "P"){
 				sPath = "/tableItems/str_pge"
 			}else{
@@ -477,7 +489,7 @@ sap.ui.define([
 		 */
 		_showObject : function (oItem) {
 			this.getRouter().navTo("object", {
-				objectId: oItem.getBindingContext().getPath().split("/")[2]
+				objectId: oItem.getBindingContext().getPath().split("/")[3]
 			});
 		},
 
@@ -513,11 +525,21 @@ sap.ui.define([
 					change: function(oEvent){
 						that.onRowsDataChange(oEvent);
 					}
-				},
-				key: function(oContext) {
-					return oContext.getProperty("user") + oContext.getProperty("timestamp"); 
 				}
 			})
+		},
+
+		_buildColumns:function(aColumns){
+			let oTable = this.getView().byId("table"),
+			oModel = this.getModel(),
+			aColumnHeader;
+			
+			aColumns.forEach(oCol => {
+				aColumnHeader = this.getTableColumn(oCol.DSZLT);
+				aColumnHeader.forEach(oColHeader => {
+					oTable.addColumn(oColHeader);
+				});
+			});
 		}
 
 	});

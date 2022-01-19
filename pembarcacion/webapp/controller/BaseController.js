@@ -58,6 +58,80 @@ sap.ui.define([
 		},
 
 		/**
+		 * 
+		 * @returns url of subaccount 
+		 */
+		 getHostSubaccount: function () {
+            var urlIntance = window.location.origin,
+            sUrlSubaccount,
+            sParam; 
+
+			if (urlIntance.indexOf('tasaqas') !== -1) {
+                sUrlSubaccount = 'tasaqas'; // aputando a QAS
+                sParam = "IDH4_QAS"
+            } else if (urlIntance.indexOf('tasaprd') !== -1) {
+                sUrlSubaccount = 'tasaprd'; // apuntando a PRD
+                sParam = "IDH4_PRD"
+            }else if(urlIntance.indexOf('localhost') !== -1){
+				sUrlSubaccount = 'tasadev'; // apuntando a DEV
+                sParam = "IDH4_DEV"
+			}else{
+				sUrlSubaccount = 'tasadev'; // apuntando a DEV
+                sParam = "IDH4_DEV"
+			}
+
+            return {
+                url : `https://${sUrlSubaccount}.launchpad.cfapps.us10.hana.ondemand.com`, 
+                param : sParam
+            };
+        },
+
+		/**
+		 * 
+		 * @returns url service 
+		 */
+		 getHostService: function () {
+            var urlIntance = window.location.origin,
+            servicioNode ; 
+
+			if (urlIntance.indexOf('tasaqas') !== -1) {
+                servicioNode = 'qas'; // aputando a QAS
+            } else if (urlIntance.indexOf('tasaprd') !== -1) {
+                servicioNode = 'prd'; // apuntando a PRD
+            }else if(urlIntance.indexOf('localhost') !== -1){
+				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+			}else{
+				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+			}
+
+            return `https://cf-nodejs-${servicioNode}.cfapps.us10.hana.ondemand.com`;
+        },
+
+		/**
+		 * 
+		 * @returns User loggued
+		 */
+		 getCurrentUser: async function(){
+            let oUshell = sap.ushell,
+            oUser={};
+            if(oUshell){
+                oUser = await sap.ushell.Container.getServiceAsync("UserInfo");
+                let sEmail = oUser.getEmail().toUpperCase(),
+                sName = sEmail.split("@")[0],
+                sDominio= sEmail.split("@")[1];
+                if(sDominio === "XTERNAL.BIZ") sName = "FGARCIA";
+                oUser = {
+                    name:sName
+                }
+            }else{
+                oUser = {
+                    name: "FGARCIA"
+                };
+            }
+			return oUser
+        },
+
+		/**
 		 * Método para consumir servicio tabla principal
 		 * @param {object} oService 
 		 */

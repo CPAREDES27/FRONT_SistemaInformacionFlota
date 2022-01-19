@@ -3,16 +3,20 @@ sap.ui.define([
 	"sap/ui/core/UIComponent",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
-	"sap/base/Log"
+	"sap/base/Log",
+	"../model/formatter"
 ], function (
 	Controller,
 	UIComponent,
 	BusyIndicator,
 	MessageBox,
-	Log) {
+	Log,
+	formatter) {
 	"use strict";
 
 	return Controller.extend("com.tasa.pcomptproduce.controller.BaseController", {
+		formatter: formatter,
+
 		/**
 		 * Convenience method for accessing the router.
 		 * @public
@@ -221,6 +225,55 @@ sap.ui.define([
 
 			return oDialogMessage;
 		},
+
+		getTableColumn:function(sLabel){
+			let aLabels = ["Pesca","NDes","t/NDes"],
+			sPath1 = "CNPDS",
+			sPath2 = "CNDSH",
+			oText1 = {
+				path: `'${sPath1}'`,
+				formatter: '.formatter.setFormatInteger'
+			},
+			sText2 = `{parts:[{path:'${sPath1}'},{path:'${sPath2}'}],formatter:'.formatter.setDivision'}`,
+			aColumns = [],
+			sHAlign,
+			oText,
+			that = this;
+
+			aLabels.forEach(label=>{
+				sHAlign = sap.ui.core.HorizontalAlign.End
+				if(label === "NDes") sPath1 = sPath2;
+				oText =  new sap.m.Text({
+					textAlign: sap.ui.core.TextAlign.End,
+					text: {
+						path: `${sPath1}`,
+						formatter: function(sText){
+							return formatter.setFormatInteger(sText);
+						}
+					}
+				});
+				if(label === "Pesca") {
+					sHAlign = sap.ui.core.HorizontalAlign.Center;
+					oText.addStyleClass("colHeader");
+				}
+				
+				aColumns.push(new sap.ui.table.Column({
+					width: "8rem",
+					hAlign: sHAlign,
+					headerSpan: label === "Pesca" ? "3,1" : "",
+					multiLabels:[
+						new sap.m.Label({
+							text:sLabel
+						}),
+						new sap.m.Label({
+							text:label
+						})
+					],
+					template: oText
+				}));
+			});
+			return aColumns;
+		}
 	});
 
 });
