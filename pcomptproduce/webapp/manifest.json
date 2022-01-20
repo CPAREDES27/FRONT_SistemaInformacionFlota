@@ -46,7 +46,7 @@
     "sap.ui": {
         "technology": "UI5",
         "icons": {
-            "icon": "sap-icon://manager-insight",
+            "icon": "sap-icon://BusinessSuiteInAppSymbols/icon-vessel",
             "favIcon": "",
             "phone": "",
             "phone@2": "",
