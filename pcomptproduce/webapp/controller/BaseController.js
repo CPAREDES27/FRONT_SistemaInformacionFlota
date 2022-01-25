@@ -226,39 +226,73 @@ sap.ui.define([
 			return oDialogMessage;
 		},
 
-		getTableColumn:function(sLabel){
+		_setPathIndPropiedad:function(sKey){
+			let sPath1, sPath2;
+			if(sKey === "D"){
+				sPath1 = "CNPDS";
+				sPath2 = "CNDSH";
+			}else if(sKey === "P"){
+				sPath1 = "CNDPR";
+				sPath2 = "DSHPR";
+			}else{
+				sPath1 = "CPDTR";
+				sPath2 = "DSHTR";
+			}
+			return {sPath1,sPath2}
+		},
+
+		/**
+		 * Generar columnas dinamicas para zonas litorales
+		 * @param {*} sLabel 
+		 * @param {*} sCod 
+		 * @param {*} sPathPesca 
+		 * @param {*} sPathNdes 
+		 * @returns 
+		 */
+		 getTableColumn:function(sLabel,sCod,sPathPesca,sPathNdes){
 			let aLabels = ["Pesca","NDes","t/NDes"],
-			sPath1 = "CNPDS",
-			sPath2 = "CNDSH",
-			oText1 = {
-				path: `'${sPath1}'`,
-				formatter: '.formatter.setFormatInteger'
-			},
-			sText2 = `{parts:[{path:'${sPath1}'},{path:'${sPath2}'}],formatter:'.formatter.setDivision'}`,
 			aColumns = [],
 			sHAlign,
 			oText,
-			that = this;
+			sPath;
 
 			aLabels.forEach(label=>{
 				sHAlign = sap.ui.core.HorizontalAlign.End
-				if(label === "NDes") sPath1 = sPath2;
-				oText =  new sap.m.Text({
-					textAlign: sap.ui.core.TextAlign.End,
-					text: {
-						path: `${sPath1}`,
-						formatter: function(sText){
-							return formatter.setFormatInteger(sText);
-						}
-					}
-				});
+				if(label === "NDes") sPath = sPathNdes;
 				if(label === "Pesca") {
 					sHAlign = sap.ui.core.HorizontalAlign.Center;
-					oText.addStyleClass("colHeader");
+					sPath = sPathPesca;
 				}
+				if(label === "t/NDes"){
+					oText =  new sap.m.Text({
+						textAlign: sap.ui.core.TextAlign.End,
+						text: {
+							parts:[
+								{path: `${sCod}/${sPathPesca}`},
+								{path: `${sCod}/${sPathNdes}`}
+							],
+							formatter: function(sText1,sText2){
+								return formatter.setDivision(sText1,sText2);
+							}
+						}
+					});
+				}else{
+					oText =  new sap.m.Text({
+						textAlign: sap.ui.core.TextAlign.End,
+						text: {
+							parts:[
+								{path:`${sCod}/${sPath}`}
+							],
+							formatter: function(sText){
+								return formatter.setFormatInteger(sText);
+							}
+						}
+					});
+				}
+				oText.addStyleClass("colHeader");
 				
 				aColumns.push(new sap.ui.table.Column({
-					width: "8rem",
+					width: "6rem",
 					hAlign: sHAlign,
 					headerSpan: label === "Pesca" ? "3,1" : "",
 					multiLabels:[
@@ -273,7 +307,65 @@ sap.ui.define([
 				}));
 			});
 			return aColumns;
-		}
+		},
+
+		getPuertosColumn:function(sLabel,sCodZona,sCodPuerto,sPath1,sPath2){
+			let aLabels = [
+				{label:"Pesca",sPath:sPath1},
+				{label:"NDes",sPath:sPath2}
+			],
+			aColumns = [],
+			sHAlign,
+			oControl,
+			oObjectStatus;
+
+			aLabels.forEach(label=>{
+				sHAlign = sap.ui.core.HorizontalAlign.End
+				if(label.label === "Pesca") {
+					sHAlign = sap.ui.core.HorizontalAlign.Center;
+					oControl =  new sap.m.ObjectStatus({
+						active:true,
+						text: {
+							path: `${sCodZona}/${sCodPuerto}/${label.sPath}`,
+							formatter: function(sValue){
+								return formatter.setFormatInteger(sValue);
+							}
+						},
+						press:function(oEvent){
+							let oContext = oEvent.getSource().getBindingContext();
+						}.bind(this)
+					});
+				}else{
+					oControl =  new sap.m.Text({
+						textAlign: sap.ui.core.TextAlign.End,
+						text: {
+							path: `${sCodZona}/${sCodPuerto}/${label.sPath}`,
+							formatter: function(sValue){
+								return formatter.setFormatInteger(sValue);
+							}
+						}
+					});
+				}
+				
+				oControl.addStyleClass("classPuerto");
+				
+				aColumns.push(new sap.ui.table.Column({
+					width: "6rem",
+					hAlign: sHAlign,
+					headerSpan: label.label === "Pesca" ? "2,1" : "",
+					multiLabels:[
+						new sap.m.Label({
+							text:sLabel
+						}),
+						new sap.m.Label({
+							text:label.label
+						})
+					],
+					template: oControl
+				}));
+			});
+			return aColumns;
+		},
 	});
 
 });

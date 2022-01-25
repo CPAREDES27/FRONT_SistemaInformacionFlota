@@ -1,17 +1,21 @@
 .classPrincipalTable{
     font: size 2.25em;
-    /* background-color: aquamarine; */
+    background-color: #e7e9fa;
 }
 
 .formClass{
-    background-color: #fcfcfc;
+    background-color: #e7eaff;
 }
 
 .classPesca {
     background-color: #C6F9C1;  /* rgba(198, 249, 193, 1)*/
 }
 
-.classPesca, .colHeader {
+.classPesca, .colHeader, .classPuerto {
     display: block;
-    padding: 10px;
+    padding: 6px;
+}
+
+.classPuerto{
+    background-color: rgba(254, 204, 142, 1);
 }

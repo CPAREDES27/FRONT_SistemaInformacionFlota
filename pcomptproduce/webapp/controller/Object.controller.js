@@ -40,6 +40,10 @@ sap.ui.define([
 			);
 		},
 
+		onExit:function(){
+			new sap.m.MessageBox("Saliendo");
+		},
+
 		/* =========================================================== */
 		/* event handlers                                              */
 		/* =========================================================== */
@@ -77,7 +81,7 @@ sap.ui.define([
 				// var sObjectPath = this.getModel().createKey("Products", {
 				// 	ProductID :  sObjectId
 				// });
-				this._bindView("/tableItems/str_gre/" + sObjectId);
+				this._bindView("/tableRows/" + sObjectId);
 			}.bind(this));
 		},
 

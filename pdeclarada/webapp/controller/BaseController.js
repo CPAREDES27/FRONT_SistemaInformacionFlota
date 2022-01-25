@@ -264,7 +264,7 @@ sap.ui.define([
 			oNavButton = oRowLast.getCells()[iCellsLength-1],
 			oObjectStatus = oRowLast.getCells()[0];
 			oNavButton.setVisible(false);
-			oObjectStatus.setState("Warning")
+			oObjectStatus.setState("Warning");
 		},
 
 		getMessageDialog:function(sTypeDialog,sMessage){

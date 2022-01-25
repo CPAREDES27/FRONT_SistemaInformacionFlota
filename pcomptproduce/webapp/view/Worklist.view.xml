@@ -8,7 +8,7 @@
 	xmlns:semantic="sap.f.semantic">
 
 	<semantic:SemanticPage id="page"
-		class="sapUiContentPadding">
+		>
 		<semantic:titleHeading>
 			<Title
 				text="{i18n>worklistTitle}"
