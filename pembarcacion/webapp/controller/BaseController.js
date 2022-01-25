@@ -145,6 +145,7 @@ sap.ui.define([
 				if(oGetData.status===200){
 					this.iCount++;
 					let oData = await oGetData.json();
+					console.log(oService);
 					if(this.iCount===this.iCountService) BusyIndicator.hide();
 					return oData;
 				}

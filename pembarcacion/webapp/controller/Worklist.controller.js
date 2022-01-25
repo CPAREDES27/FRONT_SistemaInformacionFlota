@@ -300,20 +300,19 @@ sap.ui.define([
 				p_cdtem: sTipEmb,
 				p_fcfin: sEndDate,
 				p_fcini: sStartDate,
-				p_pag: sPage || "1",
+				//p_pag: sPage || "1",
 				p_user: ""
 			};
 			this.iCount=0;
 			this.iCountService=1;
 			let oPescData = await this.getDataService(oService);
-
 			if(oPescData){
 				oModel.setProperty("/PESCAS_EMBARCACION",oPescData["str_pem"]);
-				let sTotalPagination = oPescData["p_totalpag"];
+				/*let sTotalPagination = oPescData["p_totalpag"];
 				oModel.setProperty("/pagination",{
 					title:`Pag ${sPage} de ${sTotalPagination}`,
 					total:sTotalPagination
-				});
+				});*/
 			}
 		},
 
