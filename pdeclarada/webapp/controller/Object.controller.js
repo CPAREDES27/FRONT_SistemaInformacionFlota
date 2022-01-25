@@ -182,6 +182,7 @@ sap.ui.define([
 		},
 
 		onNavMarea: async function (evt) {
+			return;
 			BusyIndicator.show(0);
 			//console.log(evt.getSource().getParent().getBindingContext("undefined").getObject());
 			var obj = evt.getSource().getParent().getBindingContext("undefined").getObject();

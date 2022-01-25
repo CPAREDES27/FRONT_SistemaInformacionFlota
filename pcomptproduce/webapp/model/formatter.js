@@ -65,6 +65,66 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 			}else{
 				return "";
 			}
+		},
+
+		setTotalCol:function(iCant1,iCant2,iCant3){
+			if(iCant1 || iCant2 || iCant3){
+				let oViewModel = this.getView().getModel("worklistView"),
+				iEmpresaIndex = oViewModel.getProperty("/empresaIndex"),
+				sIndicadorPropiedad = oViewModel.getProperty("/indicadorPropiedad"),
+				oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:0,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				// return oFloatNumber.format(sValue);
+				if(iEmpresaIndex === 1){
+					switch (sIndicadorPropiedad) {
+						case "P":
+							return oFloatNumber.format(iCant2);
+							break;
+						case "T":
+							return oFloatNumber.format(iCant3);
+							break;
+					
+						default:
+							return oFloatNumber.format(iCant1);
+							break;
+					}
+				}else{
+					return oFloatNumber.format(iCant1);
+				}
+			}
+		},
+		setTotalCoc:function(iCant1,iCant2,iCant3){
+			if(iCant1 || iCant2 || iCant3){
+				let oViewModel = this.getView().getModel("worklistView"),
+				iEmpresaIndex = oViewModel.getProperty("/empresaIndex"),
+				sIndicadorPropiedad = oViewModel.getProperty("/indicadorPropiedad"),
+				oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:0,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				if(iEmpresaIndex === 1){
+					switch (sIndicadorPropiedad) {
+						case "P":
+							return oFloatNumber.format(iCant2);
+							break;
+						case "T":
+							return oFloatNumber.format(iCant3);
+							break;
+					
+						default:
+							return oFloatNumber.format(iCant1);
+							break;
+					}
+				}else{
+					return oFloatNumber.format(iCant1);
+				}
+			}
 		}
 
 	};

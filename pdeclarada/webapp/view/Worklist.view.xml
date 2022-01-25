@@ -133,7 +133,7 @@
 					visibleRowCount="5"
 					class="classTable">
 					<table:columns>
-						<table:Column width="8rem"  >
+						<table:Column width="15rem"  >
 							<table:multiLabels>
 								<Label visible="false" />
 								<Label text="Planta"/>
@@ -142,10 +142,6 @@
 								<ObjectStatus 
 									text="{DESCR}"
 									state="Information" />
-								<Link
-									text="{DESCR}"
-									press="onNavMarea"
-								/>
 							</table:template>
 						</table:Column>
 

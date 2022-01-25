@@ -109,6 +109,8 @@ sap.ui.define([
 				}
 				this.getModel("worklistView").setProperty("/worklistTableTitle", sTitle);
 
+				console.log(oRowBinding.oList)
+
 			}
 		},
 

@@ -3,22 +3,41 @@
 	xmlns:core="sap.ui.core">
     <Popover
 		id="myListPopover"
-		title="Products"
+		title="Seleccione zona para mostrar puertos"
 		afterClose="handleAfterClose"
 		placement="Left">
-		<!-- <List
+		<List
 			id="list"
 			items="{
-				path:'/str_zlt'
-			}" >
+					path:'str_zlt',
+					sorter:{
+						path:'CDZLT'
+					}
+				}">
 			<StandardListItem
 				title="{CDZLT}"
-				description="{DSZLT}"
+				info="{DSZLT}"
 				type="Active"
-				icon="{ProductPicUrl}"
-				iconDensityAware="false"
-				iconInset="false"
+				infoState="Information"
                 press="onSeleccionarPuerto" />
-		</List> -->
+		</List>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer/>
+				<Button
+					icon="sap-icon://show"
+					text="Mostrar todos"
+					press="onShowPuertos"
+					type="Accept"
+					visible="{worklistView>/bMostrarPuertos}" />
+				<Button
+					id="action"
+					icon="sap-icon://hide"
+					text="Ocultar Puertos"
+					press="onHidePuertos"
+					type="Reject"
+					visible="{worklistView>/bMostrarPuertos}" />
+			</Toolbar>
+		</footer>
 	</Popover>
 </core:FragmentDefinition>

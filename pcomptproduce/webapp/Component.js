@@ -64,6 +64,13 @@ sap.ui.define([
 				}
 			}
 			return this._sContentDensityClass;
+		},
+
+		getContentDensityCompactClass : function() {
+			if (this._sContentDensityClass === undefined) {
+					this._sContentDensityClass = "sapUiSizeCozy";
+			}
+			return this._sContentDensityClass;
 		}
 
 	});
