@@ -827,6 +827,84 @@ sap.ui.define([
 			aTableData.push(oLastRow);
 			oModel.setProperty("/PESCAS_EMBARCACION",aTableData);
 			this.bFlag = true;
-		}
+		},
+		exportToExcel: function (event) {
+
+			let oModel = this.getModel(),
+			oHelp = oModel.getProperty("/help"),			
+			sStartDate = oHelp.FHITM,
+			sEndDate = oHelp.FHFTM,
+			temporada = oHelp.CDPCN,
+			tipoEmbarcacion = oModel.getProperty("/help/tipoEmb");
+
+
+			//let temporada= this.byId("tipoEmbarcacion").getValue();
+			//let tipoEmbarcacion= this.byId("tipoEmbarcacion").getValue();
+			//fechaInicio = sStartDate.split("/")[2].concat(sStartDate.split("/")[1], sStartDate.split("/")[0]);
+
+			let fechaInicioFormat = sStartDate.split("/")[2].concat(sStartDate.split("/")[1], sStartDate.split("/")[0]);
+			let fechaFinFormat = sEndDate.split("/")[2].concat(sEndDate.split("/")[1], sEndDate.split("/")[0]);
+
+			const body = {
+				fieldstr_pem: [],
+				p_cdpcn: temporada,
+				p_cdtem: tipoEmbarcacion,
+				p_fcfin: fechaFinFormat,
+				p_fcini: fechaInicioFormat,
+				p_user: ""
+			};
+
+				fetch(this.getHostService()+"/api/sistemainformacionflota/ExportPescaPorEmbarcacion", {
+					method: 'POST',
+					body: JSON.stringify(body)
+				})
+					.then(resp => resp.json())
+					.then(data => {
+						const content = data.base64;
+						const contentType = 'application/vnd.ms-excel';
+						const sliceSize = 512;
+						let byteCharacters = window.atob(
+							content);
+						let byteArrays = [];
+						const fileName = 'Pesca por embarcacion.xls';
+
+						/**
+						 * Convertir base64 a Blob
+						 */
+						for (let offset = 0; offset < byteCharacters.length; offset +=
+							sliceSize) {
+							let slice = byteCharacters.slice(offset, offset + sliceSize);
+							let byteNumbers = new Array(slice.length);
+							for (let i = 0; i < slice.length; i++) {
+								byteNumbers[i] = slice.charCodeAt(i);
+							}
+							let byteArray = new Uint8Array(byteNumbers);
+							byteArrays.push(byteArray);
+						}
+						let blob = new Blob(byteArrays, {
+							type: contentType
+						});
+
+						/**
+						 * Exportar a Excel
+						 */
+						if (navigator.msSaveBlob) {
+							navigator.msSaveBlob(blob, fileName);
+						} else {
+							let link = document.createElement("a");
+							if (link.download !== undefined) {
+								let url = URL.createObjectURL(blob);
+								link.setAttribute("href", url);
+								link.setAttribute("download", fileName);
+								link.style.visibility = 'hidden';
+								document.body.appendChild(link);
+								link.click();
+								document.body.removeChild(link);
+							}
+						}
+					})
+					.catch(error => console.error(error))
+			
+		},
 	});
 });

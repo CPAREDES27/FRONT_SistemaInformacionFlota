@@ -143,7 +143,7 @@
 								text="Exportar"
 								type="Emphasized" 
 								icon="sap-icon://excel-attachment" 
-								press="onExport"/>
+								press="exportToExcel"/>
 						</OverflowToolbar>
 					</table:extension>
 					<table:columns>
