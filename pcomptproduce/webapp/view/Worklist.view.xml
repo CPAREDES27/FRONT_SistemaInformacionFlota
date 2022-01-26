@@ -35,7 +35,7 @@
 										select="onSelectEmpresa" 
 										valueState="Information"
 										columns="2"
-										selectedIndex="{worklistView>/empresaIndex}">
+										selectedIndex="{/empresaIndex}">
 										<RadioButton 
 											text="Armador"
 											class="sapUiSmallMarginEnd" />
@@ -255,11 +255,6 @@
 				</form:layout>
 			</form:Form>
 		</semantic:headerContent>
-
-		<semantic:content>
-			<core:Fragment fragmentName="com.tasa.pcomptproduce.view.fragments.TablaPrincipal" type="XML" />
-			
-		</semantic:content>
 
 	</semantic:SemanticPage>
 

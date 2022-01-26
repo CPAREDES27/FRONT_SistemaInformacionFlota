@@ -5,8 +5,7 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/core/Fragment",
-	"sap/ui/core/BusyIndicator",
-	"sap/ui/core/format/NumberFormat"
+	"sap/ui/core/BusyIndicator"
 ], function (
 	BaseController,
 	JSONModel,
@@ -14,8 +13,7 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	Fragment,
-	BusyIndicator,
-	NumberFormat) {
+	BusyIndicator) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.pcomptproduce.controller.Worklist", {
@@ -47,7 +45,6 @@ sap.ui.define([
 				worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
 				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
 				tableBusyDelay: 0,
-				empresaIndex: 1,
 				fechaIndex: 0,
 				tempState: "None",
 				fechaState: "None",
@@ -68,6 +65,22 @@ sap.ui.define([
 			// 	oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			// });
 			oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
+		},
+
+		onAfterRendering:function(oEvent){
+			let oModel = this.getModel(),
+			oPage = this.getView().byId("page"),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex");
+
+			if(iEmpresaIndex === 1){
+				Fragment.load({
+					name:"com.tasa.pcomptproduce.view.fragments.TablaRecep",
+					controller:this
+				}).then(oTable=>{
+					oPage.setContent(oTable);
+				});
+			} 
+			
 		},
 
 		/* =========================================================== */
@@ -132,6 +145,12 @@ sap.ui.define([
 		onPress : function (oEvent) {
 			// The source is the list item that got pressed
 			this._showObject(oEvent.getSource());
+		},
+
+		onPressEmba:function(oItem){
+			this.getRouter().navTo("embarcacion", {
+				objectId: oItem.getBindingContext().getPath().split("/")[2]
+			});
 		},
 
 		/**
@@ -559,7 +578,6 @@ sap.ui.define([
 		_bindRowsTable:function(sPath){
 			let oTable = this.getView().byId("table"),
 			that = this;
-			
 			oTable.bindRows({
 				path:sPath,
 				events:{
@@ -576,8 +594,8 @@ sap.ui.define([
 		/**
 		 * Internal helper method to build dynamic columns from sap.ui.table
 		 * @param {Array} aColumns 
-		 * @param {string} sIndProp1 
-		 * @param {string} sIndProp2 
+		 * @param {string} sPath1 
+		 * @param {string} sPath2 
 		 */
 		_buildColumns:function(aColumnZonas,sPath1,sPath2){
 			this._destroyColumns();

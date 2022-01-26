@@ -2,8 +2,9 @@ sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/routing/History",
-	"../model/formatter"
-], function (BaseController, JSONModel, History, formatter) {
+	"../model/formatter",
+	"sap/ui/core/Fragment"
+], function (BaseController, JSONModel, History, formatter,Fragment) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.pcomptproduce.controller.Object", {
@@ -38,10 +39,6 @@ sap.ui.define([
 					oViewModel.setProperty("/delay", iOriginalBusyDelay);
 				}
 			);
-		},
-
-		onExit:function(){
-			new sap.m.MessageBox("Saliendo");
 		},
 
 		/* =========================================================== */
@@ -98,7 +95,7 @@ sap.ui.define([
 			this.getView().bindElement({
 				path: sObjectPath,
 				events: {
-					// change: this._onBindingChange.bind(this),
+					change: this._onBindingChange.bind(this),
 					dataRequested: function () {
 						oDataModel.dataLoaded().then(function () {
 							// Busy indicator on view should only be set if metadata is loaded,
@@ -115,6 +112,136 @@ sap.ui.define([
 			});
 			oViewModel.setProperty("/busy", false);
 		},
+
+		_onBindingChange: async function(oEvent){
+			let oContext = oEvent.getSource().getBoundContext(),
+			oModel = oContext.getModel(),
+			oObject = oContext.getObject(),
+			sCDGRE = oObject.CDGRE,
+			aColumnZonas = oModel.getProperty("/oDataApp/str_zlt"),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
+			aEmpresa,
+			oEmpresaTable;
+
+			if(iEmpresaIndex === 0){
+				aEmpresa = this._getDataArmador(oModel,sCDGRE)
+			}else{
+				aEmpresa = this._getDataReceptor(oModel,sCDGRE);
+				oEmpresaTable = await Fragment.load({name:"com.tasa.pcomptproduce.view.fragments.TablaEmpresas"})
+			} 
+			
+
+			this._buildZonasColumns(aColumnZonas,"CNPDS","CNDSH");
+			oModel.setProperty("/empresas",aEmpresa);
+		},
+		
+		/**
+		 * Event handler when a table item gets pressed
+		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
+		 * @public
+		 */
+		 onPress : function (oEvent) {
+			// The source is the list item that got pressed
+			this.getRouter().navTo("embarcacion", {
+				objectId: oEvent.getSource().getBindingContext().getPath().split("/")[2]
+			});
+		},
+
+		/* =========================================================== */
+		/* internal methods                                            */
+		/* =========================================================== */
+
+		_getDataReceptor:function(oModel,sCDGRE){
+			let aEmp = oModel.getProperty("/oDataApp/str_emp"),
+			aEpp = oModel.getProperty("/oDataApp/str_epp"),
+			aEmpresas = [];
+			aEmp.forEach(emp => {
+				if(sCDGRE === emp.CDGRE){
+					aEmpresas.push({
+						DSEMP:emp.DSEMP,
+						CDGRE:emp.CDGRE,
+						CNPDS:emp.CNPDS,
+						CNDSH:emp.CNDSH,
+						NREMB:emp.NREMB,
+						CDEMP:emp.CDEMP,
+						indProp:[
+							{DSEMP:"Propios", NREMB:emp.EMBPR},
+							{DSEMP:"Terceros", NREMB:emp.EMBTR}
+						]
+					});
+				}
+			});
+			aEmpresas.forEach(empr => {
+				let totCNDSH = 0,
+				propCNDPR = 0,
+				propCNDSH = 0,
+				tercCNDPR = 0,
+				tercCNDSH = 0;
+				aEpp.forEach(epp=>{
+					if(epp.EMPTA === empr.CDEMP){
+						empr[epp.CDZLT] = epp;
+						//propios
+						// empr.indProp[0][epp.CDZLT] = epp;
+						empr.indProp[0][epp.CDZLT] = {};
+						empr.indProp[0][epp.CDZLT].CNPDS = epp.CNDPR;
+						empr.indProp[0][epp.CDZLT].CNDSH = epp.DSHPR;
+						
+						// terceros
+						empr.indProp[1][epp.CDZLT] = {};
+						empr.indProp[1][epp.CDZLT].CNPDS = epp.CPDTR;
+						empr.indProp[1][epp.CDZLT].CNDSH = epp.DSHTR;
+						
+						totCNDSH += epp.CNDSH;
+						propCNDPR += epp.CNDPR;
+						propCNDSH += epp.DSHPR;
+						tercCNDPR += epp.CPDTR;
+						tercCNDSH += epp.DSHTR;
+					}
+				});
+				empr.CNDSH = totCNDSH;
+				empr.indProp[0].CNPDS = propCNDPR;
+				empr.indProp[0].CNDSH = propCNDSH;
+				empr.indProp[1].CNPDS = tercCNDPR;
+				empr.indProp[1].CNDSH = tercCNDSH;
+				
+			});
+			return aEmpresas;
+		},
+
+		_buildZonasColumns:function(aColumnZonas,sPath1,sPath2){
+			this._destroyColumns();
+			let oTable = this.getView().byId("empresasTable"),
+			aColumnHeader;
+			this.colZonasLength = aColumnZonas.length * 3;
+			this.aColPuertosLength = 0;
+			
+			aColumnZonas.forEach(oCol => {
+				aColumnHeader = this.getTableColumn(oCol.DSZLT,oCol.CDZLT,sPath1,sPath2);
+				aColumnHeader.forEach(oColHeader => {
+					oTable.addColumn(oColHeader);
+				});
+			});
+		},
+		
+		/**
+		 * Internal helper method to destroy dynamic columns
+		 */
+		 _destroyColumns:function(){
+			let oTable = this.getView().byId("empresasTable"),
+			aColumns = oTable.getColumns(),
+			iLimitInf = aColumns.length - this.colZonasLength - this.aColPuertosLength,
+			aRows = oTable.getRows();
+			for (let i = aColumns.length-1; i > iLimitInf - 1; i--) {
+				oTable.removeColumn(aColumns[i]);
+			}
+			aRows.forEach(oRow => {
+				oRow.getCells()[0].setActive(true);
+				oRow.getCells()[0].setState("Information");
+			});
+			this.colZonasLength = 0;
+			this.aColPuertosLength = 0;
+		},
+
 
 	});
 

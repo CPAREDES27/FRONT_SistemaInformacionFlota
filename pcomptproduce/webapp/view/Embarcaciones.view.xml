@@ -10,504 +10,121 @@
 		id="page"
 		headerPinnable="false"
 		toggleHeaderOnTitleClick="false"
-		busy="{objectView>/busy}"
-		busyIndicatorDelay="{objectView>/delay}">
+		busy="{embarcacionesView>/busy}"
+		busyIndicatorDelay="{embarcacionesView>/delay}">
 
 		<semantic:titleHeading>
-			<m:Title
+			<m:ObjectStatus 
+				title="EMBARCACIONES"
+				text="{}"/>
+			<!-- <m:Title
 				text="{DSGRE}"
-				level="H2"/>
+				level="H2"/> -->
 		</semantic:titleHeading>
 
-		<semantic:headerContent>
-			
-		</semantic:headerContent>
-
 		<semantic:content>
-			<m:IconTabBar
-				selectedKey="{worklistView>/mainSelectedKey}"
-				stretchContentHeight="true"
-				tabDensityMode="Compact"
-				backgroundDesign="Translucent"
-				headerMode="Standard">
-				<m:content>
-					<Table 
-						id = "table"
-						rows = "{
-							path:'/tableItems/str_emp',
-							events:{
-								change:'.onRowsDataChange'
-							}
-						}"
-						columns = "{path:'/tableItems/str_zlt'}"
-						sort="onSort"
-						selectionMode="None">
-						<extension>
-							<m:OverflowToolbar >
-								<m:Title text="{worklistView>/worklistTableTitle}" />
-								<m:ToolbarSpacer />
-								<m:Button 
-									icon="sap-icon://multi-select"
-									text="Puertos por zona" 
-									press="onAbrirZonas"
-									type="Accept"/>
-								<m:Label text="Puertos de zona litoral" />
-								<m:Select 
-									forceSelection="false"
-									selectedKey="{}"
-									items="{
-										path:'/tableItems/str_zlt'
-									}">
-									<core:Item text="{DSZLT}" key="{CDZLT}"/>
-								</m:Select>
-							</m:OverflowToolbar>
-						</extension>
-						<columns>
+			<Table 
+				id = "table"
+				rows = "{
+					path:'/table',
+					events:{
+						change:'.onRowsDataChange'
+					}
+				}"
+				columns = "{path:'/tableItems/str_zlt'}"
+				sort="onSort"
+				selectionMode="None">
+				<extension>
+					<m:OverflowToolbar >
+						<m:Title text="{embarcacionesView>/embarcacionesTableTitle}" />
+						<m:ToolbarSpacer />
+					</m:OverflowToolbar>
+				</extension>
+				<columns>
+					<Column width="12rem"
+							hAlign="Begin">
+						<!-- <multiLabels> -->
+							<m:Label text="Empresa"/>
+						<!-- </multiLabels> -->
+						<template>
+							<m:Link 
+								text="{DSGRE}"
+								press=".onPress"
+								emphasized="true"
+								enabled="{worklistView>/linkVisible}"/>
+						</template>
+					</Column>
 
-						<!-- Columna Grupo Empresarial -->
-							<Column width="12rem"
-									hAlign="Begin">
-								<multiLabels>
-									<m:Label text=""/>
-									<m:Label text="EMPRESA"/>
-								</multiLabels>
-								<template>
-									<m:Link 
-										text="{DSGRE}"
-										press=".onPress"
-										emphasized="true"
-										enabled="{worklistView>/linkVisible}"/>
-								</template>
-							</Column>
+					<Column width="8rem"
+							hAlign="Center">
+						<multiLabels>
+							<m:Label text="Embarcación" />
+						</multiLabels>
+						<template>
+							<m:Text text="{
+								path:'CNPDS',
+								formatter:'.formatter.setFormatInteger'
+								}" />
+						</template>
+					</Column>
 
-						<!-- COlumnas de totales -->
+					<Column width="6rem"
+							hAlign="Center"
+							visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+						<multiLabels>
+							<m:Label text="Matrícula" />
+						</multiLabels>
+						<template>
+							<m:Text text="" />
+						</template>
+					</Column>
 
-							<Column width="8rem"
-									headerSpan="5,1"
-									hAlign="Center">
-								<multiLabels>
-									<m:Label text="TOTALES" />
-									<m:Label text="Pesca" />
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-										}" />
-								</template>
-							</Column>
+					<Column width="6rem"
+							hAlign="End">
+						<multiLabels>
+							<m:Label text="CBOD"/>
+						</multiLabels>
+						<template>
+							<m:Text text="{NREMB}"  />
+						</template>
+					</Column>
 
-							<Column width="6rem"
-									headerSpan="5,1"
-									hAlign="Center"
-									visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
-								<multiLabels>
-									<m:Label text="TOTALES" />
-									<m:Label text="% Ds Tasa" />
-								</multiLabels>
-								<template>
-									<m:Text text="" />
-								</template>
-							</Column>
+					<Column width="6rem"
+							hAlign="Center">
+						<multiLabels>
+							<m:Label text="Pesca" />
+						</multiLabels>
+						<template>
+							<m:Text text="" />
+						</template>
+					</Column>
 
-							<Column width="6rem"
-									headerSpan="5,1"
-									hAlign="End">
-								<multiLabels>
-									<m:Label text="TOTALES" />
-									<m:Label text="Emba"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{NREMB}"  />
-								</template>
-							</Column>
-
-							<Column width="6rem"
-									hAlign="Center">
-								<multiLabels>
-									<m:Label text="TOTALES" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="" />
-								</template>
-							</Column>
-
-							<Column width="6rem"
-									hAlign="Center">
-								<multiLabels>
-									<m:Label text="TOTALES" />
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="" />
-								</template>
-							</Column>
-								
-						<!-- Columnas de zonas litorales -->
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/0/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/0/DSZLT}" />
-									<m:Label text="Pesca" />
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/0/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/0/DSZLT}"/>
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/0/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/0/DSZLT}" />
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{
-											parts:[
-												{path:'CNPDS'},
-												{path:'CNDSH'}
-											],
-											formatter:'.formatter.setDivision'
-										}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/1/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/1/DSZLT}"/>
-									<m:Label text="Pesca"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/1/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/1/DSZLT}" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/1/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/1/DSZLT}" />
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{
-											parts:[
-												{path:'CNPDS'},
-												{path:'CNDSH'}
-											],
-											formatter:'.formatter.setDivision'
-										}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/2/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/2/DSZLT}"/>
-									<m:Label text="Pesca"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/2/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/2/DSZLT}" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/2/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/2/DSZLT}" />
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{
-											parts:[
-												{path:'CNPDS'},
-												{path:'CNDSH'}
-											],
-											formatter:'.formatter.setDivision'
-										}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/3/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/3/DSZLT}"/>
-									<m:Label text="Pesca"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/3/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/3/DSZLT}" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/3/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/3/DSZLT}"/>
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="" />
-								</template>
-							</Column>
-
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/4/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/4/DSZLT}"/>
-									<m:Label text="Pesca"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/4/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/4/DSZLT}" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/4/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/4/DSZLT}"/>
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="" />
-								</template>
-							</Column>
-
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/5/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/5/DSZLT}"/>
-									<m:Label text="Pesca"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/5/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/5/DSZLT}" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/5/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/5/DSZLT}"/>
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="" />
-								</template>
-							</Column>
-
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/6/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/6/DSZLT}"/>
-									<m:Label text="Pesca"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/6/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/6/DSZLT}" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/6/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/6/DSZLT}"/>
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-
-							<Column width="8rem"
-									headerSpan="3,1"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/7/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/7/DSZLT}"/>
-									<m:Label text="Pesca"/>
-								</multiLabels>
-								<template>
-									<m:Text text="{
-										path:'CNPDS',
-										formatter:'.formatter.setFormatInteger'
-									}" 
-									textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="End"
-									visible="{=${/tableItems/str_zlt/7/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/7/DSZLT}" />
-									<m:Label text="NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="{CNDSH}" 
-										textAlign="End"/>
-								</template>
-							</Column>
-							<Column width="8rem"
-									hAlign="Center"
-									visible="{=${/tableItems/str_zlt/7/DSZLT}?true:false}">
-								<multiLabels>
-									<m:Label text="{/tableItems/str_zlt/7/DSZLT}"/>
-									<m:Label text="t/NDes" />
-								</multiLabels>
-								<template>
-									<m:Text text="" />
-								</template>
-							</Column>
-
-
-						</columns>
-					</Table>
-				</m:content>
-				<m:items>
-					<m:IconTabFilter
-						icon="sap-icon://shield"
-						text="Empresas Armador"
-						count="{worklistView>/tabCount}"
-						key="0"/>
-					<m:IconTabSeparator />
-					<m:IconTabFilter
-						icon="sap-icon://badge"
-						text="Empresas Receptor"
-						count="{worklistView>/tabCount}"
-						key="1"/>
-				</m:items>
-			</m:IconTabBar>
+					<Column width="6rem"
+							hAlign="Center">
+						<multiLabels>
+							<m:Label text="Num desc" />
+						</multiLabels>
+						<template>
+							<m:Text text="" />
+						</template>
+					</Column>
+						
+					<Column width="8rem"
+							hAlign="Center"
+							visible="{=${/tableItems/str_zlt/0/DSZLT}?true:false}">
+						<multiLabels>
+							<m:Label text="Ind prop" />
+						</multiLabels>
+						<template>
+							<m:Text text="{
+								path:'CNPDS',
+								formatter:'.formatter.setFormatInteger'
+							}" 
+							textAlign="End"/>
+						</template>
+					</Column>
+				</columns>
+			</Table>
 		</semantic:content>
 
 	</semantic:SemanticPage>

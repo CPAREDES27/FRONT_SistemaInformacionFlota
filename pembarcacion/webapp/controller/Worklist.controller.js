@@ -247,6 +247,18 @@ sap.ui.define([
 
 			oTable = this._oTable;
 			oRowBinding = oTable.getBinding('rows');
+
+			jQuery.sap.require("sap.ui.core.util.Export");
+			jQuery.sap.require("sap.ui.core.util.ExportTypeCSV");
+
+			oTable.exportData({
+				exportType: new sap.ui.core.util.ExportTypeCSV()
+			})
+			.saveFile()
+			.always(function() {
+				this.destroy();
+			});
+
 			aCols = this._createColumnConfig();
 
 			oSettings = {
@@ -408,11 +420,11 @@ sap.ui.define([
 		_createColumnConfig: function () {
 			var aCols = [];
 
-			aCols.push({
-				label: 'Embarcación',
-				property: 'NMEMB',
-				type: EdmType.String
-			});
+			// aCols.push({
+			// 	label: 'Embarcación',
+			// 	property: 'NMEMB',
+			// 	type: EdmType.String
+			// });
 
 			aCols.push({
 				label: 'CBOD',

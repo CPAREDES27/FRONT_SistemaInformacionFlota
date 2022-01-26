@@ -1,0 +1,154 @@
+<core:FragmentDefinition 
+    xmlns:m="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns="sap.ui.table">
+    <Table
+        id="table"
+        selectionMode="None"
+        visibleRowCount="8"
+        fixedColumnCount="1"
+        fixedBottomRowCount="3"
+        class="classPrincipalTable">
+        <extension>
+            <m:OverflowToolbar >
+                <m:Title text="{worklistView>/worklistTableTitle}" />
+                <m:ToolbarSpacer />
+            </m:OverflowToolbar>
+        </extension>
+        <columns>
+            <!-- Columna Grupo Empresarial -->
+                <Column width="12rem"
+                        hAlign="Begin">
+                    <multiLabels>
+                        <m:Label text=""/>
+                        <m:Label text="GRUPO EMPRESARIAL"/>
+                    </multiLabels>
+                    <template>
+                        <m:ObjectStatus
+                            text="{DSGRE}"
+                            active="true"
+                            state="Information"
+                            press=".onPress" />
+                    </template>
+                </Column>
+
+            <!-- Columnas de CUOTA -->
+                <Column width="5rem"
+                        headerSpan="2,1"
+                        hAlign="Center" >
+                    <multiLabels>
+                        <m:Label text="CUOTA" />
+                        <m:Label text="Período" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{= ${/help/ZCDZAR} === '001' ? ${CPRNC} : ${CPRSU}}"  textAlign="End" />
+                    </template>
+                </Column>
+
+                <Column width="6rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="CUOTA" />
+                        <m:Label text="Avance(%)" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{= ${/help/ZCDZAR} === '001' ? ${CAVNC} : ${CAVSU}}" />
+                    </template>
+                </Column>
+
+            <!-- COlumnas de totales -->
+                <Column width="8rem"
+                        headerSpan="5,1"
+                        hAlign="Center">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="Pesca" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+                                parts:[
+                                    {path:'pescaTotalD'},
+                                    {path:'pescaTotalP'},
+                                    {path:'pescaTotalT'}
+                                ],
+                                formatter:'.formatter.setTotalCol'
+                            }"
+                            textAlign="End"
+                            class="classPesca" />
+                    </template>
+                </Column>
+
+                <Column width="6rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="% Ds Tasa" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+                            parts:[
+                                {path:'CDTAS'},
+                                {path: 'nDesTotalD'}
+                            ],
+                            formatter:'.formatter.setDivision'
+                        }" />
+                    </template>
+                </Column>
+
+                <Column width="6rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="Emba"/>
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+                                parts:[
+                                    {path: 'NREMB'},
+                                    {path: 'EMBPR'},
+                                    {path: 'EMBTR'}
+                                ],
+                                formatter: '.formatter.setTotalCol'    
+                            }"  />
+                    </template>
+                </Column>
+
+                <Column width="6rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="NDes" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+                                parts:[
+                                    {path:'nDesTotalD'},
+                                    {path:'nDesTotalP'},
+                                    {path:'nDesTotalT'}
+                                ],
+                                formatter: '.formatter.setTotalCol'
+                            }" />
+                    </template>
+                </Column>
+
+                <Column width="6rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="t/NDes" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+							parts:[
+								{path: 'nCocPescaNdesD'},
+                                {path: 'nCocPescaNdesP'},
+                                {path: 'nCocPescaNdesT'}
+							],
+                            formatter: '.formatter.setTotalCoc'
+						}" />
+                    </template>
+                </Column>
+
+        </columns>
+    </Table>
+</core:FragmentDefinition>

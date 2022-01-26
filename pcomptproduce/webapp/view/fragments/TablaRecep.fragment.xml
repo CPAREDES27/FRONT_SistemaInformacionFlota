@@ -1,0 +1,131 @@
+<core:FragmentDefinition 
+    xmlns:m="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns="sap.ui.table">
+    <TreeTable
+        id="empresasTable"
+        rows="{
+            path:'/empresas',
+            parameters:{
+                arrayNames:['indProp']
+            }
+        }"
+        selectionMode="None"
+        visibleRowCount="8"
+        fixedColumnCount="0"
+        fixedBottomRowCount="3"
+        class="classPrincipalTable">
+        <extension>
+            <m:OverflowToolbar >
+                <m:Title text="{objectView>/objectTableTitle}" />
+                <m:ToolbarSpacer />
+                <!-- <m:SegmentedButton 
+                    selectedKey="{objectView>/indicadorPropiedad}" 
+                    selectionChange="onSelectioIndPropiedad" 
+                    visible="{=%{objectView>/empresaIndex} === 0 ? false : true}">
+					<m:items>
+						<m:SegmentedButtonItem text="Todos" key="D" />
+						<m:SegmentedButtonItem text="Propios" key="P"/>
+						<m:SegmentedButtonItem text="Terceros" key="T"/>
+					</m:items>
+				</m:SegmentedButton> -->
+                <m:Button 
+                    icon="sap-icon://multi-select"
+                    text="Puertos por zona" 
+                    press="onOpenZonas"
+                    type="Accept"
+                    visible="{= ${objectView>/empresaIndex} === 1 &amp;&amp; ${objectView>/bMostrarPuertos} }"/>
+            </m:OverflowToolbar>
+        </extension>
+        <columns>
+            <!-- Columna Grupo Empresarial -->
+                <Column width="15rem"
+                        hAlign="Begin">
+                    <multiLabels>
+                        <m:Label text=""/>
+                        <m:Label text="EMPRESA"/>
+                    </multiLabels>
+                    <template>
+                        <m:ObjectStatus
+                            text="{DSEMP}"
+                            active="true"
+                            state="Information"
+                            press=".onPress" />
+                    </template>
+                </Column>
+
+            <!-- COlumnas de totales -->
+                <Column width="6rem"
+                        headerSpan="5,1"
+                        hAlign="Center">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="Pesca" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+                                parts:[
+                                    {path:'CNPDS'}
+                                ],
+                                formatter:'.formatter.setFormatInteger'
+                            }"
+                            textAlign="End"
+                            class="classPesca" />
+                    </template>
+                </Column>
+
+                <Column width="4rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="Emba"/>
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+                                parts:[
+                                    {path: 'NREMB'}
+                                ],
+                                formatter:'.formatter.setFormatInteger'   
+                            }"  />
+                    </template>
+                </Column>
+
+                <Column width="6rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="NDes" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+                                parts:[
+                                    {path:'CNDSH'},
+                                    {path:'nDesTotalP'},
+                                    {path:'nDesTotalT'}
+                                ],
+                                formatter: '.formatter.setFormatInteger'
+                            }" />
+                    </template>
+                </Column>
+
+                <Column width="6rem"
+                        hAlign="End">
+                    <multiLabels>
+                        <m:Label text="TOTALES" />
+                        <m:Label text="t/NDes" />
+                    </multiLabels>
+                    <template>
+                        <m:Text text="{
+							parts:[
+								{path: 'nCocPescaNdesD'},
+                                {path: 'nCocPescaNdesP'},
+                                {path: 'nCocPescaNdesT'}
+							],
+                            formatter: '.formatter.setTotalCoc'
+						}" />
+                    </template>
+                </Column>
+
+        </columns>
+    </TreeTable>
+</core:FragmentDefinition>

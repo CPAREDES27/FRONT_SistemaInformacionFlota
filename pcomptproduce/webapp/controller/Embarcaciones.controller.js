@@ -28,11 +28,11 @@ sap.ui.define([
 					delay : 0
 				});
 
-			this.getRouter().getRoute("object").attachPatternMatched(this._onObjectMatched, this);
+			this.getRouter().getRoute("embarcacion").attachPatternMatched(this._onObjectMatched, this);
 
 			// Store original busy indicator delay, so it can be restored later on
 			iOriginalBusyDelay = this.getView().getBusyIndicatorDelay();
-			this.setModel(oViewModel, "objectView");
+			this.setModel(oViewModel, "embarcacionesView");
 			this.getOwnerComponent().getModel().dataLoaded().then(function () {
 					// Restore original busy indicator delay for the object view
 					oViewModel.setProperty("/delay", iOriginalBusyDelay);
@@ -88,7 +88,7 @@ sap.ui.define([
 		 * @private
 		 */
 		_bindView : function (sObjectPath) {
-			var oViewModel = this.getModel("objectView"),
+			var oViewModel = this.getModel("embarcacionesView"),
 				oDataModel = this.getModel();
 
 			this.getView().bindElement({

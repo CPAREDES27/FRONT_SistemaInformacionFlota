@@ -317,7 +317,7 @@ sap.ui.define([
 			aColumns = [],
 			sHAlign,
 			oControl,
-			oObjectStatus;
+			that = this;
 
 			aLabels.forEach(label=>{
 				sHAlign = sap.ui.core.HorizontalAlign.End
@@ -332,7 +332,7 @@ sap.ui.define([
 							}
 						},
 						press:function(oEvent){
-							let oContext = oEvent.getSource().getBindingContext();
+							this.onPressEmba(oEvent.getSource())
 						}.bind(this)
 					});
 				}else{

@@ -141,8 +141,8 @@
                     "title": "{i18n>objectViewTitle}"
                 },
                 "embarcacion": {
-                    "viewName": "Embarcacion",
-                    "viewId": "embarcacion",
+                    "viewName": "Embarcaciones",
+                    "viewId": "embarcaciones",
                     "viewLevel": 3,
                     "title": "{i18n>embarcacionViewTitle}"
                 },

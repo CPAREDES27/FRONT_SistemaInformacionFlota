@@ -40,6 +40,8 @@ sap.ui.define([
 				empresaDesc:""
 			});
 
+			oModel.setProperty("/empresaIndex",1);
+
 			// Consumiendo servicios inciales
 			this.Count = 0;
 			this.CountService = 5;
