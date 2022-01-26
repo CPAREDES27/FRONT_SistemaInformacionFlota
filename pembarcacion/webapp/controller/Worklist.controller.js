@@ -306,6 +306,15 @@ sap.ui.define([
 			this.iCount=0;
 			this.iCountService=1;
 			let oPescData = await this.getDataService(oService);
+
+			for(var i=0; i<oPescData.str_pem.length; i++){
+
+				var num=oPescData.str_pem[i].RENEM.toFixed(3);
+				var renem=parseFloat(num*100.0).toFixed(1);
+				oPescData.str_pem[i].RENEM=parseFloat(renem);
+
+			}
+
 			if(oPescData){
 				oModel.setProperty("/PESCAS_EMBARCACION",oPescData["str_pem"]);
 				/*let sTotalPagination = oPescData["p_totalpag"];
@@ -417,12 +426,13 @@ sap.ui.define([
 				label: 'CBOD',
 				type: EdmType.Number,
 				property: 'CPPMS',
-				scale: 2
+				scale: 1
 			});
 
 			/**
 			 * CUOTA
 			 */
+			/*
 			aCols.push({
 				label: 'Periodo',
 				type: EdmType.Number,
@@ -435,39 +445,40 @@ sap.ui.define([
 				type: EdmType.Number,
 				property: 'CAVNC',
 				scale: 2
-			});
+			});*/
 
 			aCols.push({
 				label: 'Periodo',
 				type: EdmType.Number,
 				property: 'CPRSU',
-				scale: 2
+				scale: 1
 			});
 
 			aCols.push({
 				label: 'Avance(%)',
 				type: EdmType.Number,
 				property: 'CAVSU',
-				scale: 2
+				scale: 1
 			});
 
 			/**
 			 * Pesca TM
 			 */
+			/*
 			aCols.push({
 				label: 'Centro Norte',
 				type: EdmType.Number,
 				property: 'CNDCN',
 				scale: 2
-			});
+			});*/
 
 			aCols.push({
-				label: 'Sur',
+				label: 'Pesca Sur',
 				type: EdmType.Number,
 				property: 'CNDSU',
-				scale: 2
+				scale: 1
 			});
-
+/*
 			aCols.push({
 				label: 'CHD',
 				type: EdmType.Number,
@@ -480,25 +491,25 @@ sap.ui.define([
 				type: EdmType.Number,
 				property: 'CNDTO',
 				scale: 2
-			});
+			});*/
 
 			/**
 			 * Días de Pesca
-			 */
+			 *//*
 			aCols.push({
 				label: 'Centro Norte',
 				type: EdmType.Number,
 				property: 'DIPCN',
 				scale: 2
-			});
+			});*/
 
 			aCols.push({
-				label: 'Sur',
+				label: 'Dias Sur',
 				type: EdmType.Number,
 				property: 'DIPSU',
-				scale: 2
+				scale: 1
 			});
-
+/*
 			aCols.push({
 				label: 'CHD',
 				type: EdmType.Number,
@@ -541,14 +552,14 @@ sap.ui.define([
 				label: 'Faltantes',
 				type: EdmType.Number,
 				property: 'DIFAL',
-				scale: 2
+				scale: 1
 			});
 
 			aCols.push({
 				label: 'Rend(%)',
 				type: EdmType.Number,
 				property: 'RENEM',
-				scale: 2
+				scale: 1
 			});
 
 			return aCols;
@@ -811,7 +822,8 @@ sap.ui.define([
 			});
 
 			oLastRow.NMEMB = "Total";
-
+			console.log("HOLA");
+			console.log(oLastRow);
 			aTableData.push(oLastRow);
 			oModel.setProperty("/PESCAS_EMBARCACION",aTableData);
 			this.bFlag = true;
