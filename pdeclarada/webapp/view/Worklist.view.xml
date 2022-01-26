@@ -8,6 +8,8 @@
     xmlns:chart="sap.suite.ui.microchart"
 	xmlns:layout="sap.ui.layout">
 
+<Shell id="shell" appWidthLimited="false">
+		<App id="app">
 	<semantic:SemanticPage
 		id="page"
 		class="sapUiNoContentPadding">
@@ -461,6 +463,7 @@
 			</layout:Grid>
 		</semantic:content>
 
-	</semantic:SemanticPage>
-
+		</semantic:SemanticPage>
+		</App>
+	</Shell>
 </mvc:View>

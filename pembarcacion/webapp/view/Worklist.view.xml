@@ -134,10 +134,10 @@
 					<table:extension>
 						<OverflowToolbar style="Clear">
 							<Title text = "{worklistView>/worklistTableTitle}" />
-							<ToolbarSeparator visible="{=${/pagination/title} ? true : false}" />
+							<!--<ToolbarSeparator visible="{=${/pagination/title} ? true : false}" />
 							<ObjectStatus
 								text = "{/pagination/title}"
-								state = "Indication06"/>
+								state = "Indication06"/>-->
 							<ToolbarSpacer />
 							<Button 
 								text="Exportar"
@@ -440,8 +440,7 @@
 							</table:multiLabels>
 							<table:template>
 								<Text text="{
-												path:'= ${RENEM} * 100',
-												formatter:'.formatter.formatFloat'
+												path:'RENEM'
 											}"
 										class="classRend"
 									    textAlign="End"/>
