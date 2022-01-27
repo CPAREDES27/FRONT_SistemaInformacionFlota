@@ -856,7 +856,7 @@ sap.ui.define([
 			let opcion=this.byId("rbOpcion").getSelectedButton().getText();
 
 			if(!this.export){
-				var msj="Por favor primero realice una búsqueda";				
+				var msj="No hay datos a exportar";				
 				MessageBox.error(msj);
 				return false;
 			}
