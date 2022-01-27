@@ -26,7 +26,7 @@
 						<f:formElements>
 							<f:FormElement label="Opción">
 								<f:fields>
-									<RadioButtonGroup columns="2" valueState="Information" select="onSelectRadioButton" >
+									<RadioButtonGroup id="rbOpcion" columns="2" valueState="Information" select="onSelectRadioButton" >
 										<RadioButton text="Temporada" class="sapUiMediumMarginEnd" />
 										<RadioButton text="Fecha" />
 									</RadioButtonGroup>

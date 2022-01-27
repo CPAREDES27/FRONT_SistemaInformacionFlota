@@ -6,7 +6,9 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	'sap/ui/export/library',
 	'sap/ui/export/Spreadsheet',
-	"sap/ui/core/BusyIndicator"
+	"sap/ui/core/BusyIndicator",
+	"sap/m/MessageBox"
+
 ], function (BaseController,
 	JSONModel,
 	formatter,
@@ -14,7 +16,8 @@ sap.ui.define([
 	FilterOperator,
 	exportLibrary,
 	Spreadsheet,
-	BusyIndicator) {
+	BusyIndicator,
+	MessageBox) {
 	"use strict";
 	var EdmType = exportLibrary.EdmType;
 
@@ -67,6 +70,7 @@ sap.ui.define([
 
 			//Llenado de selectores
 			// this.loadData();
+			this.export=false;
 		},
 
 		/* =========================================================== */
@@ -269,6 +273,8 @@ sap.ui.define([
 		 * Metodo que consume servicio para para tabla
 		 */
 		onPescaSearch: async function(sPage){
+			this.export=true;
+
 			let oModel = this.getModel(),
 			oHelp = oModel.getProperty("/help"),
 			oViewModel = this.getView().getModel("worklistView"),
@@ -330,8 +336,9 @@ sap.ui.define([
 		 */
 		onClearSearch:function(){
 			let oModel = this.getModel();
-			oModel.setProperty("/help",{});
+			oModel.setProperty("/help",{});//
 			oModel.setProperty("/help/ZCDZAR","001");
+
 		},
 
 		/**
@@ -830,8 +837,10 @@ sap.ui.define([
 		},
 		exportToExcel: function (event) {
 
+			
+
 			let oModel = this.getModel(),
-			oHelp = oModel.getProperty("/help"),			
+			oHelp = oModel.getProperty("/help"),
 			sStartDate = oHelp.FHITM,
 			sEndDate = oHelp.FHFTM,
 			temporada = oHelp.CDPCN,
@@ -842,9 +851,31 @@ sap.ui.define([
 			//let tipoEmbarcacion= this.byId("tipoEmbarcacion").getValue();
 			//fechaInicio = sStartDate.split("/")[2].concat(sStartDate.split("/")[1], sStartDate.split("/")[0]);
 
-			let fechaInicioFormat = sStartDate.split("/")[2].concat(sStartDate.split("/")[1], sStartDate.split("/")[0]);
-			let fechaFinFormat = sEndDate.split("/")[2].concat(sEndDate.split("/")[1], sEndDate.split("/")[0]);
+			let fechaInicioFormat="", fechaFinFormat = "";
 
+			let opcion=this.byId("rbOpcion").getSelectedButton().getText();
+
+			if(!this.export){
+				var msj="Por favor primero realice una búsqueda";				
+				MessageBox.error(msj);
+				return false;
+			}
+
+			if(opcion=="Fecha"){
+
+				temporada="";
+				fechaInicioFormat= this.byId("dateRangePescaEmbarcacion").mProperties.dateValue;
+				fechaFinFormat= this.byId("dateRangePescaEmbarcacion").mProperties.secondDateValue;
+				fechaInicioFormat=this.onValidaFechaCalendario(fechaInicioFormat);
+				fechaFinFormat=this.onValidaFechaCalendario(fechaFinFormat);
+
+
+			}else{
+				fechaInicioFormat = sStartDate.split("/")[2].concat(sStartDate.split("/")[1], sStartDate.split("/")[0]);
+				fechaFinFormat = sEndDate.split("/")[2].concat(sEndDate.split("/")[1], sEndDate.split("/")[0]);
+			}
+
+			
 			const body = {
 				fieldstr_pem: [],
 				p_cdpcn: temporada,
@@ -853,13 +884,14 @@ sap.ui.define([
 				p_fcini: fechaInicioFormat,
 				p_user: ""
 			};
-
+			console.log("body excel: "+body);
 				fetch(this.getHostService()+"/api/sistemainformacionflota/ExportPescaPorEmbarcacion", {
 					method: 'POST',
 					body: JSON.stringify(body)
 				})
 					.then(resp => resp.json())
 					.then(data => {
+						console.log(data);
 						const content = data.base64;
 						const contentType = 'application/vnd.ms-excel';
 						const sliceSize = 512;
@@ -906,5 +938,24 @@ sap.ui.define([
 					.catch(error => console.error(error))
 			
 		},
+		onValidaFechaCalendario : function(fecha){
+
+			var date=new Date(fecha);
+				var año=date.getFullYear();
+				var mes=date.getMonth()+1;
+				var dia=date.getDate();
+
+				if(mes<10){
+
+					mes='0'+mes;
+				}
+				if(dia<10){
+
+					dia='0'+dia;
+				}
+				var formatFecha=año+''+mes+''+dia;
+
+			return formatFecha;
+		}
 	});
 });
