@@ -135,7 +135,7 @@
 					visibleRowCount="5"
 					class="classTable">
 					<table:columns>
-						<table:Column width="15rem"  >
+						<table:Column width="13rem"  >
 							<table:multiLabels>
 								<Label visible="false" />
 								<Label text="Planta"/>
@@ -147,7 +147,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="4,1" hAlign="Center" width="4rem" class="col">
+						<table:Column headerSpan="4,1" hAlign="Center" width="3.06rem" class="col">
 							<table:multiLabels>
 								<Label text="Flota propia" textAlign="Center" />
 								<Label text="Asig" textAlign="Center" />
@@ -158,7 +158,7 @@
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column hAlign="End" width="4rem" class="col">
+						<table:Column hAlign="End" width="3.06rem" class="col">
 							<table:multiLabels>
 								<Label text="Flota propia" />
 								<Label text="Pesc" textAlign="Center"/>
@@ -167,7 +167,7 @@
 								<Text text="{CEMBP}"/>
 							</table:template>
 						</table:Column>
-						<table:Column width="4rem" hAlign="End">
+						<table:Column width="3.06rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Flota propia" />
 								<Label text="Inop" textAlign="Center" />
@@ -176,7 +176,7 @@
 								<Text text="{CEMBI}"/>
 							</table:template>
 						</table:Column>
-						<table:Column hAlign="End" width="4rem">
+						<table:Column hAlign="End" width="3rem">
 							<table:multiLabels>
 								<Label text="Flota propia" />
 								<Label text="Otro" />
@@ -186,7 +186,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column id="idColAsig" headerSpan="2" hAlign="End" width="4rem">
+						<table:Column id="idColAsig" headerSpan="2" hAlign="End" width="3.1rem">
 							<table:multiLabels >
 								<Label text="% CBOD" />
 								<Label text="Asig" />
@@ -202,7 +202,7 @@
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column id="idColOper" width="4rem" hAlign="End">
+						<table:Column id="idColOper" width="3.1rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="% CBOD" />
 								<Label text="Oper" />
@@ -219,7 +219,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column id="idColDesc" headerSpan="4" hAlign="Center" width="8rem">
+						<table:Column id="idColDesc" headerSpan="4" hAlign="Center" width="4rem">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="Desc" />
@@ -239,7 +239,7 @@
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column id="idColDecl" width="6rem" hAlign="End">
+						<table:Column id="idColDecl" width="3.5rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="Decl" />
@@ -255,7 +255,7 @@
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column id="idColEp" width="4rem" hAlign="End">
+						<table:Column id="idColEp" width="3.5rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="E/P" />
@@ -264,7 +264,7 @@
 								<Text text="{TOT_NUM_EMBA}"/>
 							</table:template>
 						</table:Column>
-						<table:Column id="idColPorc" width="4rem" hAlign="End">
+						<table:Column id="idColPorc" width="3.5rem" hAlign="End">
 							<table:multiLabels>
 								<Label text="Total Pesca" />
 								<Label text="%" />
@@ -282,7 +282,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column id="idColTn" headerSpan="2" hAlign="Center" width="4rem">
+						<table:Column id="idColTn" headerSpan="2" hAlign="Center" width="3.5rem">
 							<table:multiLabels>
 								<Label text="Pesca Propios" />
 								<Label text="TN" />
@@ -299,7 +299,7 @@
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column id="idColPep" hAlign="End" width="4rem">
+						<table:Column id="idColPep" hAlign="End" width="3.5rem">
 							<table:multiLabels>
 								<Label text="Pesca Propios" />
 								<Label text="E/P" />
@@ -309,7 +309,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column id="idColTtn" headerSpan="2" hAlign="Center" width="4rem">
+						<table:Column id="idColTtn" headerSpan="2" hAlign="Center" width="3.5rem">
 							<table:multiLabels>
 								<Label text="Pesca Terceros" />
 								<Label text="TN" />
@@ -326,7 +326,7 @@
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column id="idColTep" hAlign="End" width="4rem">
+						<table:Column id="idColTep" hAlign="End" width="3.5rem">
 							<table:multiLabels>
 								<Label text="Pesca Terceros" />
 								<Label text="E/P" />
@@ -336,7 +336,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column id="idColPprop"  headerSpan="2" hAlign="End" width="4rem">
+						<table:Column id="idColPprop"  headerSpan="2" hAlign="End" width="3.5rem">
 							<table:multiLabels>
 								<Label text="Promedio" />
 								<Label text="Prop" />
@@ -352,7 +352,7 @@
 											}"/>
 							</table:template>
 						</table:Column>
-						<table:Column id="idColPterc" hAlign="End" width="4rem">
+						<table:Column id="idColPterc" hAlign="End" width="3.5rem">
 							<table:multiLabels>
 								<Label text="Promedio" />
 								<Label text="Terc" />
@@ -369,7 +369,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column hAlign="Center" width="4rem" >
+						<table:Column hAlign="Center" width="3.5rem" >
 							<Label visible="false" />
 							<table:template>
 								<Button 

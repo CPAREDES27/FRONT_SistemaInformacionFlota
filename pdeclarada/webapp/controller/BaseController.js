@@ -129,7 +129,7 @@ sap.ui.define([
 		getDataMainTable: async function(oModel,oParam){
 			const sUrl = HOST + '/api/sistemainformacionflota/PescaDeclarada',
 			param = new Object;
-
+            
 			param.fieldstr_te= [];
 			param.fieldstr_tp= [];
 			param.p_cdmma= oParam.cdmma;
@@ -144,7 +144,10 @@ sap.ui.define([
 					let aPropia,
 					aTerceras;
 					aDataTe = oMotMareaData["str_te"];
+                    
 					aDataTp.forEach(oItem=>{
+                        oItem.PORC_CBOD_OPER=oItem.PORC_CBOD_OPER.toFixed();
+                        oItem.PORC_CBOD=oItem.PORC_CBOD.toFixed();
 						aPropia = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="P");
 						aTerceras = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="T");
 						oItem.propias = aPropia;
