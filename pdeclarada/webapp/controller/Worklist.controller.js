@@ -65,8 +65,8 @@ sap.ui.define([
 			// });
 
 			// this.getDataTable(new Date, undefined);
-
-		},
+			
+				},
 
 		/* =========================================================== */
 		/* event handlers                                              */

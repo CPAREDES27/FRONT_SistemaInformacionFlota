@@ -6,7 +6,10 @@
 	xmlns:f="sap.ui.layout.form"
 	xmlns:table="sap.ui.table"
     xmlns:chart="sap.suite.ui.microchart"
-	xmlns:layout="sap.ui.layout">
+	xmlns:layout="sap.ui.layout"
+	xmlns:viz.data="sap.viz.ui5.data"
+	 xmlns:viz="sap.viz.ui5.controls"
+	 xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
 
 <Shell id="shell" appWidthLimited="false">
 		<App id="app">
@@ -449,7 +452,7 @@
 						</items>
 					</VBox>
 
-					<VBox width="30rem"  height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+					<!--<VBox width="30rem"  height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
 							<chart:InteractiveBarChart labelWidth="50%" bars="{/STR_TP_GRAPHICS}" displayedBars="{=${/countBars}}">
 								<chart:bars>
@@ -457,8 +460,32 @@
 								</chart:bars>
 							</chart:InteractiveBarChart>
 						</items>
-					</VBox>
+					</VBox>-->
+					<FlexBox width="25rem" height="35rem" direction="Column" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+						<items>
+							<ObjectStatus 
+								text=""
+								state="Indication06" />
+							<chart:InteractiveBarChart 
+						
+								bars="{/Propiedad}" 
+								labelWidth="25%" 																																																																																																																																																		
+								selectionChanged=".selectionChanged" 
+								press="press"
+								
+								displayedBars="{=${/countBars}.length}">
+								<chart:bars>
+									<chart:InteractiveBarChartBar 
+										label="{descripcion}" 
+										value="{value}" 
+										displayedValue="{porcentaje}"
+										color="Good"/>
+								</chart:bars>
+							</chart:InteractiveBarChart>
+						</items>
+					</FlexBox>
 				</layout:HorizontalLayout>
+					
 
 			</layout:Grid>
 		</semantic:content>

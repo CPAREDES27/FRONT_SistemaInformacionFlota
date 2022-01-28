@@ -346,11 +346,14 @@ sap.ui.define([
 			aGraphData=[
 				{
 					descripcion:"Propios",
-					value:iValueProp
+					value:iValueProp,
+					porcentaje:iValueProp+"%"
 				},
 				{
 					descripcion:"Terceros",
-					value:iValueTerc
+					value:iValueTerc,
+					porcentaje:iValueTerc+"%"
+
 				}
 			];
 
