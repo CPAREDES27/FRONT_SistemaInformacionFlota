@@ -160,12 +160,40 @@ sap.ui.define([
 		 */
 		_onObjectMatched : function (oEvent) {
 			var sObjectId =  oEvent.getParameter("arguments").objectId;
-			this.getModel().dataLoaded().then( function() {
-				// var sObjectPath = this.getModel().createKey("Products", {
-				// 	ProductID :  sObjectId
-				// });
-				this._bindView("/STR_DL/" + sObjectId);
-			}.bind(this));
+			this._bindView("/STR_DL/" + sObjectId);
+			
+			// this.getModel().dataLoaded().then( function() {
+			// 	// var sObjectPath = this.getModel().createKey("Products", {
+			// 	// 	ProductID :  sObjectId
+			// 	// });
+				
+			// }.bind(this));
+		},
+		_getDetailData: async function(sDate){
+			let sUrl = HOST+"/api/sistemainformacionflota/PescaDeclaradaDife",
+			oModel = this.getModel(),
+			sDateParam = formatter.formatDateInverse(sDate),
+			sRangeDate = oModel.getProperty("/rangeDate"),
+			sStartDate = sRangeDate.split("-")[0].trim(),
+			sEndDate = sRangeDate.split("-")[1].trim(),
+			sStartDateParam = formatter.formatDateInverse(sStartDate),
+			sEndDateParam = formatter.formatDateInverse(sEndDate),
+			param = {
+				fieldstr_emd: [],
+				fieldstr_emr: [],
+				fieldstr_ptd: [],
+				fieldstr_ptr: [],
+				p_fecha: sDateParam,
+				p_ffdes: sEndDateParam,
+				p_fides: sStartDateParam,
+				p_user: "FGARCIA"
+			},
+
+			oPescaDetail = await this.getDataService(sUrl, param);
+			
+			if(oPescaDetail){
+				oModel.setProperty("/pescaDetail", oPescaDetail);
+			}
 		},
 
 		/**
@@ -175,41 +203,34 @@ sap.ui.define([
 		 * @private
 		 */
 		_bindView : function (sObjectPath) {
+			console.log(sObjectPath);
 			var oViewModel = this.getModel("objectView"),
 			oDataModel = this.getModel(),
 			oObject =  oDataModel.getProperty(sObjectPath);
-			
+			console.log(oObject);
+			this._getDetailData(oObject.FECCONMOV);
+			this._applyBindTable(oObject,"D");
 			this.getView().bindElement({
-				path: sObjectPath,
-				events: {
-					// change: this._onBindingChange.bind(this),
-					dataRequested: function () {
-						oDataModel.dataLoaded().then(function () {
-							// Busy indicator on view should only be set if metadata is loaded,
-							// otherwise there may be two busy indications next to each other on the
-							// screen. This happens because route matched handler already calls '_bindView'
-							// while metadata is loaded.
-							oViewModel.setProperty("/busy", true);
-						});
-					},
-					dataReceived: function () {
-						oViewModel.setProperty("/busy", false);
-					}
-				}
+				path: sObjectPath
 			});
 			oViewModel.setProperty("/selectedKey", "D");
 			oViewModel.setProperty("/busy", false);
 
-			this._applyBindTable(oObject,"D");
+			
 			
 		},
 
 		_applyBindTable:function(oObject,sKey){
+			console.log(oObject);
+
 			let oTable = this.getView().byId("detailTableId"),
 			oLinktCol = this.getView().byId("linkTable"),
 			oModel = this.getModel(),
 			sDate,sTitleTable, sBinding;
 			if(sKey==="D"){
+
+				var array=oModel.getProperty("/pescaDetail/str_ptd");
+				console.log(array);
 				sDate = oObject["FECCONMOV"];
 				sTitleTable = "Día seleccionado";
 				sBinding = "/pescaDetail/str_ptd";
@@ -220,6 +241,8 @@ sap.ui.define([
 				sBinding = "/pescaDetail/str_ptr";
 				oLinktCol.setEnabled(false);
 			}
+			
+			console.log(sDate);
 			oModel.setProperty("/dateType", sDate);
 			oModel.setProperty("/titleTable", sTitleTable);
 			
