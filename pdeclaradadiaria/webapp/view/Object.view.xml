@@ -42,7 +42,7 @@
 									<Label text="Centro" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{WERKS}" />
+									<Text text="{oObject/WERKS}" />
 								</table:template>
 							</table:Column>
 							<table:Column headerSpan="2,1">
@@ -55,7 +55,7 @@
 										id="linkTable"
 										emphasized="true"
 										enabled="true"
-										text="{DESCR}"
+										text="{oObject/DESCR}"
 										press="onPlantaDetail"/>
 								</table:template>
 							</table:Column>
@@ -66,7 +66,7 @@
 									<Label text="Decl" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{}" />
+									<Text text="{oObject/PDLTR}" />
 								</table:template>
 							</table:Column>
 							<table:Column headerSpan="3,1">
@@ -75,7 +75,7 @@
 									<Label text="Desc" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{}" />
+									<Text text="{oObject/PDSTR}" />
 								</table:template>
 							</table:Column>
 							<table:Column headerSpan="3,1">
@@ -84,7 +84,7 @@
 									<Label text="Difer %" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{}" />
+									<Text text="{oObject/PORC_DIFER}" />
 								</table:template>
 							</table:Column>
 

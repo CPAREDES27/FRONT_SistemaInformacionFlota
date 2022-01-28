@@ -387,7 +387,7 @@ sap.ui.define([
 			},
 
 			oPescaDetail = await this.getDataService(sUrl, param);
-
+			
 			if(oPescaDetail){
 				oModel.setProperty("/pescaDetail", oPescaDetail);
 			}
