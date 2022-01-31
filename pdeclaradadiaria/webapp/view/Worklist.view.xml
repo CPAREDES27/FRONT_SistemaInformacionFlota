@@ -417,6 +417,7 @@
 															path:'value'
 															
 														}" 
+												displayedValue="{porcentaje}"
 												color="Good"/>
 										</chart:bars>
 									</chart:InteractiveBarChart>

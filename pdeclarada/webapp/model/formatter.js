@@ -25,11 +25,32 @@ sap.ui.define([], function () {
 
 		formatDateInverse:function(sDate){
 			if(sDate){
-				let sNewDate =`${sDate.split("/")[2]}${sDate.split("/")[1]}${sDate.split("/")[0]}`;
+				let day=sDate.split("/")[0];
+				let mes=sDate.split("/")[1];
+				let anio=sDate.split("/")[2];
+				debugger;
+				if(mes<10){
+					mes=this.zeroFill(mes,2);
+				}
+				if(day<10){
+					day=this.zeroFill(day,2);
+				}
+				let sNewDate =anio+""+mes+""+day;
+				console.log(sNewDate);
+				sNewDate=anio+""+mes+""+day;
 				return sNewDate;
 			}else{
 				return "";
 			}
+		},
+		zeroFill: function( number, width )
+		{
+				width -= number.toString().length;
+				if ( width > 0 )
+				{
+					return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+				}
+				return number + ""; // siempre devuelve tipo cadena
 		},
 		
 		formatDateDDMMYYYY:function(oDate){

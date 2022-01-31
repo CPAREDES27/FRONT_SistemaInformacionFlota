@@ -6,7 +6,11 @@
 	xmlns:f="sap.ui.layout.form"
 	xmlns:table="sap.ui.table"
     xmlns:chart="sap.suite.ui.microchart"
-	xmlns:layout="sap.ui.layout">
+	xmlns:layout="sap.ui.layout"
+	xmlns:viz.data="sap.viz.ui5.data"
+	xmlns:viz="sap.viz.ui5.controls"
+	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
+	
 
 	<semantic:SemanticPage
 		id="page"
@@ -211,30 +215,32 @@
 						</items>
 					</FlexBox>
 
-					<FlexBox width="20rem" height="10rem" direction="Column" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
+
+						<FlexBox width="25rem" height="35rem" direction="Column" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
 						<items>
-							<!-- <chart:InteractiveDonutChart selectionChanged="onSelectionChanged">
-								<chart:segments>
-									<chart:InteractiveDonutChartSegment label="Implementation Phase" value="40.0" displayedValue="40.0%" color="Error"/>
-									<chart:InteractiveDonutChartSegment label="Design Phase" value="21.5" displayedValue="21.5%" color="Critical"/>
-									<chart:InteractiveDonutChartSegment label="Test Phase" value="38.5" displayedValue="38.5%" color="Good"/>
-								</chart:segments>
-							</chart:InteractiveDonutChart> -->
 							<ObjectStatus 
-								text="Pesca descargada por planta"
+								text="Pesca descargada por día"
 								state="Indication06" />
-							<chart:ColumnMicroChart 
-								columns="{/plantas}" 
-								size="L" 
-								press="press" 
-								class="sapUiSmallMargin"
-								allowColumnLabels="true">
-								<chart:columns>
-									<chart:ColumnMicroChartData label="{label}" value="{value}" color="Good"/>
-								</chart:columns>
-							</chart:ColumnMicroChart>
+							<chart:InteractiveBarChart 
+						
+								bars="{/plantas}" 
+								labelWidth="25%" 																																																																																																																																																		
+								selectionChanged="selectionChanged" 
+								press="press"
+								
+								displayedBars="{=${/items}.length}">
+								<chart:bars>
+									<chart:InteractiveBarChartBar 
+										label="{label}" 
+										value="{value}" 
+										color="Critical"/>
+								</chart:bars>
+							</chart:InteractiveBarChart>
 						</items>
 					</FlexBox>
+
+
+				
 				</layout:HorizontalLayout>
 			</layout:Grid>
 		</semantic:content>

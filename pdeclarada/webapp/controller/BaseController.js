@@ -8,6 +8,7 @@ sap.ui.define([
 	"sap/ui/core/BusyIndicator",
 	"../Service/TasaBackendService",
     "./Utils",
+    'sap/m/MessageToast',
 ], function (Controller,
 	UIComponent,
 	library,
@@ -16,7 +17,8 @@ sap.ui.define([
 	Log,
 	BusyIndicator,
 	TasaBackendService,
-	Utils
+	Utils,
+    MessageToast
 	) {
 	"use strict";
 
@@ -70,6 +72,7 @@ sap.ui.define([
 					method:'POST',
 					body:JSON.stringify(param)
 				});
+                console.log(oResponseData);
 				if(oResponseData.ok) {
 					this.count++;
 					return oResponseData.json();
@@ -129,7 +132,7 @@ sap.ui.define([
 		getDataMainTable: async function(oModel,oParam){
 			const sUrl = HOST + '/api/sistemainformacionflota/PescaDeclarada',
 			param = new Object;
-
+            
 			param.fieldstr_te= [];
 			param.fieldstr_tp= [];
 			param.p_cdmma= oParam.cdmma;
@@ -139,21 +142,37 @@ sap.ui.define([
 			aDataTp,
 			aDataTe;
 			if(oMotMareaData){
+                console.log(oMotMareaData);
 				aDataTp = oMotMareaData["str_tp"];
 				if(aDataTp.length>0){
 					let aPropia,
 					aTerceras;
 					aDataTe = oMotMareaData["str_te"];
+                    
+
 					aDataTp.forEach(oItem=>{
+                        oItem.PORC_CBOD_OPER=oItem.PORC_CBOD_OPER.toFixed();
+                        oItem.PORC_CBOD=oItem.PORC_CBOD.toFixed();
 						aPropia = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="P");
 						aTerceras = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="T");
 						oItem.propias = aPropia;
 						oItem.terceras = aTerceras;
 						oItem.cantPropias = aPropia.length;
-						oItem.cantTerceras = aTerceras.length;
+						oItem.cantTerceras = aTerceras.length;                      
+                        
 					});
+                    var propias=aDataTe.filter(item=>item.INPRP==="P").length;
+                    var terceros=aDataTe.filter(item=>item.INPRP==="T").length;
+                    var ninguno=aDataTe.filter(item=>item.INPRP==="").length;
+
+                    console.log(propias);
+                    console.log(terceros);
+                    console.log(ninguno);
+
+
 					this.getGraphData(aDataTp);
-					this.calcularTotales(aDataTp);
+					this.calcularTotales(aDataTp,propias, terceros, ninguno);
+                    this.getBarsPropiedad(aDataTp);
 					oModel.setProperty(`/str_tp`,aDataTp);
 					oModel.setProperty(`/str_te`,aDataTe);
 					this.setTotalRowTable();
@@ -166,7 +185,7 @@ sap.ui.define([
 			
 		},
 
-		calcularTotales: function (listPescaDeclarada) {
+		calcularTotales: function (listPescaDeclarada, propios, terceros, ninguno) {
 			/**
 			 * Copia del primer elemento para obtener su modelo
 			 */
@@ -189,6 +208,9 @@ sap.ui.define([
 			let total_PROM_PESC_PROP = 0;
 			let total_PROM_PESC_TERC = 0;
 			let total_TOTED = 0;
+            let total_Propios= 0;
+            let total_Terceros= 0;
+
 
 			listPescaDeclarada.forEach(p => {
 				total_CEMBA += p.CEMBA;
@@ -205,6 +227,8 @@ sap.ui.define([
 				total_PROM_PESC_PROP += p.PROM_PESC_PROP;
 				total_PROM_PESC_TERC += p.PROM_PESC_TERC;
 				total_TOTED += p.TOTED;
+               
+                
 			});
 
 			/**
@@ -228,6 +252,11 @@ sap.ui.define([
 			pescaDeclaradaTotal.PROM_PESC_PROP = total_PROM_PESC_PROP.toFixed(0);
 			pescaDeclaradaTotal.PROM_PESC_TERC = total_PROM_PESC_TERC.toFixed(0);
 			pescaDeclaradaTotal.TOTED = total_TOTED;
+            pescaDeclaradaTotal.cantPropias=parseInt(propios);
+            pescaDeclaradaTotal.cantTerceras=parseInt(terceros);
+            pescaDeclaradaTotal.cantVacio=parseInt(ninguno);
+
+
 
 			listPescaDeclarada.push(pescaDeclaradaTotal);
 
@@ -250,7 +279,39 @@ sap.ui.define([
 
 			this.getModel().setProperty("/STR_TP_GRAPHICS", aGraphData);
 			this.getModel().setProperty("/countBars", aData.length-1);
+
+           
 		},
+        getBarsPropiedad:function(aData){
+ 
+            var total=aData[aData.length-1];
+            var totalEmbarca=total.cantPropias+total.cantTerceras+total.cantVacio;
+
+            var items=[
+                {
+                    descripcion:"Propias",
+                    value:parseInt(((total.cantPropias*100)/totalEmbarca).toFixed(0)),
+                    porcentaje:((total.cantPropias*100)/totalEmbarca).toFixed(0).concat("%"),
+                    cantidad:total.cantPropias
+
+                },
+                {
+                    descripcion:"Terceros",
+                    value:parseInt(((total.cantTerceras*100)/totalEmbarca).toFixed(0)),
+                    porcentaje:((total.cantTerceras*100)/totalEmbarca).toFixed(0).concat("%"),
+                    cantidad:total.cantTerceras
+
+                },
+                {
+                    descripcion:"Ninguno",
+                    value:parseInt(((total.cantVacio*100)/totalEmbarca).toFixed(0)),
+                    porcentaje:((total.cantVacio*100)/totalEmbarca).toFixed(0).concat("%"),
+                    cantidad:total.cantVacio
+                }
+             ];		
+			this.getModel().setProperty("/Propiedad", items);
+            console.log(items);
+        },
 
 		setTotalRowTable:function(){
 			let oTable = sap.ui.getCore().byId("application-pescaDeclarada-display-component---worklist--tablePescaDeclarada");
@@ -736,7 +797,28 @@ sap.ui.define([
 
             BusyIndicator.hide();
         },
+        selectionChanged: function (oEvent) {
+			var oBar = oEvent.getParameter("bar");
+            var Propiedad=this.getModel().getProperty("/Propiedad");
+            var cantidad=0;
 
+            var n=false;
+            if(oBar.getLabel() =="Propias"){
+                cantidad=Propiedad[0].cantidad;
+            }
+            if(oBar.getLabel() =="Terceros"){
+                cantidad=Propiedad[1].cantidad;
+
+            }
+            if(oBar.getLabel() =="Ninguno"){
+                cantidad=Propiedad[2].cantidad;
+                n=true;
+            }
+
+            MessageToast.show("Se encontró "+ cantidad +" embarcaciones "+(!n ? oBar.getLabel(): " sin indicador de propiedad"));
+            oBar.setSelected(false);
+			//MessageToast.show("The selection changed: " + oBar.getLabel() +" "+cantidad + " " + ((oBar.getSelected()) ? "selected" : "deselected"));
+		}
 
 
 

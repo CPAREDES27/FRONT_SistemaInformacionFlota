@@ -346,11 +346,14 @@ sap.ui.define([
 			aGraphData=[
 				{
 					descripcion:"Propios",
-					value:iValueProp
+					value:iValueProp,
+					porcentaje:iValueProp+"%"
 				},
 				{
 					descripcion:"Terceros",
-					value:iValueTerc
+					value:iValueTerc,
+					porcentaje:iValueTerc+"%"
+
 				}
 			];
 
@@ -387,7 +390,7 @@ sap.ui.define([
 			},
 
 			oPescaDetail = await this.getDataService(sUrl, param);
-
+			
 			if(oPescaDetail){
 				oModel.setProperty("/pescaDetail", oPescaDetail);
 			}

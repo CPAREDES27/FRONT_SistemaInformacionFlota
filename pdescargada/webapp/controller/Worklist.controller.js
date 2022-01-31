@@ -305,6 +305,7 @@ sap.ui.define([
 					}
 				});
 			});
+			console.log(aPlantasGraph);
 			oModel.setProperty("/columns",aColumns);
 			oModel.setProperty("/items",aItems);
 			oModel.setProperty("/plantas",aPlantasGraph);
