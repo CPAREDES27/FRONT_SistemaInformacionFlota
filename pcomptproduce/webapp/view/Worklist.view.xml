@@ -7,8 +7,7 @@
 	xmlns:form="sap.ui.layout.form"
 	xmlns:semantic="sap.f.semantic">
 
-	<semantic:SemanticPage id="page"
-		>
+	<semantic:SemanticPage id="pageGrupoEmp">
 		<semantic:titleHeading>
 			<Title
 				text="{i18n>worklistTitle}"
@@ -18,7 +17,7 @@
 		<semantic:headerContent>
 			<form:Form 
 				editable="true"
-				binding="{ path: '/help'}" 
+				binding="{path: '/help'}" 
 				class="formClass">
 				<form:title>
 					<core:Title	text="Datos de selección" icon = "sap-icon://filter"/>
@@ -63,8 +62,10 @@
 								</form:fields>
 							</form:FormElement>
 							<form:FormElement 
-								label="Temporadas"
 								visible="{=${worklistView>/fechaIndex} === 0 ? true : false}">
+								<form:label>
+									<Label text="Temporadas" design="Bold" />
+								</form:label>
 								<form:fields>
 									<Input 
 										value="{
@@ -83,8 +84,10 @@
 								</form:fields>
 							</form:FormElement>
 							<form:FormElement 
-								label="Fecha"
 								visible="{=${worklistView>/fechaIndex} === 1 ? true : false}">
+								<form:label>
+									<Label text="Fecha" design="Bold" />
+								</form:label>
 								<form:fields>
 									<DateRangeSelection
 										value="{dateRange}"
@@ -96,8 +99,10 @@
 								</form:fields>
 							</form:FormElement>
 							<form:FormElement 
-								label="Zona"
 								visible="{=%{worklistView>/fechaIndex} === 1 ? true : false}">
+								<form:label>
+									<Label text="Zona" design="Bold" />
+								</form:label>
 								<form:fields>
 									<Select
 										items="{path:'/1ZONAAREA'}"
@@ -113,8 +118,10 @@
 					<form:FormContainer>
 						<form:formElements>
 							<form:FormElement 
-								label="Categoría"
-								visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+								visible="{=%{/empresaIndex} === 0 ? true : false}">
+								<form:label>
+									<Label text="Categoría" design="Bold" />
+								</form:label>
 								<form:fields>
 									<Select
 										items="{path:'/CATEGORIA'}"
@@ -125,8 +132,10 @@
 								</form:fields>
 							</form:FormElement>
 							<form:FormElement 
-								label="Grupo empresarial"
-								visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+								visible="{=%{/empresaIndex} === 0 ? true : false}">
+								<form:label>
+									<Label text="Grupo empresarial" design="Bold" />
+								</form:label>
 								<form:fields>
 									<Input
 										value="{CDGRE}"
@@ -163,9 +172,11 @@
 									</Input>
 								</form:fields>
 							</form:FormElement>
-							<form:FormElement 
-								label="Empresa receptora"
-								visible="{=%{worklistView>/empresaIndex} === 1 ? true : false}">
+							<form:FormElement
+								visible="{=%{/empresaIndex} === 1 ? true : false}">
+								<form:label>
+									<Label text="Empresa receptora" design="Bold" />
+								</form:label>
 								<form:fields>
 									<Input
 										value="{CDEMP}"
@@ -204,8 +215,10 @@
 								</form:fields>
 							</form:FormElement>
 							<form:FormElement 
-								label="Embarcación"
-								visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+								visible="{=%{/empresaIndex} === 0 ? true : false}">
+								<form:label>
+									<Label text="Embarcación" design="Bold" />
+								</form:label>
 								<form:fields>
 									<Input
 										value="{

@@ -3,7 +3,7 @@
     xmlns:core="sap.ui.core"
     xmlns="sap.ui.table">
     <Table
-        id="table"
+        id="tableArmad"
         selectionMode="None"
         visibleRowCount="8"
         fixedColumnCount="1"
@@ -17,7 +17,7 @@
         </extension>
         <columns>
             <!-- Columna Grupo Empresarial -->
-                <Column width="12rem"
+                <Column width="15rem"
                         hAlign="Begin">
                     <multiLabels>
                         <m:Label text=""/>
@@ -41,23 +41,29 @@
                         <m:Label text="Período" />
                     </multiLabels>
                     <template>
-                        <m:Text text="{= ${/help/ZCDZAR} === '001' ? ${CPRNC} : ${CPRSU}}"  textAlign="End" />
+                        <m:Text 
+                            text="{= ${/help/ZCDZAR} === '001' ? ${CPRNC} : ${CPRSU}}"  
+                            textAlign="End"
+                            class="classPeriodo"/>
                     </template>
                 </Column>
 
-                <Column width="6rem"
+                <Column width="5.5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="CUOTA" />
                         <m:Label text="Avance(%)" />
                     </multiLabels>
                     <template>
-                        <m:Text text="{= ${/help/ZCDZAR} === '001' ? ${CAVNC} : ${CAVSU}}" />
+                        <m:Text 
+                            text="{= ${/help/ZCDZAR} === '001' ? ${CAVNC} : ${CAVSU}}"
+                            textAlign="End"
+                            class="classPuerto"  />
                     </template>
                 </Column>
 
             <!-- COlumnas de totales -->
-                <Column width="8rem"
+                <Column width="6.5rem"
                         headerSpan="5,1"
                         hAlign="Center">
                     <multiLabels>
@@ -78,7 +84,7 @@
                     </template>
                 </Column>
 
-                <Column width="6rem"
+                <Column width="4rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -91,11 +97,13 @@
                                 {path: 'nDesTotalD'}
                             ],
                             formatter:'.formatter.setDivision'
-                        }" />
+                        }"
+                        textAlign="End"
+                        class="classDsTasa" />
                     </template>
                 </Column>
 
-                <Column width="6rem"
+                <Column width="4.5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -109,11 +117,13 @@
                                     {path: 'EMBTR'}
                                 ],
                                 formatter: '.formatter.setTotalCol'    
-                            }"  />
+                            }" 
+                            textAlign="End"
+                            class="classTotales" />
                     </template>
                 </Column>
 
-                <Column width="6rem"
+                <Column width="5.5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -127,11 +137,13 @@
                                     {path:'nDesTotalT'}
                                 ],
                                 formatter: '.formatter.setTotalCol'
-                            }" />
+                            }" 
+                            textAlign="End"
+                            class="classTotales"/>
                     </template>
                 </Column>
 
-                <Column width="6rem"
+                <Column width="5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -145,7 +157,9 @@
                                 {path: 'nCocPescaNdesT'}
 							],
                             formatter: '.formatter.setTotalCoc'
-						}" />
+						}"
+                        textAlign="End"
+                        class="classTotales" />
                     </template>
                 </Column>
 

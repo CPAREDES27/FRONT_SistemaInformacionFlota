@@ -2,52 +2,46 @@
     xmlns:m="sap.m"
     xmlns:core="sap.ui.core"
     xmlns="sap.ui.table">
-    <TreeTable
-        id="empresasTable"
-        rows="{
-            path:'/empresas',
-            parameters:{
-                arrayNames:['indProp']
-            }
-        }"
+    <Table
+        id="tableRecep"
         selectionMode="None"
         visibleRowCount="8"
-        fixedColumnCount="0"
+        fixedColumnCount="1"
         fixedBottomRowCount="3"
         class="classPrincipalTable">
         <extension>
             <m:OverflowToolbar >
-                <m:Title text="{objectView>/objectTableTitle}" />
+                <m:Title text="{worklistView>/worklistTableTitle}" />
                 <m:ToolbarSpacer />
-                <!-- <m:SegmentedButton 
-                    selectedKey="{objectView>/indicadorPropiedad}" 
+                <m:SegmentedButton 
+                    selectedKey="{worklistView>/indicadorPropiedad}" 
                     selectionChange="onSelectioIndPropiedad" 
-                    visible="{=%{objectView>/empresaIndex} === 0 ? false : true}">
+                    visible="{= ${/bMostrarProp} }">
 					<m:items>
 						<m:SegmentedButtonItem text="Todos" key="D" />
 						<m:SegmentedButtonItem text="Propios" key="P"/>
 						<m:SegmentedButtonItem text="Terceros" key="T"/>
 					</m:items>
-				</m:SegmentedButton> -->
+				</m:SegmentedButton>
                 <m:Button 
-                    icon="sap-icon://multi-select"
+                    icon="sap-icon://close-command-field"
                     text="Puertos por zona" 
                     press="onOpenZonas"
                     type="Accept"
-                    visible="{= ${objectView>/empresaIndex} === 1 &amp;&amp; ${objectView>/bMostrarPuertos} }"/>
+                    visible="{= ${/bMostrarPuertos} }"/>
             </m:OverflowToolbar>
         </extension>
         <columns>
             <!-- Columna Grupo Empresarial -->
-                <Column width="15rem"
+                <Column width="12rem"
                         hAlign="Begin">
                     <multiLabels>
                         <m:Label text=""/>
-                        <m:Label text="EMPRESA"/>
+                        <m:Label text="GRUPO EMPRESARIAL"/>
                     </multiLabels>
                     <template>
                         <m:ObjectStatus
-                            text="{DSEMP}"
+                            text="{DSGRE}"
                             active="true"
                             state="Information"
                             press=".onPress" />
@@ -55,8 +49,8 @@
                 </Column>
 
             <!-- COlumnas de totales -->
-                <Column width="6rem"
-                        headerSpan="5,1"
+                <Column width="6.5rem"
+                        headerSpan="4,1"
                         hAlign="Center">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -65,16 +59,18 @@
                     <template>
                         <m:Text text="{
                                 parts:[
-                                    {path:'CNPDS'}
+                                    {path:'CNPDS'},
+                                    {path:'CNDPR'},
+                                    {path:'CPDTR'}
                                 ],
-                                formatter:'.formatter.setFormatInteger'
+                                formatter:'.formatter.setTotalCol'
                             }"
                             textAlign="End"
                             class="classPesca" />
                     </template>
                 </Column>
 
-                <Column width="4rem"
+                <Column width="4.5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -83,14 +79,18 @@
                     <template>
                         <m:Text text="{
                                 parts:[
-                                    {path: 'NREMB'}
+                                    {path: 'NREMB'},
+                                    {path: 'EMBPR'},
+                                    {path: 'EMBTR'}
                                 ],
-                                formatter:'.formatter.setFormatInteger'   
-                            }"  />
+                                formatter: '.formatter.setTotalCol'    
+                            }"
+                            textAlign="End"
+                            class="classTotales" />
                     </template>
                 </Column>
 
-                <Column width="6rem"
+                <Column width="5.5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -100,15 +100,17 @@
                         <m:Text text="{
                                 parts:[
                                     {path:'CNDSH'},
-                                    {path:'nDesTotalP'},
-                                    {path:'nDesTotalT'}
+                                    {path:'DSHPR'},
+                                    {path:'DSHTR'}
                                 ],
-                                formatter: '.formatter.setFormatInteger'
-                            }" />
+                                formatter: '.formatter.setTotalCol'
+                            }"
+                            textAlign="End"
+                            class="classTotales" />
                     </template>
                 </Column>
 
-                <Column width="6rem"
+                <Column width="5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -122,10 +124,12 @@
                                 {path: 'nCocPescaNdesT'}
 							],
                             formatter: '.formatter.setTotalCoc'
-						}" />
+						}"
+                        textAlign="End"
+                        class="classTotales" />
                     </template>
                 </Column>
 
         </columns>
-    </TreeTable>
+    </Table>
 </core:FragmentDefinition>

@@ -27,7 +27,7 @@
         "@sap/ui5-builder-webide-extension": "1.0.x",
         "@sap/ux-ui5-tooling": "^1.4.6",
         "@sapui5/ts-types": "1.92.2",
-        "@ui5/cli": "^2.14.2",
+        "@ui5/cli": "^2.14.4",
         "@ui5/fs": "^2.0.6",
         "@ui5/logger": "^2.0.1",
         "eslint": "7.32.0",

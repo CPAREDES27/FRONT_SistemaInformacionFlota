@@ -254,16 +254,25 @@ sap.ui.define([
 			aColumns = [],
 			sHAlign,
 			oText,
-			sPath;
+			sPath,
+			sWidth,
+			sId;
 
 			aLabels.forEach(label=>{
+				sId = label;
+				sWidth = "4.5rem"
 				sHAlign = sap.ui.core.HorizontalAlign.End
-				if(label === "NDes") sPath = sPathNdes;
+				if(label === "NDes"){
+					sPath = sPathNdes;
+					sWidth = "5rem";
+				}
 				if(label === "Pesca") {
 					sHAlign = sap.ui.core.HorizontalAlign.Center;
 					sPath = sPathPesca;
+					sWidth = "6rem";
 				}
 				if(label === "t/NDes"){
+					sId = "tNDes";
 					oText =  new sap.m.Text({
 						textAlign: sap.ui.core.TextAlign.End,
 						text: {
@@ -291,8 +300,8 @@ sap.ui.define([
 				}
 				oText.addStyleClass("colHeader");
 				
-				aColumns.push(new sap.ui.table.Column({
-					width: "6rem",
+				aColumns.push(new sap.ui.table.Column(/*`${sId}-${sCod}`,*/{
+					width: sWidth,
 					hAlign: sHAlign,
 					headerSpan: label === "Pesca" ? "3,1" : "",
 					multiLabels:[
@@ -317,11 +326,13 @@ sap.ui.define([
 			aColumns = [],
 			sHAlign,
 			oControl,
-			that = this;
+			sWidth;
 
 			aLabels.forEach(label=>{
+				sWidth = "5rem";
 				sHAlign = sap.ui.core.HorizontalAlign.End
 				if(label.label === "Pesca") {
+					sWidth = "6rem";
 					sHAlign = sap.ui.core.HorizontalAlign.Center;
 					oControl =  new sap.m.ObjectStatus({
 						active:true,
@@ -350,7 +361,7 @@ sap.ui.define([
 				oControl.addStyleClass("classPuerto");
 				
 				aColumns.push(new sap.ui.table.Column({
-					width: "6rem",
+					width: sWidth,
 					hAlign: sHAlign,
 					headerSpan: label.label === "Pesca" ? "2,1" : "",
 					multiLabels:[

@@ -16,7 +16,8 @@
 		<semantic:titleHeading>
 			<m:ObjectStatus 
 				title="EMBARCACIONES"
-				text="{}"/>
+				text="{DSEMP}{DSGRE}"
+				state="Information"/>
 			<!-- <m:Title
 				text="{DSGRE}"
 				level="H2"/> -->
@@ -24,14 +25,8 @@
 
 		<semantic:content>
 			<Table 
-				id = "table"
-				rows = "{
-					path:'/table',
-					events:{
-						change:'.onRowsDataChange'
-					}
-				}"
-				columns = "{path:'/tableItems/str_zlt'}"
+				id = "tableEmbarcaciones"
+				rows = "{/table}"
 				sort="onSort"
 				selectionMode="None">
 				<extension>
@@ -41,41 +36,36 @@
 					</m:OverflowToolbar>
 				</extension>
 				<columns>
-					<Column width="12rem"
-							hAlign="Begin">
+					<Column width="12rem">
 						<!-- <multiLabels> -->
-							<m:Label text="Empresa"/>
+							<m:Label text="Grupo empresarial"/>
 						<!-- </multiLabels> -->
 						<template>
-							<m:Link 
-								text="{DSGRE}"
-								press=".onPress"
-								emphasized="true"
-								enabled="{worklistView>/linkVisible}"/>
+							<m:Text text="{DSGRE}" />
 						</template>
 					</Column>
 
-					<Column width="8rem"
-							hAlign="Center">
+					<Column width="8rem">
 						<multiLabels>
 							<m:Label text="Embarcación" />
 						</multiLabels>
 						<template>
-							<m:Text text="{
-								path:'CNPDS',
-								formatter:'.formatter.setFormatInteger'
-								}" />
+							<m:ObjectStatus
+								text="{
+								path:'NMEMB'
+								}"
+								active="true"
+								press=".onPress"
+								state="Information" />
 						</template>
 					</Column>
 
-					<Column width="6rem"
-							hAlign="Center"
-							visible="{=%{worklistView>/empresaIndex} === 0 ? true : false}">
+					<Column width="8rem">
 						<multiLabels>
 							<m:Label text="Matrícula" />
 						</multiLabels>
 						<template>
-							<m:Text text="" />
+							<m:Text text="{MREMB}" />
 						</template>
 					</Column>
 
@@ -85,47 +75,57 @@
 							<m:Label text="CBOD"/>
 						</multiLabels>
 						<template>
-							<m:Text text="{NREMB}"  />
+							<m:Text text="{CPPMS}"  />
 						</template>
 					</Column>
 
 					<Column width="6rem"
-							hAlign="Center">
+							hAlign="End">
 						<multiLabels>
 							<m:Label text="Pesca" />
 						</multiLabels>
 						<template>
-							<m:Text text="" />
+							<m:Text 
+								text="{
+									path:'CNPDS',
+									formatter:'.formatter.setFormatInteger'
+								}"
+								class="classPesca" 
+								textAlign="End"/>
 						</template>
 					</Column>
 
 					<Column width="6rem"
-							hAlign="Center">
+							hAlign="End">
 						<multiLabels>
 							<m:Label text="Num desc" />
 						</multiLabels>
 						<template>
-							<m:Text text="" />
+							<m:Text text="{
+									path:'CNDSH',
+									formatter:'.formatter.setFormatInteger'
+								}" />
 						</template>
 					</Column>
 						
 					<Column width="8rem"
-							hAlign="Center"
-							visible="{=${/tableItems/str_zlt/0/DSZLT}?true:false}">
+							hAlign="Begin">
 						<multiLabels>
 							<m:Label text="Ind prop" />
 						</multiLabels>
 						<template>
 							<m:Text text="{
-								path:'CNPDS',
-								formatter:'.formatter.setFormatInteger'
-							}" 
-							textAlign="End"/>
+								path:'INPRP'
+							}" />
 						</template>
 					</Column>
 				</columns>
 			</Table>
 		</semantic:content>
+
+		<semantic:closeAction>
+			<semantic:CloseAction press="onNavBack" />
+		</semantic:closeAction>
 
 	</semantic:SemanticPage>
 

@@ -30,8 +30,7 @@ sap.ui.define([
 		 */
 		onInit : function () {
 			var oViewModel,
-				iOriginalBusyDelay,
-				oTable = this.byId("table");
+				iOriginalBusyDelay;
 
 			// Put down worklist table's original value for busy indicator delay,
 			// so it can be restored later on. Busy handling on the table is
@@ -39,6 +38,9 @@ sap.ui.define([
 			// iOriginalBusyDelay = oTable.getBusyIndicatorDelay();
 			// keeps the search state
 			this._aTableSearchState = [];
+			this.mTables = {};
+			this.colZonasLength = 0;
+			this.aColPuertosLength = 0;
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
@@ -52,8 +54,7 @@ sap.ui.define([
 				selectedReceptor: true,
 				selectedFecha:false,
 				selectedTemp:true,
-				indicadorPropiedad:"D",
-				bMostrarPuertos:false
+				indicadorPropiedad:"D"
 			});
 			this.setModel(oViewModel, "worklistView");
 
@@ -69,16 +70,25 @@ sap.ui.define([
 
 		onAfterRendering:function(oEvent){
 			let oModel = this.getModel(),
-			oPage = this.getView().byId("page"),
-			iEmpresaIndex = oModel.getProperty("/empresaIndex");
+			oView = this.getView(),
+			oPage = oView.byId("pageGrupoEmp"),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
+			oRecepTable;
 
+			oModel.setProperty("/bMostrarPuertos",false);
+			oModel.setProperty("/bMostrarProp",true);
+			
 			if(iEmpresaIndex === 1){
-				Fragment.load({
-					name:"com.tasa.pcomptproduce.view.fragments.TablaRecep",
-					controller:this
-				}).then(oTable=>{
-					oPage.setContent(oTable);
-				});
+				oRecepTable = this.mTables["TablaRecep"];
+				if(!oRecepTable){
+					this.RecepcionTable = this.loadFragment({
+						name:"com.tasa.pcomptproduce.view.fragments.TablaRecep"
+					}).then(oTable=>{
+						this.mTables["TablaRecep"] = oTable;
+						// oView.addDependent(oTable);
+						oPage.setContent(oTable);
+					});
+				}
 			} 
 			
 		},
@@ -116,7 +126,8 @@ sap.ui.define([
 			iTotalRows = oRowBinding.iLength,
 			oViewModel = this.getModel("worklistView"),
 			oModel = this.getModel(),
-			aColumnZonas = oModel.getProperty("/oDataApp/str_zlt"),
+			aZonas = oModel.getProperty("/oDataApp/str_zlt"),
+			bIsPort = false,
 			sTitle;
 
 			oViewModel.setProperty("/tabCount","");
@@ -124,13 +135,13 @@ sap.ui.define([
 				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalRows]);
 				oViewModel.setProperty("/tabCount",iTotalRows);
 				oViewModel.setProperty("/indicadorPropiedad","D")
-				this._buildColumns(aColumnZonas,"CNPDS","CNDSH");
-				
+				oModel.setProperty("/selectedCodZona",undefined);
+				this._buildZonasColumns(aZonas,bIsPort);
+				this._formatTotales(iTotalRows);
 			} else {
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
 			oViewModel.setProperty("/worklistTableTitle", sTitle);
-			this._formatTotales(iTotalRows);
 		},
 
 		onSort:function(oEvent){
@@ -147,10 +158,36 @@ sap.ui.define([
 			this._showObject(oEvent.getSource());
 		},
 
-		onPressEmba:function(oItem){
-			this.getRouter().navTo("embarcacion", {
-				objectId: oItem.getBindingContext().getPath().split("/")[2]
-			});
+		onPressEmba: async function(oItem){
+			let oContext = oItem.getBindingContext(),
+			 oObject = oContext.getObject(),
+			 sPath = oContext.getPath(),
+			 sPathRow = sPath.split("/")[1],
+			 sObjectId = sPath.split("/")[2],
+			 oModel = oContext.getModel(),
+			 oParam = this._getParametersService(oObject),
+			 oService = {},
+			 oData;
+			oService.url = this.getHostService() +  "/api/sistemainformacionflota/PescaCompetenciaProduce";
+			oService.serviceName = "Embarcaciones";
+			oService.param = oParam;
+			oService.param.cdusr = "";
+			oService.p_ctgra = "";
+			oService.p_zcdzar = "";
+			oService.p_emba = "";
+			oService.p_empeb = "";
+
+			this.Count = 0; 
+			this.CountService = 1;
+			oData = await this.getDataService(oService);
+			if(oData){
+				oModel.setProperty("/embarcaciones", oData);
+				oModel.setProperty("/pathRow", sPathRow);
+				// The source is the list item that got pressed
+				this.getRouter().navTo("embarcacion", {
+					objectId: sObjectId
+				});
+			}
 		},
 
 		/**
@@ -189,7 +226,10 @@ sap.ui.define([
 		 * @public
 		 */
 		onRefresh : function () {
-			var oTable = this.byId("table");
+			var oTable = sap.ui.getCore().byId("tableRecep"),
+			oModel = this.getModel(),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex");
+			if(iEmpresaIndex === 0) oTable = sap.ui.getCore().byId("tableArmad");
 			oTable.getBinding("items").refresh();
 		},
 
@@ -197,15 +237,29 @@ sap.ui.define([
 		 * Event handler for select empresa
 		 * @param {event} oEvent 
 		 */
-		onSelectEmpresa:function(oEvent){
+		onSelectEmpresa: async function(oEvent){
 			let iEmpresaIndex = oEvent.getParameter("selectedIndex"),
+			oView = this.getView(),
+			oPage = oView.byId("pageGrupoEmp"),
 			oModel = this.getModel(),
 			oViewModel = this.getModel("worklistView"),
+			oArmadTable,
+			oRecepTable,
 			sTitle;
+
 			if(iEmpresaIndex === 0) {
 				oModel.setProperty("/help/CDEMP","");
 				oModel.setProperty("/help/DSEMP","");
 				oModel.setProperty("/help/RUCPRO","");
+				oArmadTable = this.mTables["TablaArma"];
+				if(!oArmadTable){
+					oArmadTable = await this.loadFragment({
+						name:"com.tasa.pcomptproduce.view.fragments.TablaArma"
+					});
+					this.mTables["TablaArma"] = oArmadTable;
+					// oView.addDependent(oArmadTable);
+				}
+				oPage.setContent(oArmadTable);
 			}else{
 				oModel.setProperty("/help/sKeyCateg","");
 				oModel.setProperty("/help/CTGRA","");
@@ -217,13 +271,17 @@ sap.ui.define([
 				oModel.setProperty("/help/NMEMB","");
 				oModel.setProperty("/help/MREMB","");
 				oModel.setProperty("/help/NAME1","");
+
+				oRecepTable = this.mTables["TablaRecep"];
+				oPage.setContent(oRecepTable);
 			}
 
 			sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			oViewModel.setProperty("/worklistTableTitle", sTitle);
-			oViewModel.setProperty("/bMostrarPuertos",false);
+			oModel.setProperty("/bMostrarPuertos",false);
 			oModel.setProperty("/tableRows",{});
-			this._destroyColumns();
+			let bFlag = true;
+			this._removeColumns(bFlag);
 		},
 
 		/**
@@ -344,11 +402,10 @@ sap.ui.define([
 		 */
 		onSearchTable: async function(){
 			let oModel = this.getModel(),
-			oTable = this.getView().byId("table"),
-			oUser = await this.getCurrentUser(),
+			oTable = this.getView().byId("tableRecep"),
 			oViewModel = this.getModel("worklistView"),
 			iFechaIndex = oViewModel.getProperty("/fechaIndex"),
-			iEmpresaIndex = oViewModel.getProperty("/empresaIndex"),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
 			oFormData = oModel.getProperty("/help"),
 			sFecha = oFormData["dateRange"],
 			sFHITM = oFormData["FHITM"],
@@ -359,10 +416,11 @@ sap.ui.define([
 			sFechaFin,
 			sOptionsKeys,
 			sOptionsLowValue,
-			oService = {};
+			oService = {},
+			oParam;
 
-			oTable.unbindRows();
-
+			if(iEmpresaIndex === 0) oTable =this.getView().byId("tableArmad");
+			// oTable.unbindRows();
 			if(iFechaIndex === 1) {
 				if(!sFecha) {
 					oViewModel.setProperty("/fechaState","Error");
@@ -385,25 +443,11 @@ sap.ui.define([
 				sOptionsLowValue = oFormData["CDEMB"]; 
 			}
 
-			this.Count = 0; 
-			this.CountService = 1;
-			let param={
-				cdusr: oUser.name,
-				p_cdgre: "",
-				p_cdpcn: oFormData["CDPCN"] || "",
-				p_ctgra: oFormData["sKeyCateg"] || "",
-				p_emba: oFormData["CDEMB"] ? "E" : "G",
-				p_empeb: oFormData["CDEMP"] || "",
-				p_fefin: formatter.setFormatDateYYYYMMDD(sFechaFin),
-				p_feini: formatter.setFormatDateYYYYMMDD(sFechaInicio),
-				p_grueb: "",
-				p_option: [],
-				p_options: [],
-				p_tcons: iEmpresaIndex === 0 ? "A" : "P",
-				p_zcdzar: oFormData["ZCDZAR"] || ""
-			  };
+			oFormData.p_fefin = formatter.setFormatDateYYYYMMDD(sFechaFin);
+			oFormData.p_feini = formatter.setFormatDateYYYYMMDD(sFechaInicio);
+			oParam = this._getParametersService(oFormData); 
 			if(sOptionsLowValue){
-				param.p_options = [
+				oParam.p_options = [
 					{
 						cantidad: "10",
 						control: "INPUT",
@@ -415,7 +459,8 @@ sap.ui.define([
 			}
 			oService.url = this.getHostService() +  "/api/sistemainformacionflota/PescaCompetenciaProduce";
 			oService.serviceName = "Pesca de competencia produce";
-			oService.param = param;
+			oService.param = oParam;
+			oModel.setProperty("/SearchingParam",oParam);
 			this._getDataMainTable(oService,iEmpresaIndex);
 			this._bindRowsTable(sPath);
 		},
@@ -426,7 +471,7 @@ sap.ui.define([
 		onclearFilter:function(){
 			let oModel = this.getModel();
 			oModel.setProperty("/help", {});
-			oModel.setProperty("/tableItems", {})
+			oModel.setProperty("/tableRows", {})
 		},
 
 		/**
@@ -440,8 +485,7 @@ sap.ui.define([
 
 		onOpenZonas: async function(oEvent){
 			var oButton = oEvent.getSource(),
-			oView = this.getView(),
-			sTableId = oView.byId("table");
+			oView = this.getView();
 			// Popup.setWithinArea(oView.getId());
 			// Create popover
 			if (!this._pListPopover) {
@@ -455,26 +499,30 @@ sap.ui.define([
 			this._pListPopover.openBy(oButton);
 		},
 
-		onShowPuertos:function(){
-			let sCod = "0000",
-			oTable = this.getView().byId("table"),
-			aColumns = oTable.getColumns(),
-			iColLength = aColumns.length;
+		onShowAllPuertos:function(sCod){
+			let oModel = this.getModel(),
+			oTable =this.getView().byId("tableRecep"),
+			iTotalRows = oTable.getBinding().iLength,
+			iEmpresaIndex = oModel.getProperty("/empresaIndex");
 
-			this._destroyColumns();
+			if(iEmpresaIndex === 0) oTable =this.getView().byId("tableArmad");
+			oModel.setProperty("/selectedCodZona",sCod);
+
 			this._buildPuertosColumns(sCod);
+			this._formatTotales(iTotalRows);
 			this._pListPopover.close();
 		},
 
 		onHidePuertos:function(){
 			let oModel = this.getModel(),
+			oTable = this.getView().byId("tableRecep"),
+			iTotalRows = oTable.getBinding().iLength,
 			aColumnZonas = oModel.getProperty("/oDataApp/str_zlt"),
-			oViewModel = this.getModel("worklistView"),
-			sKey = oViewModel.getProperty("/indicadorPropiedad"),
-			sPath1 = this._setPathIndPropiedad(sKey).sPath1,
-			sPath2 = this._setPathIndPropiedad(sKey).sPath2;
-			this._buildColumns(aColumnZonas,sPath1,sPath2);
-			this._destroyColumnsPuertos();
+			bIsPort = false;
+
+			oModel.setProperty("/selectedCodZona",undefined),
+			this._buildZonasColumns(aColumnZonas,bIsPort);
+			this._formatTotales(iTotalRows);
 			this._pListPopover.close();
 		},
 
@@ -482,10 +530,18 @@ sap.ui.define([
 			let oContext = oEvent.getSource().getBindingContext(),
 			oObject = oContext.getObject(),
 			oModel = oContext.getModel(),
-			sCodZona = oObject.CDZLT;
+			oViewModel = this.getModel("worklistView"),
+			sIndPropSelected = oViewModel.getProperty("/indicadorPropiedad"),
+			sPath1 = this._setPathIndPropiedad(sIndPropSelected).sPath1,
+			sPath2 = this._setPathIndPropiedad(sIndPropSelected).sPath2,
+			aZonas = oModel.getProperty("/oDataApp/str_zlt"),
+			sCodZona = oObject.CDZLT,
+			aZonasSelected = aZonas.filter(zona => zona.CDZLT !== sCodZona);
 			oModel.setProperty("/selectedCodZona",sCodZona);
 			this._pListPopover.close();
-			this._buildPuertosColumns(sCodZona);
+			this._buildPuertosColumns(sCodZona,);
+			this._buildZonasColumns(aZonasSelected,sPath1,sPath2);
+
 		},
 
 		/**
@@ -496,23 +552,24 @@ sap.ui.define([
 			let oIndPropItem = oEvent.getParameter("item"),
 			sKey = oIndPropItem.getKey(),
 			oModel = this.getModel(),
-			oViewModel = this.getModel("worklistView"),
-			aColumnZonas = oModel.getProperty("/oDataApp/str_zlt"),
-			iIndexDelete = aColumnZonas.findIndex(col => col.CDZLT === "0000"),
-			aTableData = oModel.getProperty("/tableRows"),
-			sPath = "/tableRows",
-			sPath1 = this._setPathIndPropiedad(sKey).sPath1,
-			sPath2 = this._setPathIndPropiedad(sKey).sPath2,
-			sCodZona = oModel.getProperty("/selectedCodZona");
-			// oViewModel.setProperty("/indicadorPropiedad",sKey)
-			if(iIndexDelete > 0) aColumnZonas.splice(iIndexDelete,1);
-			// this._bindRowsTable(sPath)
-			this._buildColumns(aColumnZonas,sPath1,sPath2);
-			this._buildPuertosColumns(sCodZona);
-			// aTableData = this._calcularColumnasTotales(aTableData,sPath1,sPath2);
-			
-		},
+			aZonas = oModel.getProperty("/oDataApp/str_zlt"),
+			sCodZona = oModel.getProperty("/selectedCodZona"),
+			bMostrarPuertos = oModel.getProperty("/bMostrarPuertos"),
+			oTable = this.getView().byId("tableRecep"),
+			iTotalRows = oTable.getBinding().iLength,
+			bIsPort = true;
 
+			// if(iIndexDelete > 0) aColumnZonas.splice(iIndexDelete,1);
+			if(bMostrarPuertos && sCodZona) this._buildPuertosColumns(sCodZona);
+			if(sCodZona && sCodZona !== "T"){
+				aZonas = aZonas.filter(zona => zona.CDZLT !== sCodZona);
+				this._buildZonasColumns(aZonas,bIsPort);
+			} else {
+				bIsPort = false;
+				if(sCodZona !== "T") this._buildZonasColumns(aZonas,bIsPort);
+			}
+			this._formatTotales(iTotalRows);
+		},
 
 		/* =========================================================== */
 		/* internal methods                                            */
@@ -536,8 +593,12 @@ sap.ui.define([
 		 * @private
 		 */
 		_applySearch: function(aTableSearchState) {
-			var oTable = this.byId("table"),
-				oViewModel = this.getModel("worklistView");
+			var oTable =this.getView().byId("tableRecep"),
+				oModel = this.getModel(),
+				oViewModel = this.getModel("worklistView"),
+				iEmpresaIndex = oModel.getProperty("/empresaIndex");
+
+			if(iEmpresaIndex === 0) oTable =this.getView().byId("tableArmad");
 			oTable.getBinding("items").filter(aTableSearchState, "Application");
 			// changes the noDataText of the list in case there are no filter results
 			if (aTableSearchState.length !== 0) {
@@ -551,9 +612,10 @@ sap.ui.define([
 		 * @param {number} iEmpresaIndex 
 		 */
 		_getDataMainTable: async function(oService,iEmpresaIndex){
+			this.Count = 0; 
+			this.CountService = 1;
 			let oData = await this.getDataService(oService),
 			oModel = this.getModel(),
-			oViewModel = this.getModel("worklistView"),
 			aTableRows=[];
 			if(oData){
 				oModel.setProperty("/oDataApp", oData);
@@ -567,7 +629,7 @@ sap.ui.define([
 				aTableRows = this._calcularFilasTotales(aTableRows);
 				oModel.setProperty("/tableRows", aTableRows);
 				// mostrar el boton de zonas
-				oViewModel.setProperty("/bMostrarPuertos",true);
+				oModel.setProperty("/bMostrarPuertos",true);
 			}
 		},
 
@@ -576,8 +638,12 @@ sap.ui.define([
 		 * @param {string} sPath 
 		 */
 		_bindRowsTable:function(sPath){
-			let oTable = this.getView().byId("table"),
+			let oTable = this.getView().byId("tableRecep"),
+			oModel = this.getModel(),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
 			that = this;
+
+			if(iEmpresaIndex === 0) oTable =this.getView().byId("tableArmad");
 			oTable.bindRows({
 				path:sPath,
 				events:{
@@ -591,17 +657,46 @@ sap.ui.define([
 			})
 		},
 
+		_getParametersService: function(oObject){
+			let oModel = this.getModel(),
+			oUser = oModel.getProperty("/user"),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
+			param={
+				cdusr: oUser.name,
+				p_cdgre: oObject.CDGRE || "",
+				p_cdpcn: oObject["CDPCN"] || "",
+				p_ctgra: oObject["sKeyCateg"] || "",
+				p_emba: oObject["CDEMB"] ? "E" : "G",
+				p_empeb: oObject["CDEMP"] || "",
+				p_fefin: oObject["p_fefin"],
+				p_feini: oObject["p_feini"],
+				p_grueb: "",
+				p_option: [],
+				p_options: [],
+				p_tcons: iEmpresaIndex === 0 ? "A" : "P",
+				p_zcdzar: oObject["ZCDZAR"] || ""
+			  };
+			return param;
+		},
+
 		/**
 		 * Internal helper method to build dynamic columns from sap.ui.table
 		 * @param {Array} aColumns 
 		 * @param {string} sPath1 
 		 * @param {string} sPath2 
 		 */
-		_buildColumns:function(aColumnZonas,sPath1,sPath2){
-			this._destroyColumns();
-			let oTable = this.getView().byId("table"),
+		_buildZonasColumns:function(aColumnZonas,bIsPort){
+			if(!bIsPort) this._removeColumns();
+			let oTable = this.getView().byId("tableRecep"),
+			oModel = this.getModel(),
+			oViewModel = this.getModel("worklistView"),
+			sIndPropSelected = oViewModel.getProperty("/indicadorPropiedad"),
+			sPath1 = this._setPathIndPropiedad(sIndPropSelected).sPath1,
+			sPath2 = this._setPathIndPropiedad(sIndPropSelected).sPath2,
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
 			aColumnHeader;
-			this.colZonasLength = aColumnZonas.length * 3;
+
+			if(iEmpresaIndex === 0) oTable = this.getView().byId("tableArmad");
 			
 			aColumnZonas.forEach(oCol => {
 				aColumnHeader = this.getTableColumn(oCol.DSZLT,oCol.CDZLT,sPath1,sPath2);
@@ -609,12 +704,15 @@ sap.ui.define([
 					oTable.addColumn(oColHeader);
 				});
 			});
+			this.colZonasLength = aColumnZonas.length * 3;
 		},
 
 		_buildPuertosColumns:function(sCodZona){
-			this._destroyColumnsPuertos();
-			let oTable = this.getView().byId("table"),
+			this._removeColumns();
+			let oTable =this.getView().byId("tableRecep"),
+			aColumns = oTable.getColumns(),
 			oModel = this.getModel(),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
 			oViewModel = this.getModel("worklistView"),
 			sKey = oViewModel.getProperty("/indicadorPropiedad"),
 			aPuertos = oModel.getProperty("/oDataApp/str_pto"),
@@ -622,8 +720,10 @@ sap.ui.define([
 			sPath1 = this._setPathIndPropiedad(sKey).sPath1,
 			sPath2 = this._setPathIndPropiedad(sKey).sPath2,
 			aColumnHeader;
+
+			// if(iEmpresaIndex === 0) oTable =this.getView().byId("tableArmad");
 			
-			if(sCodZona === "0000"){
+			if(sCodZona === "T"){
 				aPuertos.forEach(oCol => {
 					// sPath1 = oCol.CDZLT+"/"+oCol.CDPTO+"/"+
 					aColumnHeader = this.getPuertosColumn(oCol.DSPTO,oCol.CDZLT,oCol.CDPTO,sPath1,sPath2);
@@ -647,34 +747,20 @@ sap.ui.define([
 		/**
 		 * Internal helper method to destroy dynamic columns
 		 */
-		_destroyColumns:function(){
-			let oTable = this.getView().byId("table"),
-			aColumns = oTable.getColumns(),
-			iLimitInf = aColumns.length - this.colZonasLength - this.aColPuertosLength,
-			aRows = oTable.getRows();
-			for (let i = aColumns.length-1; i > iLimitInf - 1; i--) {
+		_removeColumns:function(bFlag){
+			let oTable = this.getView().byId("tableRecep"),
+			oModel = this.getModel(),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
+			iFixedCount = 5;
+			if(bFlag){
+				if(iEmpresaIndex === 1) oTable = this.getView().byId("tableArmad");
+				iFixedCount = 8;
+			};
+
+			let aColumns = oTable.getColumns();
+			for (let i = iFixedCount; i < aColumns.length; i++) {
 				oTable.removeColumn(aColumns[i]);
 			}
-			aRows.forEach(oRow => {
-				oRow.getCells()[0].setActive(true);
-				oRow.getCells()[0].setState("Information");
-			});
-			this.colZonasLength = 0;
-			this.aColPuertosLength = 0;
-		},
-
-		_destroyColumnsPuertos:function(){
-			let oModel = this.getModel(),
-			oViewModel = this.getModel("worklistView"),
-			oTable = this.getView().byId("table"),
-			aColumns = oTable.getColumns(),
-			iLimitInf = aColumns.length - this.aColPuertosLength;
-			if(this.aColPuertosLength === 0) return;
-			for (let i = aColumns.length-1; i > iLimitInf-1; i--) {
-				oTable.removeColumn(aColumns[i]);
-			};
-			// oViewModel.setProperty("/bMostrarPuertos",false);
-			this.aColPuertosLength = 0;
 		},
 
 		/**
@@ -736,16 +822,9 @@ sap.ui.define([
 				iPescaTotal = 0;
 				iNDesTotal = 0;
 				iCocPescaNdes = 0;
-				if (key === "P"){
-					sPath1 = "CNDPR";
-					sPath2 = "DSHPR";
-				} else if(key === "T") {
-					sPath1 = "CPDTR";
-					sPath2 = "DSHTR";
-				} else {
-					sPath1 = "CNPDS";
-					sPath2 = "CNDSH";
-				}
+				sPath1 = this._setPathIndPropiedad(key).sPath1;
+				sPath2 = this._setPathIndPropiedad(key).sPath2;
+				
 				aTableRows.forEach(row => {
 					iPescaTotal = 0;
 					iNDesTotal = 0;
@@ -756,8 +835,8 @@ sap.ui.define([
 							iNDesTotal += row[zona.CDZLT][sPath2];
 						}
 					});
-					row["pescaTotal"+key] = iPescaTotal;
-					row["nDesTotal"+key] = iNDesTotal;
+					row[this._setPathIndPropiedad(key).sPath1] = iPescaTotal;
+					row[this._setPathIndPropiedad(key).sPath2] = iNDesTotal;
 					if(iNDesTotal>0) iCocPescaNdes = iPescaTotal/iNDesTotal;
 					row["nCocPescaNdes"+key] = iCocPescaNdes;
 				});
@@ -769,29 +848,31 @@ sap.ui.define([
 			let oModel = this.getModel(),
 			aStrZlt = oModel.getProperty("/oDataApp/str_zlt"),
 			aPuertos = oModel.getProperty("/oDataApp/str_pto"),
-			oTotals={};
+			oTotals={},
+			oPorcDisNac = {},
+			oPorcTasa = {};
 			if(aTableRows.length > 0){
 				// calculamos totales
 				let aKeys = Object.keys(aTableRows[0]),
 				sTotal,
-				sPescaTotal,
-				sEmbaTotal,
 				iTotCNPDS,
 				iTotNDes,
 				iTotCNDPR,
 				iTotDSHPR,
 				iTotCPDTR,
-				iTotDSHTR;
+				iTotDSHTR,
+				iPescaZonaD,
+				iPescaZonaP,
+				iPescaZonaT;
 
 				aKeys.forEach(key => {
 					sTotal = 0;
-					sPescaTotal = 0;
 					iTotCNPDS = 0;
-					sEmbaTotal = 0;
 					iTotNDes = 0;
-					if(key === "DSGRE") {
-						sTotal = "Total";
-					}else {
+					iPescaZonaD = 0;
+					iPescaZonaP = 0;
+					iPescaZonaT = 0;
+					if(key !== "DSGRE") {
 						sTotal = aTableRows.reduce( (acc , obj) => {
 							return acc + obj[key]
 						},0);
@@ -799,6 +880,7 @@ sap.ui.define([
 					oTotals[key] = sTotal;
 				});
 
+				// totales zonas
 				aStrZlt.forEach(zona => {
 					iTotCNPDS = 0;
 					iTotNDes = 0;
@@ -817,6 +899,14 @@ sap.ui.define([
 						if(row[zona.CDZLT]) iTotCPDTR += row[zona.CDZLT].CPDTR;
 						if(row[zona.CDZLT]) iTotDSHTR += row[zona.CDZLT].DSHTR;
 
+						if(row.CDGRE === "045"){
+							if(row[zona.CDZLT]){
+								iPescaZonaD = row[zona.CDZLT].CNPDS/row.CNPDS;
+								iPescaZonaP = row[zona.CDZLT].CNDPR/row.CNDPR;
+								iPescaZonaT = row[zona.CDZLT].CPDTR/row.CPDTR;
+							}
+						}
+
 					});
 					oTotals[zona.CDZLT] = {}
 					oTotals[zona.CDZLT].CNPDS = iTotCNPDS;
@@ -827,8 +917,28 @@ sap.ui.define([
 
 					oTotals[zona.CDZLT].CPDTR = iTotCPDTR;
 					oTotals[zona.CDZLT].DSHTR = iTotDSHTR;
+
+					// % Dis Nac
+					oPorcDisNac[zona.CDZLT] = {};
+					oPorcDisNac.CNPDS = "N"
+					oPorcDisNac.NREMB = "N"
+					oPorcDisNac.CNDSH = "N"
+					oPorcDisNac[zona.CDZLT]["CNPDS"] = (iTotCNPDS/oTotals.CNPDS)*100;
+					oPorcDisNac[zona.CDZLT]["CNDPR"] = (iTotCNDPR/oTotals.CNDPR)*100;
+					oPorcDisNac[zona.CDZLT]["CPDTR"] = (iTotCPDTR/oTotals.CPDTR)*100;
+
+					// % Dis Tasa
+					oPorcTasa[zona.CDZLT] = {};
+					oPorcTasa.CNPDS = "N";
+					oPorcTasa.NREMB = "N";
+					oPorcTasa.CNDSH = "N";
+					
+					oPorcTasa[zona.CDZLT]["CNPDS"] = iPescaZonaD*100;
+					oPorcTasa[zona.CDZLT]["CNDPR"] = iPescaZonaP*100;
+					oPorcTasa[zona.CDZLT]["CPDTR"] = iPescaZonaT*100;
 				});
 
+				// totales puertos
 				aPuertos.forEach( port => {
 					iTotCNPDS = 0;
 					iTotNDes = 0;
@@ -865,33 +975,40 @@ sap.ui.define([
 
 						oTotals[port.CDZLT][port.CDPTO].CPDTR = iTotCPDTR;
 						oTotals[port.CDZLT][port.CDPTO].DSHTR = iTotDSHTR;
+
+						// % Dis Nac
+						oPorcDisNac[port.CDZLT][port.CDPTO] = {};
+						oPorcDisNac[port.CDZLT][port.CDPTO].CNPDS = iTotCNPDS;
 					});
 				});
-
+				oTotals.DSGRE = "Total"
 				aTableRows.push(oTotals);
-				// aStrGreData.push({
-				// 	DSGRE:"Total",
-				// 	CNPDS:"1560.56"
-				// })
-				aTableRows.push({
-					DSGRE:"Distr. Nacional (%)",
-					CNPDS:"1560.56"
-				})
-				aTableRows.push({
-					DSGRE:"DISTR. TASA(%)",
-					CNPDS:"1560.56"
-				})
-
+				oPorcDisNac.DSGRE = "Distr. Nacional (%)"
+				aTableRows.push(oPorcDisNac);
+				
+				oPorcTasa.DSGRE = "DISTR. TASA(%)";
+				aTableRows.push(oPorcTasa);
 			}
 
 			return aTableRows;
 		}, 
 
 		_formatTotales:function(iTotalRows){
-			let oTable = this.getView().byId("table"),
-			aRows = oTable.getRows(),
+			let oTable = this.getView().byId("tableRecep"),
+			oModel = this.getModel(),
+			iEmpresaIndex = oModel.getProperty("/empresaIndex");
+
+			if(iEmpresaIndex === 0) oTable = this.getView().byId("tableArmad");
+
+			let aRows = oTable.getRows(),
 			iRowsLength = aRows.length,
 			oControl,oControl1,oControl2;
+
+			aRows.forEach(oRow => {
+				oRow.getCells()[0].setActive(true);
+				oRow.getCells()[0].setState("Information");
+			});
+
 			if(iTotalRows > 0){
 				if(iTotalRows < iRowsLength){
 					oControl = aRows[iTotalRows-1].getCells()[0];
@@ -909,9 +1026,21 @@ sap.ui.define([
 				oControl.setState("Error");
 				oControl1.setState("Success");
 				oControl2.setState("None");
+				
+				for (let i = 1; i < 4; i++) {
+					if(iTotalRows < iRowsLength){
+						aRows[iTotalRows-i].getCells().forEach(cell => {
+							cell.addStyleClass("none");
+						});
+					}else{
+						aRows[iRowsLength-i].getCells().forEach(cell => {
+							cell.addStyleClass("none");
+						});
+					}
+					
+				}
 			}
 
 		}
-
 	});
 });

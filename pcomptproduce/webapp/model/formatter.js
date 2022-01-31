@@ -57,6 +57,25 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 			}
 		},
 
+		/**
+		 * Formatea a numero de un decimal
+		 * @param {string} sValue 
+		 * @returns string
+		 */
+		 setFormatFloat:function(sValue){
+			if(sValue){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:1,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				return oFloatNumber.format(sValue);
+			}else{
+				return null;
+			}
+		},
+
 		setDivision:function(iPesca, iNdes){
 			if(iPesca && iNdes){
 				if(isNaN(iPesca)) iPesca = Number(iPesca);
@@ -69,8 +88,12 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 
 		setTotalCol:function(iCant1,iCant2,iCant3){
 			if(iCant1 || iCant2 || iCant3){
-				let oViewModel = this.getView().getModel("worklistView"),
-				iEmpresaIndex = oViewModel.getProperty("/empresaIndex"),
+				if (iCant1 === "N") return "";
+				if (iCant2 === "N") return "";
+				if (iCant2 === "N") return "";
+				let oViewModel = this.getModel("worklistView") || this.getModel("objectView"),
+				oModel = this.getModel(),
+				iEmpresaIndex = oModel.getProperty("/empresaIndex"),
 				sIndicadorPropiedad = oViewModel.getProperty("/indicadorPropiedad"),
 				oFloatNumber = NumberFormat.getFloatInstance({
 					decimals:0,
@@ -87,7 +110,6 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 						case "T":
 							return oFloatNumber.format(iCant3);
 							break;
-					
 						default:
 							return oFloatNumber.format(iCant1);
 							break;
@@ -96,14 +118,16 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 					return oFloatNumber.format(iCant1);
 				}
 			}
+			return 0;
 		},
 		setTotalCoc:function(iCant1,iCant2,iCant3){
 			if(iCant1 || iCant2 || iCant3){
-				let oViewModel = this.getView().getModel("worklistView"),
-				iEmpresaIndex = oViewModel.getProperty("/empresaIndex"),
+				let oViewModel = this.getModel("worklistView") || this.getModel("objectView"),
+				oModel = this.getModel(),
+				iEmpresaIndex = oModel.getProperty("/empresaIndex"),
 				sIndicadorPropiedad = oViewModel.getProperty("/indicadorPropiedad"),
 				oFloatNumber = NumberFormat.getFloatInstance({
-					decimals:0,
+					decimals:1,
                     groupingEnabled: true,
 					groupingSeparator:',',
 					decimalSeparator:'.'
@@ -116,7 +140,6 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 						case "T":
 							return oFloatNumber.format(iCant3);
 							break;
-					
 						default:
 							return oFloatNumber.format(iCant1);
 							break;
@@ -125,6 +148,7 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 					return oFloatNumber.format(iCant1);
 				}
 			}
+			return 0.0;
 		}
 
 	};

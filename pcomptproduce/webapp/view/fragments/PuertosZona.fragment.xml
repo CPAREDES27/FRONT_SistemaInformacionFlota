@@ -27,16 +27,16 @@
 				<Button
 					icon="sap-icon://show"
 					text="Mostrar todos"
-					press="onShowPuertos"
+					press=".onShowAllPuertos('T')"
 					type="Accept"
-					visible="{worklistView>/bMostrarPuertos}" />
+					visible="{/bMostrarPuertos}" />
 				<Button
 					id="action"
 					icon="sap-icon://hide"
 					text="Ocultar Puertos"
 					press="onHidePuertos"
 					type="Reject"
-					visible="{worklistView>/bMostrarPuertos}" />
+					visible="{/bMostrarPuertos}" />
 			</Toolbar>
 		</footer>
 	</Popover>

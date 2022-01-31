@@ -7,7 +7,7 @@
 	xmlns:semantic="sap.f.semantic">
 
 	<semantic:SemanticPage
-		id="page"
+		id="pageEmpresa"
 		headerPinnable="false"
 		toggleHeaderOnTitleClick="false"
 		busy="{objectView>/busy}"
@@ -30,26 +30,36 @@
 
 		<semantic:content>
 			<m:IconTabBar
+				id="iconTabBarId"
 				selectedKey="{objectView>/mainSelectedKey}"
+				select="onSelectEmpresa"
 				stretchContentHeight="true"
 				tabDensityMode="Compact"
 				backgroundDesign="Translucent"
 				headerMode="Standard">
-				<m:content>
-					<core:Fragment fragmentName="com.tasa.pcomptproduce.view.fragments.TablaEmpresas" type="XML" />
-				</m:content>
 				<m:items>
 					<m:IconTabFilter
 						icon="sap-icon://shield"
 						text="Empresas Armador"
-						count="{worklistView>/tabCount}"
-						key="0"/>
-					<m:IconTabSeparator />
+						count="{objectView>/tabCountArmad}"
+						design="Horizontal"	
+						key="A"
+						visible="{objectView>/visibleFilterArmad}">
+						<m:content>
+							<!-- <core:Fragment fragmentName="com.tasa.pcomptproduce.view.fragments.TablaArma" type="XML" /> -->
+						</m:content>
+					</m:IconTabFilter>
+					<m:IconTabSeparator visible="{objectView>/visibleFilterArmad}"/>
 					<m:IconTabFilter
 						icon="sap-icon://badge"
 						text="Empresas Receptor"
-						count="{worklistView>/tabCount}"
-						key="1"/>
+						count="{objectView>/tabCountRecep}"
+						design="Horizontal"
+						key="R">
+						<m:content>
+							<!-- <core:Fragment fragmentName="com.tasa.pcomptproduce.view.fragments.TablaRecepDet" type="XML" /> -->
+						</m:content>
+					</m:IconTabFilter >
 				</m:items>
 			</m:IconTabBar>
 		</semantic:content>

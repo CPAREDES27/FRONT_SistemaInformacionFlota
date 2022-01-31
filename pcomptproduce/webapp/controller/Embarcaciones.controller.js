@@ -53,12 +53,26 @@ sap.ui.define([
 		 */
 		onNavBack : function() {
 			var sPreviousHash = History.getInstance().getPreviousHash();
-
 			if (sPreviousHash !== undefined) {
 				history.go(-1);
 			} else {
-				this.getRouter().navTo("worklist", {}, true);
+				this.getRouter().navTo("object", {objectId:0}, true);
 			}
+		},
+
+		onPress: async function(oEvent){
+			let oContext = oEvent.getSource().getBindingContext(),
+			oModel = oContext.getModel(),
+			aDiasEmba = oModel.getProperty("/embarcaciones/str_ped"),
+			oObject = oContext.getObject();
+
+			aDiasEmba = this._calcularFilasTotales(aDiasEmba);
+			let oDiasEmbaDialog = await this.loadFragment({name:"com.tasa.pcomptproduce.view.fragments.DiasEmba"});
+			oDiasEmbaDialog.open();
+		},
+
+		onCloseDialog:function(oEvent){
+			oEvent.getSource().getParent().close();
 		},
 
 		/* =========================================================== */
@@ -72,12 +86,14 @@ sap.ui.define([
 		 * @private
 		 */
 		_onObjectMatched : function (oEvent) {
-			var sObjectId =  oEvent.getParameter("arguments").objectId;
+			var sObjectId =  oEvent.getParameter("arguments").objectId,
+			oModel = this.getModel(),
+			sPathRow = oModel.getProperty("/pathRow");
 			this.getModel().dataLoaded().then( function() {
 				// var sObjectPath = this.getModel().createKey("Products", {
 				// 	ProductID :  sObjectId
 				// });
-				this._bindView("/tableItems/str_gre/" + sObjectId);
+				this._bindView( `/${sPathRow}/${sObjectId}`);
 			}.bind(this));
 		},
 
@@ -94,23 +110,35 @@ sap.ui.define([
 			this.getView().bindElement({
 				path: sObjectPath,
 				events: {
-					// change: this._onBindingChange.bind(this),
-					dataRequested: function () {
-						oDataModel.dataLoaded().then(function () {
-							// Busy indicator on view should only be set if metadata is loaded,
-							// otherwise there may be two busy indications next to each other on the
-							// screen. This happens because route matched handler already calls '_bindView'
-							// while metadata is loaded.
-							oViewModel.setProperty("/busy", true);
-						});
-					},
-					dataReceived: function () {
-						oViewModel.setProperty("/busy", false);
-					}
+					change: this._onBindingChange.bind(this)
 				}
 			});
 			oViewModel.setProperty("/busy", false);
 		},
+
+		_onBindingChange:function(oEvent){
+			let oContext = oEvent.getSource().getBoundContext(),
+			oObject = oContext.getObject(),
+			oModel = oContext.getModel(),
+			oEmbarcaciones = oModel.getProperty("/embarcaciones"),
+			aEmbarcaciones = oEmbarcaciones.str_pem;
+
+			oModel.setProperty("/table",aEmbarcaciones)
+
+		},
+
+		_calcularFilasTotales:function(aDiasEmba){
+			let aData = [],
+			iTotal = 0;
+			aDiasEmba.forEach(row => {
+				iTotal += row.CNPDS
+			});
+
+			aDiasEmba.push({
+				CNPDS: iTotal
+			});
+			return aDiasEmba;
+		}
 
 	});
 
