@@ -21,11 +21,15 @@
 		<semantic:content>
 			<IconTabBar
 				selectedKey="{objectView>/selectedKey}"
-				select="onFilterSelect">
+				select="onFilterDiasSelect">
 				<content>
 					<table:Table
 						id="detailTableId"
-						selectionMode="None">
+						selectionMode="None"
+						fixedBottomRowCount="1"
+						rowsUpdated="onRowsUpateTable"
+						visibleRowCount="{/detailVisibleRowCount}"
+						class="sapUiNoPadding sapUiNoMargin">
 						<table:extension>
 							<OverflowToolbar>
 								<ObjectStatus
@@ -42,105 +46,167 @@
 									<Label text="Centro" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{oObject/WERKS}" />
+									<Text text="{WERKS}" />
 								</table:template>
 							</table:Column>
+
 							<table:Column headerSpan="2,1">
 								<table:multiLabels>
 									<Label visible="false" />
 									<Label text="Planta" />
 								</table:multiLabels>
 								<table:template>
-									<Link
-										id="linkTable"
-										emphasized="true"
-										enabled="true"
-										text="{oObject/DESCR}"
-										press="onPlantaDetail"/>
+									<ObjectStatus 
+										text="{DESCR}"
+										press=".onPlantaDetail"
+										state="{objectView>/statePlanta}"
+										active="{objectView>/activePlanta}"/>
 								</table:template>
 							</table:Column>
 
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Total Pesca" />
 									<Label text="Decl" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{oObject/PDLTR}" />
+									<Text text="{
+										path:'PDLTO',
+										formatter:'.formatter.formatFloat'
+									}"
+									textAlign="End"
+									class="classCol" />
 								</table:template>
 							</table:Column>
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Total Pesca" />
 									<Label text="Desc" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{oObject/PDSTR}" />
+									<Text text="{
+											path:'PDSTO',
+											formatter:'.formatter.formatFloat3'
+										}" 
+										textAlign="End"
+										class="classCol" />
 								</table:template>
 							</table:Column>
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Total Pesca" />
 									<Label text="Difer %" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{oObject/PORC_DIFER}" />
+									<Text text="{
+										path:'PORC_DIFER',
+										formatter:'.formatter.formatFloat'
+									}" 
+									textAlign="End"
+									class="classCol" />
 								</table:template>
 							</table:Column>
 
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Pesca Propios" />
 									<Label text="Decl" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{PDLPR}" />
+									<Text text="{
+											path:'PDLPR'
+										}" 
+									textAlign="End"
+									class="classCol" />
 								</table:template>
 							</table:Column>
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Pesca Propios" />
 									<Label text="Desc" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{PDSPR}" />
+									<Text text="{
+										path:'PDSPR',
+										formatter:'.formatter.formatFloat3'
+									}"
+									textAlign="End"
+									class="classCol" />
 								</table:template>
 							</table:Column>
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Pesca Propios" />
 									<Label text="Dif %" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{}" />
+									<Text text="{
+										path:'PORC_DIFER_PR',
+										formatter:'.formatter.formatFloat'
+									}"
+									textAlign="End"
+									class="classCol"  />
 								</table:template>
 							</table:Column>
 
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Pesca Terceros" />
 									<Label text="Decl" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{PDLTR}" />
+									<Text text="{
+										path:'PDLTR',
+										formatter:'.formatter.formatFloat'
+									}"
+									textAlign="End"
+									class="classCol"  />
 								</table:template>
 							</table:Column>
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Pesca Terceros" />
 									<Label text="Desc" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{PDSTR}" />
+									<Text text="{
+										path:'PDSTR',
+										formatter:'.formatter.formatFloat3'
+									}"
+									textAlign="End"
+									class="classCol"  />
 								</table:template>
 							</table:Column>
-							<table:Column headerSpan="3,1">
+							<table:Column 
+								headerSpan="3,1"
+								hAlign="Center">
 								<table:multiLabels>
 									<Label text="Pesca Terceros" />
 									<Label text="Dif %" />
 								</table:multiLabels>
 								<table:template>
-									<Text text="{}" />
+									<Text text="{
+										path:'PORC_DIFER_TR',
+										formatter:'.formatter.formatFloat'
+									}"
+									textAlign="End"
+									class="classCol"  />
 								</table:template>
 							</table:Column>
 						</table:columns>

@@ -77,10 +77,36 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 		},
 
 		setDivision:function(iPesca, iNdes){
+			let cociente=0;
 			if(iPesca && iNdes){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:1,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
 				if(isNaN(iPesca)) iPesca = Number(iPesca);
 				if(isNaN(iNdes)) iNdes = Number(iNdes);
-				return (iPesca/iNdes).toFixed(1);
+				cociente = iPesca/iNdes
+				return oFloatNumber.format(cociente*100);
+			}else{
+				return "";
+			}
+		},
+
+		setDivisionTasa:function(iPesca, iNdes){
+			let cociente=0;
+			if(iPesca && iNdes){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:3,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				if(isNaN(iPesca)) iPesca = Number(iPesca);
+				if(isNaN(iNdes)) iNdes = Number(iNdes);
+				cociente = iPesca/iNdes
+				return oFloatNumber.format(cociente*100);
 			}else{
 				return "";
 			}

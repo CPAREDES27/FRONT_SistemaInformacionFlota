@@ -1,35 +1,142 @@
-.colHar{
-    background-color: #BDCFE9  /*rgba(189, 207, 233, 1); */;
+.classForm{
+    background-color: rgba(231, 231, 231, 0.253);
 }
 
-.colPescaProp{
-    background-color: #FDBB71 /*rgba(253, 187, 113, 1) */;
+.classCol{
+    display: block;
 }
 
-.colPescaTerc{
-    background-color: #BAEE9A /*rgba(186, 238, 154, 1) */;
+/* -------------------------------------------------------------
+ *   LOCALHOST
+ * -------------------------------------------------------------
+ */
+
+/* Columnas Total Pesca */
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(1),
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(2){
+    background-color: #BDCFE9; /*rgba(255, 128, 115, 1)*/
 }
 
-.colTnEp{
-    background-color: #FF8073 /*rgba(255, 128, 115, 1) */;
+/* Columnas Pesca propios */
+
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(3),
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(4){
+    background-color: #FDBB71; /*rgba(255, 128, 115, 1)*/
 }
 
-.colEp{
-    background-color: #A6E5E0 /*rgba(166, 229, 244, 1) */;
+/* Columnas Pesca terceros */
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(5),
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(6){
+    background-color: #BAEE9A; /*rgba(255, 128, 115, 1)*/
 }
 
-.colTotal{
-    background-color: #C6F9C1 /*rgba(198, 249, 193, 1) */;
+/* Columnas tn/Ep */
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(7),
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(8){
+    background-color: #FF8073; /*rgba(255, 128, 115, 1)*/
 }
 
-.colHar, .colPescaProp,.colPescaTerc, .colTnEp,.colEp, .colTotal,.colTotal{
+/* Columnas EP */
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(9),
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(10){
+    background-color: #A6E5E0; /*rgba(255, 128, 115, 1)*/
+}
+
+/* Columnas Total Pesca */
+#container-pdeclaradadiaria---worklist--table-table td:nth-child(13){
+    background-color: rgba(198, 249, 193, 1)
+}
+
+/* 
+*  Detalle -------------------
+*/
+/* Columnas Total Pesca */
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(3),
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(4),
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(5){
+    background-color: #BDCFE9;
+}
+
+/* Columnas Pesca Propios */
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(6),
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(7),
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(8){
+    background-color: #FDBB71;
+}
+
+/* Columnas Pesca Terceros */
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(9),
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(10),
+#container-pdeclaradadiaria---object--detailTableId-table td:nth-child(11){
+    background-color: #BAEE9A;
+}
+
+/* -------------------------------------------------------------
+ *   LAUNCHPAD
+ * -------------------------------------------------------------
+ */
+ 
+ /* Columnas Total Pesca */
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(1),
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(2){
+    background-color: #BDCFE9; /*rgba(255, 128, 115, 1)*/
+}
+
+/* Columnas Pesca propios */
+
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(3),
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(4){
+    background-color: #FDBB71; /*rgba(255, 128, 115, 1)*/
+}
+
+/* Columnas Pesca terceros */
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(5),
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(6){
+    background-color: #BAEE9A; /*rgba(255, 128, 115, 1)*/
+}
+
+/* Columnas tn/Ep */
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(7),
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(8){
+    background-color: #FF8073; /*rgba(255, 128, 115, 1)*/
+}
+
+/* Columnas EP */
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(9),
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(10){
+    background-color: #A6E5E0; /*rgba(255, 128, 115, 1)*/
+}
+
+/* Columnas Total Pesca */
+#application-pescaDeclaradaDiaria-display-component---worklist--table-table td:nth-child(13){
+    background-color: rgba(198, 249, 193, 1)
+}
+
+.colHar, .colPescaProp,.colPescaTerc, .colTnEp,.colEp, .colTotal,.colTotal , .colSinColor{
     display: block;
     padding: 10px;
 }
 
-.colSinColor{
-    display: block;
+/* 
+*  Detalle -------------------
+*/
+
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(3),
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(4),
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(5){
+    background-color: #BDCFE9;
 }
-/* .sapUiTableDataCell>.sapUiTableCellInner, .sapUiTableCreationRow .sapUiTableCreationRowForm .sapUiTableCell>.sapUiTableCellInner{
-    padding: 0;
-} */
+
+/* Columnas Pesca Propios */
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(6),
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(7),
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(8){
+    background-color: #FDBB71;
+}
+
+/* Columnas Pesca Terceros */
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(9),
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(10),
+#application-pescaDeclaradaDiaria-display-component---object--detailTableId-table td:nth-child(11){
+    background-color: #BAEE9A;
+}

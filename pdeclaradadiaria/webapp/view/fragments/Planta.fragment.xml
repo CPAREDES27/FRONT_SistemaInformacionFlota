@@ -2,7 +2,8 @@
 	xmlns="sap.m"
 	xmlns:core="sap.ui.core">
     <Dialog
-        showHeader="false">
+        showHeader="false"
+        contentWidth="60%">
         <beginButton>
             <Button
                 icon="sap-icon://decline"
@@ -19,12 +20,13 @@
 						id="iconTabBar2"
 						headerMode="Inline"
                         tabDensityMode="Compact"
-                        selectedKey="{objectView>/plantPropTercKey}"
+                        selectedKey="{objectView>/plantaIndPropKey}"
 						class="sapUiNoMargin sapUiNoContentPadding"
                         select="onPlantaFilterSelect">
                         <content>
                             <Table
                                 id="plantaTableId"
+                                items="{/plantas}"
                                 updateFinished="onUpdateFinishedTable">
                                 <headerToolbar>
                                     <OverflowToolbar>
@@ -36,60 +38,80 @@
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>
-                                    <Column>
+                                    <Column >
                                         <Label text="Embaración" />
                                         <footer>
-                                            <Text text="{}" />
+                                            <ObjectStatus 
+                                                text="Total"
+                                                state="Error" />
                                         </footer>
                                     </Column>
-                                    <Column>
+                                    <Column hAlign="End">
                                         <Label text="CBOD" />
-                                        <footer>
-                                            <Text text="{}" />
-                                        </footer>
                                     </Column>
-                                    <Column>
+                                    <Column hAlign="End">
                                         <Label text="Decl" />
                                         <footer>
-                                            <Text text="{}" />
+                                            <Text text="{
+                                                path:'/totCNPCM',
+                                                formatter: '.formatter.formatFloat'
+                                            }" />
                                         </footer>
                                     </Column>
-                                    <Column>
+                                    <Column hAlign="End">
                                         <Label text="Desc" />
                                         <footer>
-                                            <Text text="{}" />
+                                            <Text text="{
+                                                path:'/totCNPDS',
+                                                formatter:'.formatter.formatFloat3'
+                                            }" />
                                         </footer>
                                     </Column>
-                                    <Column>
+                                    <Column hAlign="End">
                                         <Label text="Difer %" />
                                         <footer>
-                                            <Text text="{}" />
+                                            <Text text="{
+                                                path:'/totPORC_DIFER',
+                                                formatter:'.formatter.formatFloat'
+                                            }" />
                                         </footer>
                                     </Column>
                                 </columns>
-                                <!-- <items>
-                                    <ColumnListItem id="ItemsTemplateId">
+                                <items>
+                                    <ColumnListItem id="templatePlantas">
                                         <cells>
                                             <Text text="{NMEMB}" />
-                                            <Text text="{}" />
-                                            <Text text="{}" />
-                                            <Text text="{}" />
-                                            <Text text="{}" />
+                                            <Text text="{
+                                                path:'CPPMS',
+                                                formatter: '.formatter.formatFloat'
+                                            }" />
+                                            <Text text="{
+                                                path:'CNPCM',
+                                                formatter: '.formatter.formatFloat'
+                                            }" />
+                                            <Text text="{
+                                                path:'CNPDS',
+                                                formatter:'.formatter.formatFloat3'
+                                            }" />
+                                            <Text text="{
+                                                path:'PORC_DIFER',
+                                                formatter:'.formatter.formatFloat'    
+                                            }" />
                                         </cells>
                                     </ColumnListItem>
-                                </items> -->
+                                </items>
                             </Table>
                         </content>
 						<items>
 							<IconTabFilter
 								key="DPT"
 								text="Pesca Propios"
-								count="3">
+								count="{/itemCountProp}">
 							</IconTabFilter>
 							<IconTabFilter
 								key="DTT"
 								text="Pesca Terceros"
-								count="4321">
+								count="{/itemCountTerc}">
 							</IconTabFilter>
 						</items>
 					</IconTabBar>

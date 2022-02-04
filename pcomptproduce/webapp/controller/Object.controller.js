@@ -653,7 +653,7 @@ sap.ui.define([
 		_destroyColumnsPuertos:function(){
 			let oModel = this.getModel(),
 			oViewModel = this.getModel("worklistView"),
-			oTable = sap.ui.getCore().byId("tableRecep"),
+			oTable = this.getView().byId("tableRecep"),
 			iEmpresaIndex = oModel.getProperty("/empresaIndex");
 
 			let aColumns = oTable.getColumns(),

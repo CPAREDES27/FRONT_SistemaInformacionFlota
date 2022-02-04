@@ -7,15 +7,12 @@
 	xmlns:table="sap.ui.table"
     xmlns:chart="sap.suite.ui.microchart"
 	xmlns:layout="sap.ui.layout"
-	xmlns:viz.data="sap.viz.ui5.data"
-	 xmlns:viz="sap.viz.ui5.controls"
-	 xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
+	xmlns:viz.data="sap.viz.ui5.data" height="100%"
+	xmlns:viz="sap.viz.ui5.controls"
+	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
 
-<Shell id="shell" appWidthLimited="false">
-		<App id="app">
 	<semantic:SemanticPage
-		id="page"
-		class="sapUiNoContentPadding">
+		id="page">
 
 		<semantic:titleHeading>
 			<Title
@@ -28,11 +25,15 @@
 			<f:Form 
 				id="idFormHeader"
 				binding="{/form}"
-				editable="true" >
+				editable="true" 
+				class="classForm">
 				<f:formContainers>
 					<f:FormContainer >
 						<f:formElements>
-							<f:FormElement label="Fecha">
+							<f:FormElement>
+								<f:label >
+									<Label text="Fecha" design="Bold" />
+								</f:label>
 								<f:fields>
 									<DatePicker 	
 										id="fechaPescaDeclarada"
@@ -41,7 +42,10 @@
 										valueFormat="dd/MM/yyyy"/>
 								</f:fields>
 							</f:FormElement>
-							<f:FormElement label="MotivoMarea">
+							<f:FormElement >
+								<f:label >
+									<Label text="MotivoMarea" design="Bold" />
+								</f:label>
 								<f:fields>
 									<Select 
 										id="motivoPescaDeclarada"
@@ -51,7 +55,7 @@
 									</Select>
 								</f:fields>
 							</f:FormElement>
-							<f:FormElement label="">
+							<f:FormElement label="" >
 								<f:fields>
 									<ObjectStatus
 										title="Hora" 
@@ -109,7 +113,7 @@
 				</f:formContainers>
 				<f:layout>
 					<f:ResponsiveGridLayout
-						labelSpanXL="2"
+						labelSpanXL="3"
 						labelSpanL="3"
 						labelSpanM="4"
 						labelSpanS="12"
@@ -127,16 +131,20 @@
 		</semantic:headerContent>
 
 		<semantic:content >
-			<layout:Grid defaultSpan="XL12 L12 M12 S12" class="sapUiNoContentPadding sapUiMediumMarginTop" >
+			<VBox>
 				<table:Table id="tablePescaDeclarada" 
-					rows="{ path: '/str_tp', formatter: '.formatter.setColorsFields' }"
+					rows="{ 
+						path: '/str_tp', 
+						events:{
+							change:'.onRowBindingChange'
+						}
+					}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					fixedBottomRowCount="1"
 					fixedColumnCount="1"
 					selectionMode="None"
 					rowActionCount="1"
-					visibleRowCount="5"
-					class="classTable">
+					visibleRowCount="{/rowCount}">
 					<table:columns>
 						<table:Column width="13rem"  >
 							<table:multiLabels>
@@ -150,15 +158,18 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="4,1" hAlign="Center" width="3.06rem" class="col">
+						<table:Column
+							headerSpan="4,1" hAlign="Center" width="3.06rem" class="col">
 							<table:multiLabels>
 								<Label text="Flota propia" textAlign="Center" />
 								<Label text="Asig" textAlign="Center" />
 							</table:multiLabels>
 							<table:template>
-								<Text text="{
-												path:'CEMBA'
-											}"/>
+								<Text 
+									text="{
+										path:'CEMBA'
+									}"
+									class="classAsig"/>
 							</table:template>
 						</table:Column>
 						<table:Column hAlign="End" width="3.06rem" class="col">
@@ -383,114 +394,96 @@
 							</table:template>
 						</table:Column>
 					</table:columns>
-					<!-- <table:rowActionTemplate>
-						<table:RowAction >
-							<table:items>
-								<table:RowActionItem
-									icon="sap-icon://open-command-field"
-									text="Ver detalle"
-									type="Navigation"
-									press="onPress"/>
-							</table:items>
-						</table:RowAction>
-					</table:rowActionTemplate> -->
-					<!-- <table:footer>
-						<Table>
-							<columns>
-								<Column>
-									<Label text="Hola" />
-								</Column>
-								<Column>
-									<Label text="Hola" />
-								</Column>
-								<Column>
-									<Label text="Hola" />
-								</Column>
-								<Column>
-									<Label text="Hola" />
-								</Column>
-							</columns>
-							<items>
-								<ColumnListItem
-									vAlign="Inherit"
-								>
-									<cells>
-										<Text text="Mundo" />
-										<Text text="Mundo" />
-										<Text text="Mundo" />
-										<Text text="Mundo" />
-									</cells>
-								</ColumnListItem>
-							</items>
-						</Table>
-					</table:footer> -->
-				</table:Table>		
+				</table:Table>
 
-				<layout:HorizontalLayout>
-					<layout:layoutData>
-						<layout:GridData span="XL12 L12 M12 S12"/>
-					</layout:layoutData>
-					<!-- Graficos -->
-					<VBox>
-						<Text text="Porc Pesca por Puerto 00%" />
-						<Text text="Porc Cap Bod por Puerto (99%)" />
-					</VBox>
-				</layout:HorizontalLayout>
+				<!-- Graficos -->
+
+				<HBox width="auto"  alignItems="Stretch" justifyContent="SpaceBetween" >
+					<viz:VizFrame 	
+						id="pieChartId" 
+						uiConfig="{applicationSet:'fiori'}"
+						vizType='pie'
+						vizProperties="{
+							plotArea:{
+								dataLabel:{	
+									visible:'true',
+									line: {visible:true,color:'red'},
+									distance: '5px',
+									formatString: 'CustomFormatPie'
+								}
+							},
+							title:{ text:'Plantas'},
+							legendGroup:{
+								layout:{position:'left'}
+							}
+						}" >
+						<viz:dataset>
+							<viz.data:FlattenedDataset data="{/STR_TP_GRAPHICS}">
+								<viz.data:dimensions>
+									<viz.data:DimensionDefinition name="Plantas"
+										value="{descripcion}" />
+								</viz.data:dimensions>
+								<viz.data:measures>
+									<viz.data:MeasureDefinition name="Porcentaje"
+										value="{
+											parts:[
+												{path:'valuePorPesDe'}
+											]
+										}" />
+								</viz.data:measures>
+							</viz.data:FlattenedDataset>
+						</viz:dataset>
+
+						<viz:feeds>
+							<viz.feeds:FeedItem uid="size" type="Measure"
+								values="Porcentaje" />
+							<viz.feeds:FeedItem uid="color" type="Dimension"
+								values="Plantas" />
+						</viz:feeds>
+					</viz:VizFrame>
 				
-				<layout:HorizontalLayout>
-					<layout:layoutData>
-						<layout:GridData span="XL12 L12 M12 S12"/>
-					</layout:layoutData>
-					<!-- Graficos -->
-					<VBox width="30rem"  alignItems="End" justifyContent="SpaceAround" class="sapUiSmallMargin">
-						<items>
-							<chart:InteractiveDonutChart  segments="{/STR_TP_GRAPHICS}" displayedSegments="{=${/countBars}}" >
-								<chart:segments>
-									<chart:InteractiveDonutChartSegment label="{descripcion}" value="{value}" displayedValue="{value}%" color="Neutral"/>
-								</chart:segments>
-							</chart:InteractiveDonutChart>
-						</items>
-					</VBox>
+					<viz:VizFrame 
+							uiConfig="{applicationSet:'fiori'}"
+							vizType='stacked_column'
+							vizProperties="{
+							plotArea:{
+								dataLabel:{	
+									visible:'true'
+								}
+							},
+							title:{ text:'Ind. propiedad (%)'}
+							}" >
+						<viz:dataset>
+							<viz.data:FlattenedDataset data="{/Propiedad}">
+								<viz.data:dimensions>
+									<viz.data:DimensionDefinition name="Tipo de Pesca"
+										value="{descripcion}" />
+								</viz.data:dimensions>
+								<viz.data:measures>
+									<viz.data:MeasureDefinition name="Propios"
+										value="{valueProp}" />
+									<viz.data:MeasureDefinition name="Terceros"
+										value="{valueTerc}" />
+									<!-- <viz.data:MeasureDefinition name="Ningunos"
+										value="{valueNone}" /> -->
+								</viz.data:measures>
+							</viz.data:FlattenedDataset>
+						</viz:dataset>
 
-					<!--<VBox width="30rem"  height="10rem" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
-						<items>
-							<chart:InteractiveBarChart labelWidth="50%" bars="{/STR_TP_GRAPHICS}" displayedBars="{=${/countBars}}">
-								<chart:bars>
-									<chart:InteractiveBarChartBar label="{descripcion}" value="{value}" color="Good"/>
-								</chart:bars>
-							</chart:InteractiveBarChart>
-						</items>
-					</VBox>-->
-					<FlexBox width="25rem" height="35rem" direction="Column" alignItems="Center" justifyContent="SpaceAround" class="sapUiSmallMargin">
-						<items>
-							<ObjectStatus 
-								text=""
-								state="Indication06" />
-							<chart:InteractiveBarChart 
-						
-								bars="{/Propiedad}" 
-								labelWidth="25%" 																																																																																																																																																		
-								selectionChanged=".selectionChanged" 
-								press="press"
-								
-								displayedBars="{=${/countBars}.length}">
-								<chart:bars>
-									<chart:InteractiveBarChartBar 
-										label="{descripcion}" 
-										value="{value}" 
-										displayedValue="{porcentaje}"
-										color="Good"/>
-								</chart:bars>
-							</chart:InteractiveBarChart>
-						</items>
-					</FlexBox>
-				</layout:HorizontalLayout>
+						<viz:feeds>
+							<viz.feeds:FeedItem uid="valueAxis" type="Measure"
+								values="Propios,Terceros" />
+							<viz.feeds:FeedItem uid="categoryAxis" type="Dimension"
+								values="Tipo de Pesca" />
+						</viz:feeds>
+					</viz:VizFrame>
+				</HBox>
+
+
+			</VBox>
 					
 
-			</layout:Grid>
 		</semantic:content>
 
-		</semantic:SemanticPage>
-		</App>
-	</Shell>
+	</semantic:SemanticPage>
 </mvc:View>

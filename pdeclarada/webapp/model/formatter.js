@@ -1,4 +1,5 @@
-sap.ui.define([], function () {
+sap.ui.define([], 
+	function () {
 	"use strict";
 
 	return {
@@ -28,7 +29,6 @@ sap.ui.define([], function () {
 				let day=sDate.split("/")[0];
 				let mes=sDate.split("/")[1];
 				let anio=sDate.split("/")[2];
-				debugger;
 				if(mes<10){
 					mes=this.zeroFill(mes,2);
 				}
@@ -83,10 +83,7 @@ sap.ui.define([], function () {
 			}else{
 				return "";
 			}
-		},
-		setColorsFields:function(field){
-			console.log(field)
-		},
+		}
 		
 	};
 

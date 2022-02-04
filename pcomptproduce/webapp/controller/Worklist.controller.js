@@ -77,6 +77,7 @@ sap.ui.define([
 
 			oModel.setProperty("/bMostrarPuertos",false);
 			oModel.setProperty("/bMostrarProp",true);
+			oModel.setProperty("/visibleRowCount",10);
 			
 			if(iEmpresaIndex === 1){
 				oRecepTable = this.mTables["TablaRecep"];
@@ -132,12 +133,12 @@ sap.ui.define([
 
 			oViewModel.setProperty("/tabCount","");
 			if(iTotalRows && oRowBinding.isLengthFinal()){
-				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalRows]);
+				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalRows-3]);
 				oViewModel.setProperty("/tabCount",iTotalRows);
 				oViewModel.setProperty("/indicadorPropiedad","D")
 				oModel.setProperty("/selectedCodZona",undefined);
 				this._buildZonasColumns(aZonas,bIsPort);
-				this._formatTotales(iTotalRows);
+				// this._formatTotales(iTotalRows);
 			} else {
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
@@ -162,21 +163,47 @@ sap.ui.define([
 			let oContext = oItem.getBindingContext(),
 			 oObject = oContext.getObject(),
 			 sPath = oContext.getPath(),
+			 oModel = oContext.getModel(),
+			 oViewModel = this.getModel("worklistView"),
+			 oFormData = oModel.getProperty("/help"),
 			 sPathRow = sPath.split("/")[1],
 			 sObjectId = sPath.split("/")[2],
-			 oModel = oContext.getModel(),
-			 oParam = this._getParametersService(oObject),
+			 oParam = {
+				cdusr: "",
+				p_cdgre: oObject.CDGRE ,
+				p_cdpcn: oFormData["CDPCN"] || "",
+				p_ctgra: "",
+				p_emba: "E",
+				p_empeb: "",
+				p_fefin: "",
+				p_feini: "",
+				p_grueb: "",
+				p_option: [],
+				p_options: [],
+				p_tcons: "P",
+				p_zcdzar: oFormData["ZCDZAR"] || ""
+			 },
+			 iFechaIndex = oViewModel.getProperty("/fechaIndex"),
 			 oService = {},
-			 oData;
+			 oData,
+			 sStartDate,
+			 sLastDate;
+
+			 
+			 if(iFechaIndex === 1) {
+				sStartDate = oFormData["dateRange"].split("-")[0].trim();
+				sLastDate = oFormData["dateRange"].split("-")[1].trim();
+			}else{
+				sLastDate = oFormData["FHFTM"];
+				sStartDate = oFormData["FHITM"];
+			}
+			oParam.p_fefin = formatter.setFormatDateYYYYMMDD(sLastDate);
+			oParam.p_feini = formatter.setFormatDateYYYYMMDD(sStartDate);
+
 			oService.url = this.getHostService() +  "/api/sistemainformacionflota/PescaCompetenciaProduce";
 			oService.serviceName = "Embarcaciones";
 			oService.param = oParam;
-			oService.param.cdusr = "";
-			oService.p_ctgra = "";
-			oService.p_zcdzar = "";
-			oService.p_emba = "";
-			oService.p_empeb = "";
-
+				
 			this.Count = 0; 
 			this.CountService = 1;
 			oData = await this.getDataService(oService);
@@ -279,6 +306,7 @@ sap.ui.define([
 			sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			oViewModel.setProperty("/worklistTableTitle", sTitle);
 			oModel.setProperty("/bMostrarPuertos",false);
+			oModel.setProperty("/visibleRowCount",10);
 			oModel.setProperty("/tableRows",{});
 			let bFlag = true;
 			this._removeColumns(bFlag);
@@ -509,7 +537,7 @@ sap.ui.define([
 			oModel.setProperty("/selectedCodZona",sCod);
 
 			this._buildPuertosColumns(sCod);
-			this._formatTotales(iTotalRows);
+			// this._formatTotales(iTotalRows);
 			this._pListPopover.close();
 		},
 
@@ -522,7 +550,7 @@ sap.ui.define([
 
 			oModel.setProperty("/selectedCodZona",undefined),
 			this._buildZonasColumns(aColumnZonas,bIsPort);
-			this._formatTotales(iTotalRows);
+			// this._formatTotales(iTotalRows);
 			this._pListPopover.close();
 		},
 
@@ -538,6 +566,7 @@ sap.ui.define([
 			sCodZona = oObject.CDZLT,
 			aZonasSelected = aZonas.filter(zona => zona.CDZLT !== sCodZona);
 			oModel.setProperty("/selectedCodZona",sCodZona);
+			oModel.setProperty("/selectedPuerto",oObject);
 			this._pListPopover.close();
 			this._buildPuertosColumns(sCodZona,);
 			this._buildZonasColumns(aZonasSelected,sPath1,sPath2);
@@ -568,7 +597,7 @@ sap.ui.define([
 				bIsPort = false;
 				if(sCodZona !== "T") this._buildZonasColumns(aZonas,bIsPort);
 			}
-			this._formatTotales(iTotalRows);
+			// this._formatTotales(iTotalRows);
 		},
 
 		/* =========================================================== */
@@ -630,6 +659,10 @@ sap.ui.define([
 				oModel.setProperty("/tableRows", aTableRows);
 				// mostrar el boton de zonas
 				oModel.setProperty("/bMostrarPuertos",true);
+				oModel.setProperty("/visibleRowCount",aTableRows.length);
+				if(aTableRows.length > 15){
+					oModel.setProperty("/visibleRowCount",15);
+				}
 			}
 		},
 
@@ -865,6 +898,7 @@ sap.ui.define([
 				iPescaZonaP,
 				iPescaZonaT;
 
+				// totales columnas fijas
 				aKeys.forEach(key => {
 					sTotal = 0;
 					iTotCNPDS = 0;
@@ -873,9 +907,9 @@ sap.ui.define([
 					iPescaZonaP = 0;
 					iPescaZonaT = 0;
 					if(key !== "DSGRE") {
-						sTotal = aTableRows.reduce( (acc , obj) => {
-							return acc + obj[key]
-						},0);
+						 sTotal = aTableRows.reduce((acc,obj)=>{
+							 if(!isNaN(obj[key])) return acc + obj[key];
+						 },0);
 					}
 					oTotals[key] = sTotal;
 				});
@@ -1009,37 +1043,37 @@ sap.ui.define([
 				oRow.getCells()[0].setState("Information");
 			});
 
-			if(iTotalRows > 0){
-				if(iTotalRows < iRowsLength){
-					oControl = aRows[iTotalRows-1].getCells()[0];
-					oControl1 = aRows[iTotalRows-2].getCells()[0];
-					oControl2 = aRows[iTotalRows-3].getCells()[0];
-				}else{
-					oControl = aRows[iRowsLength-1].getCells()[0];
-					oControl1 = aRows[iRowsLength-2].getCells()[0];
-					oControl2 = aRows[iRowsLength-3].getCells()[0];
-				}
-				oControl.setActive(false);
-				oControl1.setActive(false);
-				oControl2.setActive(false);
+			// if(iTotalRows > 0){
+			// 	if(iTotalRows < iRowsLength){
+			// 		oControl = aRows[iTotalRows-1].getCells()[0];
+			// 		oControl1 = aRows[iTotalRows-2].getCells()[0];
+			// 		oControl2 = aRows[iTotalRows-3].getCells()[0];
+			// 	}else{
+			// 		oControl = aRows[iRowsLength-1].getCells()[0];
+			// 		oControl1 = aRows[iRowsLength-2].getCells()[0];
+			// 		oControl2 = aRows[iRowsLength-3].getCells()[0];
+			// 	}
+			// 	oControl.setActive(false);
+			// 	oControl1.setActive(false);
+			// 	oControl2.setActive(false);
 
-				oControl.setState("Error");
-				oControl1.setState("Success");
-				oControl2.setState("None");
+			// 	oControl.setState("Error");
+			// 	oControl1.setState("Success");
+			// 	oControl2.setState("None");
 				
-				for (let i = 1; i < 4; i++) {
-					if(iTotalRows < iRowsLength){
-						aRows[iTotalRows-i].getCells().forEach(cell => {
-							cell.addStyleClass("none");
-						});
-					}else{
-						aRows[iRowsLength-i].getCells().forEach(cell => {
-							cell.addStyleClass("none");
-						});
-					}
+			// 	for (let i = 1; i < 4; i++) {
+			// 		if(iTotalRows < iRowsLength){
+			// 			aRows[iTotalRows-i].getCells().forEach(cell => {
+			// 				cell.addStyleClass("none");
+			// 			});
+			// 		}else{
+			// 			aRows[iRowsLength-i].getCells().forEach(cell => {
+			// 				cell.addStyleClass("none");
+			// 			});
+			// 		}
 					
-				}
-			}
+			// 	}
+			// }
 
 		}
 	});

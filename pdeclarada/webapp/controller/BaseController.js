@@ -24,7 +24,6 @@ sap.ui.define([
 
 	// shortcut for sap.m.URLHelper
 	// var URLHelper = mobileLibrary.URLHelper;
-	var HOST = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com';
 
 	return Controller.extend("com.tasa.pdeclarada.controller.BaseController", {
 		/**
@@ -65,68 +64,127 @@ sap.ui.define([
 		getResourceBundle: function () {
 			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
 		},
-		getDataService: async function(sUrl,param){
-			BusyIndicator.show(0);
-			try {
-				let oResponseData = await fetch(sUrl,{
+
+        Count:0,
+        CountService:0,
+
+        /**
+		 * 
+		 * @returns url service 
+		 */
+		 getHostService: function () {
+            var urlIntance = window.location.origin,
+            servicioNode ; 
+
+			if (urlIntance.indexOf('tasaqas') !== -1) {
+                servicioNode = 'qas'; // aputando a QAS
+            } else if (urlIntance.indexOf('tasaprd') !== -1) {
+                servicioNode = 'prd'; // apuntando a PRD
+            }else if(urlIntance.indexOf('localhost') !== -1){
+				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+			}else{
+				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+			}
+
+            return `https://cf-nodejs-${servicioNode}.cfapps.us10.hana.ondemand.com`;
+        },
+
+        /**
+         * Establece un mensaje de aviso para un evento determinado
+         * @param {string} sType 
+         * @param {string} sMessage 
+         */
+		 setAlertMessage:function(sType,sMessage){
+            let sTitle = "Mensaje";
+            if(sType === "success"){
+                MessageBox.success(sMessage,{
+                    title: sTitle
+                });
+            };
+            if(sType === "information"){
+                MessageBox.information(sMessage,{
+                    title: sTitle
+                });
+            };
+            if(sType === "warning"){
+                MessageBox.warning(sMessage,{
+                    title: sTitle
+                });
+            };
+            if(sType === "error") {
+                MessageBox.warning(sMessage,{
+                    title: sTitle
+                });
+            };
+        },
+
+		getDataService: async function(oService){
+            try {
+				BusyIndicator.show(0);
+				this.Count++;
+				let oFetch = await fetch(oService.url,{
 					method:'POST',
-					body:JSON.stringify(param)
+					body:JSON.stringify(oService.param)
 				});
-                console.log(oResponseData);
-				if(oResponseData.ok) {
-					this.count++;
-					return oResponseData.json();
+				if(oFetch.status===200){
+					if(this.Count === this.CountService) BusyIndicator.hide();
+					return await oFetch.json();
 				}else{
+					BusyIndicator.hide();
+					Log.error(`Status:${oFetch.status}, ${oFetch.statusText}`);
 					return null;
 				}
 			} catch (error) {
+				Log.error(`Error:${error}`);
 				BusyIndicator.hide();
-				Log.error(error);
-				this.getMessageDialog("Error", "Se produjo un error de conexión")
-				return null;
+				this.setAlertMessage("error","Hubo un error de conexión con el servicio "/* + oService.serviceName*/);
 			}
-			// try {
-				// let oPromise = fetch(sUrl,{
-				// 	method:'POST',
-				// 	body:JSON.stringify(oService.param)	
-				// });
-				// if(oPromise.ok){
-				// 	return oPromise;
-					// let oData = await oPromise.json(),
-					// aData,
-					// aData2;
-					// if(oData["str_tp"]) aData = oData["str_tp"];
-					// if(oData["data"]) aData = oData.data[0].data;
-					// if(aData.length>0){
-					// 	oService.model.setProperty(`/${oService.property}`,aData);
-					// 	// estrucutura para Detalle
-					// 	if(oData["str_tp"]){
-					// 		let aDetailData = oData["str_te"],
-					// 		aPropia,
-					// 		aTerceras;
-					// 		aData.forEach(oItem=>{
-					// 			aPropia = aDetailData.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="P");
-					// 			aTerceras = aDetailData.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="T");
-					// 			oItem.propias = aPropia;
-					// 			oItem.terceras = aTerceras;
-					// 			oItem.cantPropias = aPropia.length;
-					// 			oItem.cantTerceras = aTerceras.length;
-					// 		});
-								
-					// 	}
-					// }else{
-					// 	this.getMessageDialog("Information", "No se econtraron registros para la busqueda");
-					// 	oService.model.setProperty(`/${oService.property}`,[]);
-					// }
-					// if(this.count===this.servicesLenght) BusyIndicator.hide();
-				// }else{
-				// 	return null;
-				// }
-			// } catch (error) {
-			// 	BusyIndicator.hide();
-			// 	Log.error(error);
-			// 	this.getMessageDialog("Error", "Se produjo un error de conexión")
-			// }
+		},
+
+        getParametersService:function(oObject){
+            return {
+                fieldstr_te : [],
+                fieldstr_tp : [],
+                p_cdmma : oObject.cdmma,
+                p_fecon : oObject.fecon,
+                p_user : ""
+            }
+        },
+
+        setDataStructure:function(oData){
+			let aDataTp = oData["str_tp"],
+            oModel = this.getModel(),
+			aDataTe;
+			if(aDataTp.length>0){
+				let aPropia,
+				aTerceras;
+				aDataTe = oData["str_te"];
+				aDataTp.forEach(oItem=>{
+					oItem.PORC_CBOD_OPER=oItem.PORC_CBOD_OPER.toFixed();
+					oItem.PORC_CBOD=oItem.PORC_CBOD.toFixed();
+					aPropia = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="P");
+					aTerceras = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="T");
+					oItem.propias = aPropia;
+					oItem.terceras = aTerceras;
+					oItem.cantPropias = aPropia.length;
+					oItem.cantTerceras = aTerceras.length;                      
+					
+				});
+				var propias=aDataTe.filter(item=>item.INPRP==="P").length;
+				var terceros=aDataTe.filter(item=>item.INPRP==="T").length;
+				// var ninguno=aDataTe.filter(item=>item.INPRP==="").length;
+
+				this.getGraphData(aDataTp);
+				this.calcularTotales(aDataTp,propias, terceros);
+				this.getBarsPropiedad(aDataTp);
+				oModel.setProperty(`/str_tp`,aDataTp);
+				oModel.setProperty(`/str_te`,aDataTe);
+				oModel.setProperty("/rowCount",aDataTp.length);
+				this.setTotalRowTable();
+			}else{
+				this.getMessageDialog("Information", "No se econtraron registros para la busqueda");
+				oModel.setProperty(`/str_tp`,[]);
+			}
 		},
 
 		getDataMainTable: async function(oModel,oParam){
@@ -142,50 +200,12 @@ sap.ui.define([
 			aDataTp,
 			aDataTe;
 			if(oMotMareaData){
-                console.log(oMotMareaData);
-				aDataTp = oMotMareaData["str_tp"];
-				if(aDataTp.length>0){
-					let aPropia,
-					aTerceras;
-					aDataTe = oMotMareaData["str_te"];
-                    
-
-					aDataTp.forEach(oItem=>{
-                        oItem.PORC_CBOD_OPER=oItem.PORC_CBOD_OPER.toFixed();
-                        oItem.PORC_CBOD=oItem.PORC_CBOD.toFixed();
-						aPropia = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="P");
-						aTerceras = aDataTe.filter(item=>item.CDPTA===oItem.CDPTA&&item.INPRP==="T");
-						oItem.propias = aPropia;
-						oItem.terceras = aTerceras;
-						oItem.cantPropias = aPropia.length;
-						oItem.cantTerceras = aTerceras.length;                      
-                        
-					});
-                    var propias=aDataTe.filter(item=>item.INPRP==="P").length;
-                    var terceros=aDataTe.filter(item=>item.INPRP==="T").length;
-                    var ninguno=aDataTe.filter(item=>item.INPRP==="").length;
-
-                    console.log(propias);
-                    console.log(terceros);
-                    console.log(ninguno);
-
-
-					this.getGraphData(aDataTp);
-					this.calcularTotales(aDataTp,propias, terceros, ninguno);
-                    this.getBarsPropiedad(aDataTp);
-					oModel.setProperty(`/str_tp`,aDataTp);
-					oModel.setProperty(`/str_te`,aDataTe);
-					this.setTotalRowTable();
-				}else{
-					this.getMessageDialog("Information", "No se econtraron registros para la busqueda");
-					oModel.setProperty(`/str_tp`,[]);
-				}
+				
 				if(this.count===this.servicesLenght) BusyIndicator.hide();
 			}
-			
 		},
 
-		calcularTotales: function (listPescaDeclarada, propios, terceros, ninguno) {
+		calcularTotales: function (listPescaDeclarada, propios, terceros) {
 			/**
 			 * Copia del primer elemento para obtener su modelo
 			 */
@@ -211,7 +231,6 @@ sap.ui.define([
             let total_Propios= 0;
             let total_Terceros= 0;
 
-
 			listPescaDeclarada.forEach(p => {
 				total_CEMBA += p.CEMBA;
 				total_CEMBP += p.CEMBP;
@@ -227,8 +246,6 @@ sap.ui.define([
 				total_PROM_PESC_PROP += p.PROM_PESC_PROP;
 				total_PROM_PESC_TERC += p.PROM_PESC_TERC;
 				total_TOTED += p.TOTED;
-               
-                
 			});
 
 			/**
@@ -254,9 +271,7 @@ sap.ui.define([
 			pescaDeclaradaTotal.TOTED = total_TOTED;
             pescaDeclaradaTotal.cantPropias=parseInt(propios);
             pescaDeclaradaTotal.cantTerceras=parseInt(terceros);
-            pescaDeclaradaTotal.cantVacio=parseInt(ninguno);
-
-
+            // pescaDeclaradaTotal.cantVacio=parseInt(ninguno);
 
 			listPescaDeclarada.push(pescaDeclaradaTotal);
 
@@ -265,52 +280,53 @@ sap.ui.define([
 			this.getModel().setProperty("/totalGenNumEmba", pescaDeclaradaTotal.TOT_NUM_EMBA);
 			this.getModel().setProperty("/totalGenPescDesc", pescaDeclaradaTotal.CNPDS);
 			this.getModel().setProperty("/totalGenNumEmbaDesc", pescaDeclaradaTotal.TOTED);
-			
-
 		},
 
 		getGraphData:function(aData){
 			const aGraphData = aData.map(s => {
 				return {
 					descripcion: s.DESCR,
-					value: s.PORC_PESC_DECL
+                    valuePorPesDe: s.PORC_PESC_DECL,
+                    valuePorCBOD: s.PORC_CBOD
 				};
 			});
 
 			this.getModel().setProperty("/STR_TP_GRAPHICS", aGraphData);
 			this.getModel().setProperty("/countBars", aData.length-1);
-
            
 		},
         getBarsPropiedad:function(aData){
- 
             var total=aData[aData.length-1];
-            var totalEmbarca=total.cantPropias+total.cantTerceras+total.cantVacio;
+            total.cantVacio = 0;
+            var totalEmbarca=total.cantPropias+total.cantTerceras/*+total.cantVacio*/;
 
             var items=[
                 {
-                    descripcion:"Propias",
-                    value:parseInt(((total.cantPropias*100)/totalEmbarca).toFixed(0)),
-                    porcentaje:((total.cantPropias*100)/totalEmbarca).toFixed(0).concat("%"),
-                    cantidad:total.cantPropias
+                    descripcion:"",
+                    valueProp: parseInt(((total.cantPropias*100)/totalEmbarca).toFixed(0)),
+                    valueTerc: parseInt(((total.cantTerceras*100)/totalEmbarca).toFixed(0)),
+                    // valueNone: parseInt(((total.cantVacio*100)/totalEmbarca).toFixed(0))
+                    // value:parseInt(((total.cantPropias*100)/totalEmbarca).toFixed(0)),
+                    // porcentaje:((total.cantPropias*100)/totalEmbarca).toFixed(0).concat("%"),
+                    // cantidad:total.cantPropias
+                    
 
                 },
-                {
-                    descripcion:"Terceros",
-                    value:parseInt(((total.cantTerceras*100)/totalEmbarca).toFixed(0)),
-                    porcentaje:((total.cantTerceras*100)/totalEmbarca).toFixed(0).concat("%"),
-                    cantidad:total.cantTerceras
+                // {
+                //     descripcion:"Terceros",
+                //     value:parseInt(((total.cantTerceras*100)/totalEmbarca).toFixed(0)),
+                //     porcentaje:((total.cantTerceras*100)/totalEmbarca).toFixed(0).concat("%"),
+                //     cantidad:total.cantTerceras
 
-                },
-                {
-                    descripcion:"Ninguno",
-                    value:parseInt(((total.cantVacio*100)/totalEmbarca).toFixed(0)),
-                    porcentaje:((total.cantVacio*100)/totalEmbarca).toFixed(0).concat("%"),
-                    cantidad:total.cantVacio
-                }
+                // },
+                // {
+                //     descripcion:"Ninguno",
+                //     value:parseInt(((total.cantVacio*100)/totalEmbarca).toFixed(0)),
+                //     porcentaje:((total.cantVacio*100)/totalEmbarca).toFixed(0).concat("%"),
+                //     cantidad:total.cantVacio
+                // }
              ];		
 			this.getModel().setProperty("/Propiedad", items);
-            console.log(items);
         },
 
 		setTotalRowTable:function(){
@@ -819,10 +835,6 @@ sap.ui.define([
             oBar.setSelected(false);
 			//MessageToast.show("The selection changed: " + oBar.getLabel() +" "+cantidad + " " + ((oBar.getSelected()) ? "selected" : "deselected"));
 		}
-
-
-
-
 	});
 
 });

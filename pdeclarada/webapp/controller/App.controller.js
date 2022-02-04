@@ -39,33 +39,26 @@ sap.ui.define([
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
 			// carga inicial
-			this.count = 0;
-			this.servicesLenght = 2;
-			let oFormData = new Object,
-			oDate = new Date;
-			oFormData.fecon =formatter.formatDateDDMMYYYY(oDate);
-			oFormData.cdmma = "A";
-			oFormData.hora = formatter.formatHours(oDate);
+			this.Count = 0;
+			this.CountService = 2;
 			let oModel = this.getModel();
-			oModel.setProperty("/form", oFormData)
 			// llamamos a servicios
 			this.getDominios(oModel);
-
 			// servicio para tabla principal
-			let oParam = new Object;
-			oParam.fecon = formatter.formatDateYYYYMMDD(oDate);
-			oParam.cdmma = oFormData.cdmma;
-			this.getDataMainTable(oModel,oParam);
+			this.getDataMainTable(oModel);
+
 		},
 
 		getDominios: async function(oModel){
-			const sUrl = HOST + '/api/dominios/Listar',
-			oParam = new Object;
+			let oParam = {},
+			oService = {};
 
 			oParam.dominios = [
 				{domname:"MOTIVOMAREA_RPDC",status:"A"}
 			];
-			let oDomData = await this.getDataService(sUrl, oParam),
+			oService.url = `${this.getHostService()}/api/dominios/Listar`;
+			oService.param = oParam;
+			let oDomData = await this.getDataService(oService),
 			aData;
 			if(oDomData){
 				aData = oDomData.data[0].data;
@@ -75,7 +68,28 @@ sap.ui.define([
 					this.getMessageDialog("Information", "No se econtraron registros");
 					oModel.setProperty(`/motivoMarea`,[]);
 				}
-				if(this.count===this.servicesLenght) BusyIndicator.hide();
+			}
+		},
+
+		getDataMainTable: async function(oModel){
+			let oDate = new Date,
+			oParamObject = {},
+			oService = {},
+			oMainTableData,
+			oParam;
+
+			oParamObject.fecon = formatter.formatDateYYYYMMDD(oDate);
+			oParamObject.cdmma = "A";
+			oParamObject.hora = formatter.formatHours(oDate);
+			oParam = this.getParametersService(oParamObject);
+			oService.url = `${this.getHostService()}/api/sistemainformacionflota/PescaDeclarada`;
+			oService.param = oParam;
+			oMainTableData = await this.getDataService(oService);
+			if(oMainTableData){
+				this.setDataStructure(oMainTableData);
+				// oModel.setProperty("/mainTable",oMainTableData);
+				oParamObject.fecon = formatter.formatDateDDMMYYYY(oDate);
+				oModel.setProperty("/form",oParamObject);
 			}
 		}
 	});

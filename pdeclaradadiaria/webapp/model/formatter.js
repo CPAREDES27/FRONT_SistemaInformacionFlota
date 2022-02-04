@@ -55,8 +55,26 @@ sap.ui.define([
 		 */
 		formatDateInverse:function(sDate){
 			if(sDate){
-				let sNewDate =`${sDate.split("/")[2]}${sDate.split("/")[1]}${sDate.split("/")[0]}`;
-				return sNewDate;
+				let sYear =sDate.split("/")[2],
+				sMonth = sDate.split("/")[1],
+				sDay = sDate.split("/")[0];
+				return `${sYear}${sMonth >= 10 ? sMonth : `0${sMonth}`}${sDay >= 10 ? sDay : `0${sDay}`}`;
+			}else{
+				return "";
+			}
+		},
+
+		/**
+		 *  Ingresa string dd/mm/yyyy ; retorna yyyymmdd
+		 * @param {string} sDate 
+		 * @returns 
+		 */
+		 formatDateInverse2:function(sDate){
+			if(sDate){
+				let sYear =sDate.split("/")[2],
+				sMonth = sDate.split("/")[1],
+				sDay = sDate.split("/")[0];
+				return sYear+sMonth+sDay;
 			}else{
 				return "";
 			}
@@ -74,6 +92,7 @@ sap.ui.define([
 				return "";
 			}
 		},
+
 		/**
 		 * Formatea numero sin digitos decimales
 		 * @param {string} sNumber 
@@ -93,13 +112,37 @@ sap.ui.define([
 		},
 
 		/**
+		 * Formatea numero con 01 digitos decimal
+		 * @param {string} sNumber 
+		 */
+		 formatFloat3:function(sNumber){
+			if(!isNaN(Number(sNumber))){
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:3,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				return oFloatNumber.format(sNumber);
+			}else{
+				return sNumber;
+			}
+		},
+
+		/**
 		 * Formatea numero alto
 		 * @param {string} sNumber 
 		 */
 		 formatBigNumber:function(sNumber){
 			if(sNumber){
-				if(sNumber>10000) return null;
-				return sNumber;
+				if(sNumber>10000000) return "";
+				let oFloatNumber = NumberFormat.getFloatInstance({
+					decimals:0,
+                    groupingEnabled: true,
+					groupingSeparator:',',
+					decimalSeparator:'.'
+				});
+				return oFloatNumber.format(sNumber);
 			}else{
 				return null;
 			}

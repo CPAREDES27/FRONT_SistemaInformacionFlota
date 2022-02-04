@@ -5,7 +5,7 @@
     <Table
         id="tableRecep"
         selectionMode="None"
-        visibleRowCount="8"
+        visibleRowCount="{/visibleRowCount}"
         fixedColumnCount="1"
         fixedBottomRowCount="3"
         class="classPrincipalTable">

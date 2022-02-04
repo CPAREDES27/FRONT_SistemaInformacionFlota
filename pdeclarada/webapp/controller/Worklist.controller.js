@@ -3,11 +3,20 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
-], function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
+	"sap/ui/model/FilterOperator",
+	"sap/viz/ui5/format/ChartFormatter",
+	"sap/viz/ui5/api/env/Format",
+	"sap/ui/core/format/NumberFormat"
+], function (
+	BaseController, 
+	JSONModel, 
+	formatter, 
+	Filter, 
+	FilterOperator,
+	ChartFormatter,
+	Format,
+	NumberFormat) {
 	"use strict";
-
-	const HOST = 'https://cf-nodejs-qas.cfapps.us10.hana.ondemand.com';
 
 	return BaseController.extend("com.tasa.pdeclarada.controller.Worklist", {
 
@@ -49,24 +58,10 @@ sap.ui.define([
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
 
-			//Obtener los motivos de marea
-			// fetch(`${mainUrlRest}dominios/Listar`, {
-			// 	method: 'POST',
-			// 	body: JSON.stringify({
-			// 		dominios: [
-			// 			{
-			// 				domname: "MOTIVOMAREA_RPDC",
-			// 				status: "A"
-			// 			}
-			// 		]
-			// 	})
-			// }).then(resp => resp.json()).then(data => {
-			// 	this.getModel("worklistView").setProperty("/motivos", data.data[0].data);
-			// });
-
-			// this.getDataTable(new Date, undefined);
+			// formateo de grafico pie
+			this._setFormatPieLabel();
 			
-				},
+		},
 
 		/* =========================================================== */
 		/* event handlers                                              */
@@ -146,6 +141,40 @@ sap.ui.define([
 			oTable.getBinding("items").refresh();
 		},
 
+		onRowBindingChange:function(oEvent){
+		},
+
+		onBuscarPescaDescargada: async function () {
+			let oModel = this.getModel(),
+				oFormData = oModel.getProperty("/form"),
+				oParam = {},
+				oService= {},
+				oMainTableData;
+
+			this.Count = 0;
+			this.CountService = 1;
+			oParam.cdmma = oFormData.cdmma;
+			oParam.fecon = formatter.formatDateInverse(oFormData.fecon);
+			oService.url = `${this.getHostService()}/api/sistemainformacionflota/PescaDeclarada`;
+			oService.param = this.getParametersService(oParam);
+			oMainTableData = await this.getDataService(oService);
+			if(oMainTableData){
+				this.setDataStructure(oMainTableData);
+			}
+		},
+
+		onCleanFilter: function () {
+			let oModel = this.getModel(),
+				oDate = new Date,
+				oDateFormat = formatter.formatDateDDMMYYYY(oDate);
+			oDate;
+			oModel.setProperty("/form", {
+				fecon: oDateFormat,
+				cdmma: "A",
+				hora: formatter.formatHours(oDate)
+			})
+		},
+
 		/* =========================================================== */
 		/* internal methods                                            */
 		/* =========================================================== */
@@ -177,30 +206,48 @@ sap.ui.define([
 			}
 		},
 
-		onBuscarPescaDescargada: function () {
-			const oModel = this.getModel(),
-				oFormData = oModel.getProperty("/form"),
-				oParam = new Object;
+		/**
+		 * Internal helper method to formatter pie chart
+		 */
+		_setFormatPieLabel:function(){
+			const chartFormatter = ChartFormatter.getInstance();
+			Format.numericFormatter(chartFormatter);
+			const UI5_FLOAT_FORMAT = "CustomFormatPie";
+			const oPercentageFormat = NumberFormat.getPercentInstance({
+				decimals:0,
+				roundingMode:"FLOOR"
+			}); 
 
-			this.count = 0;
-			this.servicesLenght = 1;
-			oParam.cdmma = oFormData.cdmma;
-			oParam.fecon = formatter.formatDateInverse(oFormData.fecon);
-			this.getDataMainTable(oModel, oParam);
-		},
+			this.countChart = 0;
+			this.bFlag = true;
 
-		onCleanFilter: function () {
-			let oModel = this.getModel(),
-				oDate = new Date,
-				oDateFormat = formatter.formatDateDDMMYYYY(oDate);
-			oDate;
-			oModel.setProperty("/form", {
-				fecon: oDateFormat,
-				cdmma: "A",
-				hora: formatter.formatHours(oDate)
-			})
-		},
+			let that = this;
 
-		
+			chartFormatter.registerCustomFormatter(UI5_FLOAT_FORMAT, function(value) {
+				// let oModel = this.getOwnerComponent().getModel(),
+				let oModel = that.getModel(),
+				aPieData = oModel.getProperty("/STR_TP_GRAPHICS"),
+				item = aPieData[that.countChart],
+				iCBOD;
+				if(that.bFlag){
+					that.bFlag = false;
+					iCBOD = parseFloat(item.valuePorCBOD);
+				}else{
+					that.countChart ++;
+					that.bFlag = true;
+					if(item) iCBOD = parseFloat(item.valuePorCBOD)/100;
+				}
+				return `${oPercentageFormat.format(value)}(${oPercentageFormat.format(iCBOD)})`;
+			
+				// oItemData = aPieData.find(item => item.valuePorPesDe === value),
+				// iCBOD = parseFloat(oItemData.valuePorCBOD);
+				// console.log(oItemData.descripcion)
+				// console.log(iCBOD)
+				// console.log(value)
+				// if(oItemData){
+
+				// }
+			});
+		}
 	});
 });

@@ -2,9 +2,9 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/UIComponent",
 	"sap/m/library",
-	"../model/formatter",
-	"sap/ui/core/BusyIndicator"
-], function (Controller, UIComponent, mobileLibrary, formatter,BusyIndicator) {
+	"sap/ui/core/BusyIndicator",
+	"sap/base/Log"
+], function (Controller, UIComponent, mobileLibrary,BusyIndicator,Log) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
@@ -50,46 +50,111 @@ sap.ui.define([
 		getResourceBundle: function () {
 			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
 		},
-		// getListPescaDeclaradaDiaria: async function (fechaInicio, fechaFin) {
-		// 	const fechaInicioFormat = formatter.formatDateYYYYMMDD(fechaInicio);
-		// 	const fechaFinFormat = formatter.formatDateYYYYMMDD(fechaFin);
 
-		// 	let listPescaDeclaradaDiaria = await fetch(`${mainUrlRest}sistemainformacionflota/PescaDeclaradaDiara`, {
-		// 		method: 'POST',
-		// 		body: JSON.stringify({
-		// 			fieldstr_dl: [],
-		// 			p_fefin: fechaFinFormat,
-		// 			p_feini: fechaInicioFormat,
-		// 			p_user: ""
-		// 		})
-		// 	})
-		// 		.then(resp => resp.json())
-		// 		.then(data => data)
-		// 		.catch(error => console.log("Error de llamado al servicio"));
+		Count:0,
 
-		// 	return listPescaDeclaradaDiaria;
-		// },
+		CountService:0,
 
-		getDataService: async function(sUrl,param){
-			BusyIndicator.show(0);
+		/**
+		 * 
+		 * @returns url service 
+		 */
+		 getHostService: function () {
+            var urlIntance = window.location.origin,
+            servicioNode ; 
+
+			if (urlIntance.indexOf('tasaqas') !== -1) {
+                servicioNode = 'qas'; // aputando a QAS
+            } else if (urlIntance.indexOf('tasaprd') !== -1) {
+                servicioNode = 'prd'; // apuntando a PRD
+            }else if(urlIntance.indexOf('localhost') !== -1){
+				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+			}else{
+				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+			}
+            return `https://cf-nodejs-${servicioNode}.cfapps.us10.hana.ondemand.com`;
+        },
+
+		/**
+         * Metodo para consultar servicios
+         * @param {object} oService 
+         * @returns 
+         */
+		 getDataService:async function(oService){
 			try {
-				let oResponseData = await fetch(sUrl,{
+				BusyIndicator.show(0);
+				this.Count++;
+				let oFetch = await fetch(oService.url,{
 					method:'POST',
-					body:JSON.stringify(param)
+					body:JSON.stringify(oService.param)
 				});
-				if(oResponseData.ok) {
-					BusyIndicator.hide();
-					return oResponseData.json();
+				if(oFetch.status===200){
+					if(this.Count === this.CountService) BusyIndicator.hide();
+					return await oFetch.json();
 				}else{
+					BusyIndicator.hide();
+					Log.error(`Status:${oFetch.status}, ${oFetch.statusText}`);
 					return null;
 				}
 			} catch (error) {
+				Log.error(`Error:${error}`);
 				BusyIndicator.hide();
-				Log.error(error);
-				this.getMessageDialog("Error", "Se produjo un error de conexión")
-				return null;
+				this.setAlertMessage("error","Hubo un error de conexión con el servicio " + oService.serviceName);
 			}
 		},
+
+		/**
+		 * 
+		 * @returns User loggued
+		 */
+		 getCurrentUser: async function(){
+            let oUshell = sap.ushell,
+            oUser={};
+            if(oUshell){
+                oUser = await sap.ushell.Container.getServiceAsync("UserInfo");
+                let sEmail = oUser.getEmail().toUpperCase(),
+                sName = sEmail.split("@")[0],
+                sDominio= sEmail.split("@")[1];
+                if(sDominio === "XTERNAL.BIZ") sName = "FGARCIA";
+                oUser = {
+                    name:sName
+                }
+            }else{
+                oUser = {
+                    name: "FGARCIA"
+                };
+            }
+			return oUser
+        },
+
+		/**
+         * Establece un mensaje de aviso para un evento determinado
+         * @param {string} sType 
+         * @param {string} sMessage 
+         */
+		 setAlertMessage:function(sType,sMessage){
+            let sTitle = "Mensaje";
+            if(sType === "success"){
+                MessageBox.success(sMessage,{
+                    title: sTitle
+                });
+            };
+            if(sType === "information"){
+                MessageBox.information(sMessage,{
+                    title: sTitle
+                });
+            };
+            if(sType === "warning"){
+                MessageBox.warning(sMessage,{
+                    title: sTitle
+                });
+            };
+            if(sType === "error") {
+                MessageBox.warning(sMessage,{
+                    title: sTitle
+                });
+            };
+        },
 		getMessageDialog:function(sTypeDialog,sMessage){
 			let oMessageDialog;
 			if (!oMessageDialog) {

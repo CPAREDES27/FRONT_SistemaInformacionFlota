@@ -2,6 +2,7 @@ sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
+	"sap/base/Log"
 ], function (BaseController, JSONModel,formatter) {
 	"use strict";
 
@@ -30,6 +31,11 @@ sap.ui.define([
 
 			// apply content density mode to root view
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+			let oModel = this.getModel(),
+			oUser = this.getCurrentUser();
+			oModel.setProperty("/user",oUser)
+			
 		}
 	});
 

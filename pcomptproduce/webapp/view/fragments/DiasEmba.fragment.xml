@@ -6,6 +6,7 @@
         contentWidth="100%">
         <m:content>
             <Table
+                id="diasEmbaTableId"
                 rows="{
                     path:'/embarcaciones/str_ped'
                 }"

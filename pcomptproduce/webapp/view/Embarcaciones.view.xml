@@ -36,12 +36,12 @@
 					</m:OverflowToolbar>
 				</extension>
 				<columns>
-					<Column width="12rem">
+					<Column width="20rem">
 						<!-- <multiLabels> -->
 							<m:Label text="Grupo empresarial"/>
 						<!-- </multiLabels> -->
 						<template>
-							<m:Text text="{DSGRE}" />
+							<m:Text text="{DSGRT}" />
 						</template>
 					</Column>
 

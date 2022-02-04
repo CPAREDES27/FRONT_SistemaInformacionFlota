@@ -11,8 +11,7 @@
 	xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
 
 	<semantic:SemanticPage
-		id="page"
-		class="sapUiNoContentPadding">
+		id="page">
 
 		<semantic:titleHeading>
 			<Title
@@ -22,11 +21,17 @@
 
 		<!-- Header Content -->
 		<semantic:headerContent>
-			<f:Form id="idFormHeader" editable="true" >
+			<f:Form 
+				id="idFormHeader" 
+				editable="true" 
+				class="classForm">
 				<f:formContainers>
 					<f:FormContainer >
 						<f:formElements>
-							<f:FormElement label="Fecha">
+							<f:FormElement>
+								<f:label>
+									<Label text="Fecha" design="Bold"/>
+								</f:label>
 								<f:fields>
 									<DateRangeSelection 
 										id="dateRangePescaDeclaradaDiaria"
@@ -76,18 +81,18 @@
 			</f:Form>
 		</semantic:headerContent>
 
-		<semantic:content>
-			
-			<VBox class="sapUiSmallMarginTop">
+		<semantic:content>		
+			<VBox >
 				<items>
 				<table:Table id="table" 
 					rows="{/STR_DL}"
 					busyIndicatorDelay="{worklistView>/tableBusyDelay}"
 					rowsUpdated="onRowsUpateTable"
 					fixedBottomRowCount="1"
-					visibleRowCount="5"
+					visibleRowCount="{/visibleRowCount}"
 					fixedColumnCount="1"
-					selectionMode="None">
+					selectionMode="None"
+					class="mainTableClass">
 					<table:columns>
 						<table:Column width="6rem" class="colClass">
 							<table:multiLabels>
@@ -96,13 +101,17 @@
 								<Label text="Fecha" />
 							</table:multiLabels>
 							<table:template>
-								<Link
+								<ObjectStatus
 									text="{FECCONMOV}"
-									press="onPress"/>
+									state="Information"
+									active="true"
+									press=".onPress" />
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="10,2,1" hAlign="Center" width="7rem">
+					<!-- Pesca declarada -->
+
+						<table:Column id="colHarina" headerSpan="10,2,1" hAlign="Center" width="6rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Total Pesca" />
@@ -110,14 +119,16 @@
 							</table:multiLabels>
 							<table:template>
 								<Text text="{
-												path:'PESC_DECL_CHI',
-												formatter:'.formatter.formatFloat'
-											}"
-										textAlign="End"
-										class="colHar"/>
+										path:'PESC_DECL_CHI',
+										formatter:'.formatter.formatFloat'
+									}"
+									textAlign="End"
+									class="colHar"/>
 							</table:template>
 						</table:Column>
-						<table:Column width="7rem" hAlign="Center">
+						<table:Column 
+							width="5rem" 
+							hAlign="Center">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Total Pesca" />
@@ -133,7 +144,10 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="10,2,1" hAlign="Center" width="7rem">
+						<table:Column 
+							headerSpan="10,2,1" 
+							hAlign="Center" 
+							width="6rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Pesca Propios" />
@@ -195,7 +209,8 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
+						<table:Column 
+							headerSpan="10,1,1" hAlign="End" width="5.5rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Prop" textAlign="Center" />
@@ -210,7 +225,7 @@
 										class="colTnEp"/>
 							</table:template>
 						</table:Column>
-						<table:Column headerSpan="10,1,1" hAlign="Center" width="4rem">
+						<table:Column headerSpan="10,1,1" hAlign="Center" width="5.5rem">
 							<table:multiLabels>
 								<Label text="Pesca declarada" />
 								<Label text="Terc" />
@@ -225,7 +240,6 @@
 										class="colTnEp"/>
 							</table:template>
 						</table:Column>
-
 
 						<table:Column headerSpan="10,1,1" hAlign="End" width="4rem">
 							<table:multiLabels>
@@ -259,8 +273,8 @@
 						</table:Column>
 
 
-
-						<table:Column headerSpan="5,3,1" hAlign="Center" width="6rem">
+					<!-- Pesca descargada -->
+						<table:Column headerSpan="5,3,1" hAlign="Center" width="6.5rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label text="Planta propia" />
@@ -277,10 +291,12 @@
 													decimalSeparator: '.',
 													groupingEnabled:true
 												}
-											}"/>
+											}"
+										textAlign="End"
+										class="colSinColor"/>
 							</table:template>
 						</table:Column>
-						<table:Column hAlign="Center" width="6rem">
+						<table:Column hAlign="Center" width="6.5rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />
 								<Label text="Planta propia" />
@@ -325,8 +341,8 @@
 							</table:template>
 						</table:Column>
 
-
-						<table:Column headerSpan="5,2,1" hAlign="Center" width="8rem">
+					
+						<table:Column headerSpan="5,2,1" hAlign="Center" width="6.5rem">
 							<table:multiLabels>
 								<Label text="Pesca descargada" />	
 								<Label visible="false"/>
@@ -371,7 +387,7 @@
 							</table:template>
 						</table:Column>
 
-						<table:Column width="4rem" hAlign="End">
+						<table:Column width="3.5rem" hAlign="End">
 							<table:multiLabels>
 								<Label visible="false" />
 								<Label text="Difer" />
@@ -380,99 +396,109 @@
 							<table:template>
 								<Text text="{
 												path:'PORC_DIFER',
-												type:'sap.ui.model.type.Float',
-												constraints:{
-													maximum:1
-												},
-												formatOptions:{
-													preserveDecimals:false,
-													maxFractionDigits:0,
-													minFractionDigits:0,
-													groupingSeparator:',',
-													decimalSeparator: '.',
-													groupingEnabled:true
-												}
+												formatter:'.formatter.formatFloat'
 											}"/>
 							</table:template>
 						</table:Column>
 					</table:columns>
 				</table:Table>
-					<HBox
-						alignContent="SpaceBetween"
-						class="sapUiMediumMarginTop">
-						<items>
-							<FlexBox 
-								width="40%"
-								justifyContent="SpaceAround" 
-								class="sapUiSmallMargin">
-								<items>
-									<chart:InteractiveBarChart 
-										bars="{/dataGraficPorc}" 
-										labelWidth="25%" 
-										displayedBars="2">
-										<chart:bars>
-											<chart:InteractiveBarChartBar 
-												label="{descripcion}" 
-												value="{
-															path:'value'
-															
-														}" 
-												displayedValue="{porcentaje}"
-												color="Good"/>
-										</chart:bars>
-									</chart:InteractiveBarChart>
-								</items>
-							</FlexBox>
 
-							<FlexBox
-								width="100%" 
-								alignItems="Center" 
-								justifyContent="SpaceAround" 
-								class="sapUiSmallMargin">
-								<!-- <items> -->
-									<viz:VizFrame
-										height="20rem"
-										vizType='line'
-										uiConfig="{applicationSet:'fiori'}"
-										vizProperties="{
-											title:{text:'Tn/Ep'}
-										}">
-										<viz:dataset>
-											<viz.data:FlattenedDataset 
-												data="{
-														path:'/dataViz',
-														sorter:{
-															path:'fecha',
-															descending:false
-														}
-													}">
-												<viz.data:dimensions>
-													<viz.data:DimensionDefinition 
-														name="Fecha"
-														value="{
-																	path:'fecha',
-																	formatter:'.formatter.formatDateDDMMYYYY'
-																}" />
-												</viz.data:dimensions>
-												<viz.data:measures>
-													<viz.data:MeasureDefinition name="Propios"
-														value="{=${propio}>10000?0:${propio}}" />	
-													<viz.data:MeasureDefinition name="Terceros"
-														value="{=${tercero}>10000?0:${tercero}}" />
-												</viz.data:measures>
-											</viz.data:FlattenedDataset>
-										</viz:dataset>
-										<viz:feeds>
-											<viz.feeds:FeedItem id='valueAxisFeed' uid="valueAxis" type="Measure"
-												values="Propios,Terceros" />
-											<viz.feeds:FeedItem id='categoryAxisFeed' uid="categoryAxis" type="Dimension"
-												values="Fecha" />
-										</viz:feeds>
-									</viz:VizFrame>
-								<!-- </items> -->
-							</FlexBox>
-						</items>
-					</HBox>
+				<!-- Graficos -->
+				<HBox
+					alignContent="SpaceBetween"
+					class="sapUiMediumMarginTop">
+					<items>
+						<FlexBox 
+							width="30%"
+							justifyContent="SpaceAround" 
+							class="sapUiSmallMargin">
+							<items>
+								<viz:VizFrame 
+									width="20rem"
+									uiConfig="{applicationSet:'fiori'}"
+									vizType='stacked_column'
+									vizProperties="{
+									plotArea:{
+										dataLabel:{	
+											visible:'true'
+										}
+									},
+									title:{ text:'Ind. propiedad (%)'}
+									}" >
+									<viz:dataset>
+										<viz.data:FlattenedDataset data="{/dataGraficPorc}">
+											<viz.data:dimensions>
+												<viz.data:DimensionDefinition name="Tipo de Pesca"
+													value="{descripcion}" />
+											</viz.data:dimensions>
+											<viz.data:measures>
+												<viz.data:MeasureDefinition name="Propios"
+													value="{propios}" />
+												<viz.data:MeasureDefinition name="Terceros"
+													value="{terceros}" />
+											</viz.data:measures>
+										</viz.data:FlattenedDataset>
+									</viz:dataset>
+
+									<viz:feeds>
+										<viz.feeds:FeedItem uid="valueAxis" type="Measure"
+											values="Propios,Terceros" />
+										<viz.feeds:FeedItem uid="categoryAxis" type="Dimension"
+											values="Tipo de Pesca" />
+									</viz:feeds>
+								</viz:VizFrame>
+							</items>
+						</FlexBox>
+
+						<FlexBox
+							width="70%" 
+							alignItems="Center" 
+							justifyContent="SpaceAround" 
+							class="sapUiSmallMargin">
+							<items>
+								<viz:VizFrame
+									width="60rem"
+									vizType='line'
+									uiConfig="{applicationSet:'fiori'}"
+									vizProperties="{
+										title:{text:'Tn/Ep'}
+									}">
+									<viz:dataset>
+										<viz.data:FlattenedDataset 
+											data="{
+													path:'/dataViz',
+													sorter:{
+														path:'fecha',
+														descending:false
+													}
+												}">
+											<viz.data:dimensions>
+												<viz.data:DimensionDefinition 
+													name="Fecha"
+													value="{
+																path:'fecha',
+																formatter:'.formatter.formatDateDDMMYYYY'
+															}" />
+											</viz.data:dimensions>
+											<viz.data:measures>
+												<viz.data:MeasureDefinition name="Propios"
+													value="{propio}" />	
+												<viz.data:MeasureDefinition name="Terceros"
+													value="{tercero}" />
+											</viz.data:measures>
+										</viz.data:FlattenedDataset>
+									</viz:dataset>
+									<viz:feeds>
+										<viz.feeds:FeedItem id='valueAxisFeed' uid="valueAxis" type="Measure"
+											values="Propios,Terceros" />
+										<viz.feeds:FeedItem id='categoryAxisFeed' uid="categoryAxis" type="Dimension"
+											values="Fecha" />
+									</viz:feeds>
+								</viz:VizFrame>
+							</items>
+						</FlexBox>
+					</items>
+				</HBox>
 				</items>
 			</VBox>
 		</semantic:content>

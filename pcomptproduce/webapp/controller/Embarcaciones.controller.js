@@ -2,8 +2,9 @@ sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/routing/History",
-	"../model/formatter"
-], function (BaseController, JSONModel, History, formatter) {
+	"../model/formatter",
+	"sap/ui/model/Filter"
+], function (BaseController, JSONModel, History, formatter,Filter) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.pcomptproduce.controller.Embarcaciones", {
@@ -64,15 +65,19 @@ sap.ui.define([
 			let oContext = oEvent.getSource().getBindingContext(),
 			oModel = oContext.getModel(),
 			aDiasEmba = oModel.getProperty("/embarcaciones/str_ped"),
-			oObject = oContext.getObject();
+			oObject = oContext.getObject(),
+			sCodEmba = oObject.CDEMB;
 
+			
 			aDiasEmba = this._calcularFilasTotales(aDiasEmba);
 			let oDiasEmbaDialog = await this.loadFragment({name:"com.tasa.pcomptproduce.view.fragments.DiasEmba"});
 			oDiasEmbaDialog.open();
+			this._applyDiasEmbaFilters(sCodEmba);
 		},
 
 		onCloseDialog:function(oEvent){
 			oEvent.getSource().getParent().close();
+			oEvent.getSource().getParent().destroy();
 		},
 
 		/* =========================================================== */
@@ -121,10 +126,34 @@ sap.ui.define([
 			oObject = oContext.getObject(),
 			oModel = oContext.getModel(),
 			oEmbarcaciones = oModel.getProperty("/embarcaciones"),
-			aEmbarcaciones = oEmbarcaciones.str_pem;
+			oSelectedPuerto = oModel.getProperty("/selectedPuerto"),
+			aEmbarcaciones = oEmbarcaciones.str_pem,
+			aPuertos = oEmbarcaciones.str_pto,
+			sCodZona = oSelectedPuerto.CDZLT,
+			sCodPuerto = "",
+			oPuerto = {},
+			aTableData = [];
 
-			oModel.setProperty("/table",aEmbarcaciones)
+			oPuerto = aPuertos.find(puerto => puerto.CDZLT === sCodZona);
+			sCodPuerto = oPuerto.CDPTO;
+			aTableData = aEmbarcaciones.filter(row => row.CDPTO === sCodPuerto && row.CDZLT ===  sCodZona);
+			oModel.setProperty("/table",aTableData)
+		},
 
+		_applyDiasEmbaFilters:function(sCodEmba){
+			let oTable = this.getView().byId("diasEmbaTableId"),
+			oBindingTable = oTable.getBinding("rows"),
+			aFilters = [],
+			oFilter = {};
+
+			oFilter = new Filter([
+				new Filter("CDEMB","EQ",sCodEmba)
+			],true);
+
+			aFilters.push(oFilter);
+			if(oBindingTable){
+				oBindingTable.filter(aFilters);
+			}
 		},
 
 		_calcularFilasTotales:function(aDiasEmba){

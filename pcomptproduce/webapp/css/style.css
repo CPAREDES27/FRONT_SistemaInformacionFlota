@@ -3,39 +3,60 @@
     background-color: #fcfffb;
 }
 
-.formClass{
-    background-color: #f4fffb;
-}
 .formClass .sapUiFormTitle{
-    background-color: #cafae9;
+    background-color: rgba(219, 219, 219, 0.253);
 }
 
-.classPesca {
-    background-color: #C6F9C1; /* rgba(198, 249, 193, 1)*/
+.formClass{
+    background-color: rgba(231, 231, 231, 0.253);
 }
 
 .classPesca, .colHeader, .classPuerto,
 .classPeriodo, .classDsTasa, .classTotales{
     display: block;
-    padding: 7px;
 }
 
-.classPuerto{
-    background-color: rgba(254, 204, 142, 1);
+
+/* -------------------------------------------------------------
+ *   LOCALHOST
+ * -------------------------------------------------------------
+ */
+
+
+ /* Tabla empresa receptora */
+/* Columnas Total Pesca */
+#container-pcomptproduce---worklist--tableRecep-table td:nth-child(1){
+    background-color: #C6F9C1; /* rgba(198, 249, 193, 1)*/
 }
 
-.classPeriodo{
-    background-color: rgba(255, 152, 140, 1);
-}
-.classDsTasa{
-    background-color: rgba(166, 229, 244, 1);
-}
-.classTotales{
+/* Columnas resto de totales */
+#container-pcomptproduce---worklist--tableRecep-table td:nth-child(2),
+#container-pcomptproduce---worklist--tableRecep-table td:nth-child(3),
+#container-pcomptproduce---worklist--tableRecep-table td:nth-child(4){
     background-color: rgba(212, 223, 239, 1);
 }
 
-.none{
-    background-color: transparent !important ;
-    display: block;
-    padding: 7px;
+/* Columnas  */
+#container-pcomptproduce---worklist--tableRecep-table td:nth-child(),
+#container-pcomptproduce---worklist--tableRecep-table td:nth-child(){
+    background-color: #BAEE9A; /*rgba(255, 128, 115, 1)*/
+}
+
+/* Tabla empresa armador */
+#container-pcomptproduce---worklist--tableArmad-table td:nth-child(1){
+    background-color: rgba(255, 152, 140, 1);
+}
+#container-pcomptproduce---worklist--tableArmad-table td:nth-child(2){
+    background-color: rgba(254, 204, 142, 1);
+}
+#container-pcomptproduce---worklist--tableArmad-table td:nth-child(3){
+    background-color: #C6F9C1; /* rgba(198, 249, 193, 1)*/
+}
+#container-pcomptproduce---worklist--tableArmad-table td:nth-child(4){
+    background-color: rgba(166, 229, 244, 1);
+}
+#container-pcomptproduce---worklist--tableArmad-table td:nth-child(5),
+#container-pcomptproduce---worklist--tableArmad-table td:nth-child(6),
+#container-pcomptproduce---worklist--tableArmad-table td:nth-child(7){
+    background-color: rgba(212, 223, 239, 1);
 }

@@ -63,24 +63,26 @@ sap.ui.define([
 			}
 		},
 
-		onUpdateFinishedTable:function(oEvent){
-			if(oEvent.getParameter("reason")==="Filter") return;
-			let oContext = oEvent.getSource().getBindingContext(),
-			oModel = oContext.getModel(),
-			oObject = oContext.getObject(),
-			sCodPlanta = oObject["CDPTA"],
-			sTipoPesca = "P";
-
-			oModel.setProperty("/plantPropTercKey", "DPT")
-
-			this._applyPlantaFilters(sCodPlanta,sTipoPesca)
+		onRowsUpateTable:function(oEvent){
+			let oTable = oEvent.getSource(),
+			oRowBinding = oTable.getBinding(),
+			oModel = this.getModel(),
+			iVisibleRowCount = oModel.getProperty("/detailVisibleRowCount"),
+			iLength = oRowBinding.iLength;
+			if(iLength < iVisibleRowCount){
+				oModel.setProperty("/detailVisibleRowCount",iLength);
+			}
 		},
 
-		onFilterSelect:function(oEvent){
+		/**
+		 * Filtro de icon tab bar
+		 * @param {event} oEvent 
+		 */
+		 onFilterDiasSelect:function(oEvent){
 			let sKey = oEvent.getParameter("key"),
 			oObject = oEvent.getSource().getBindingContext().getObject();
 			
-			this._applyBindTable(oObject,sKey)
+			this._applyDiasBindTable(oObject,sKey)
 		},
 
 		/**
@@ -94,24 +96,48 @@ sap.ui.define([
 			oObject = oContext.getObject(),
 			sPath = oContext.getPath();
 
-			
 			oViewModel.setProperty("/plantaSelectedKey","DP");
 			oViewModel.setProperty("/plantPropTercKey","DPT");
 			
 			if(!this.oPlantaDialog){
-				this.oPlantaDialog = await Fragment.load({
-					name:"com.tasa.pdeclaradadiaria.view.fragments.Planta",
-					controller:this
+				this.oPlantaDialog = await this.loadFragment({
+					name:"com.tasa.pdeclaradadiaria.view.fragments.Planta"
 				});
-				oView.addDependent(this.oPlantaDialog);
+				// oView.addDependent(this.oPlantaDialog);
 			};
 			this.oPlantaDialog.bindElement(sPath);
-			this.oPlantaDialog.open();
 			this._applyPlantaBindTable(oObject,"DP");
+			this.oPlantaDialog.open();
+		},
+
+		onUpdateFinishedTable:function(oEvent){
+			// if(oEvent.getParameter("reason")==="Filter") return;
+			// let oContext = oEvent.getSource().getBindingContext(),
+			// oModel = oContext.getModel(),
+			// oViewModel = this.getModel("objectView"),
+			// sPlantaSelectedKey = oViewModel.getProperty("/plantaSelectedKey"),
+			// sPlantaIndPropKey = oViewModel.getProperty("/plantaIndPropKey"),
+			// oObject = oContext.getObject(),
+			// sCodPlanta = oObject["CDPTA"],
+			// sIndProp,
+			// sDate,sStartDate,sEndDate;
+
+			// if(sPlantaSelectedKey === "DP"){ // dia
+			// 	// sIndProp = "P";
+			// 	sDate = oModel.getProperty("/date");
+			// }else{ //rango
+			// 	sDate = oModel.getProperty("/rangeDate");
+			// 	sStartDate = sDate.split("-")[0].trim();
+			// 	sEndDate = sDate.split("-")[1].trim();	
+			// }
+			
+			// oModel.setProperty("/plantaIndPropKey", "DPT");
+
+			// this._applyPlantaFilters(sCodPlanta)
 		},
 
 		/**
-		 * Eventos para Dialogo Planta
+		 * Eventos filtro por Dia o Rango de fecha
 		 * @param {*} oEvent 
 		 */
 
@@ -122,21 +148,17 @@ sap.ui.define([
 			this._applyPlantaBindTable(oObject,sKey);
 		},
 
+
+		/**
+		 * Evento para filtro por indicador de propiedad
+		 * @param {event} oEvent 
+		 */
 		onPlantaFilterSelect:function(oEvent){
-			let sKey = oEvent.getParameter("key"),
-			oContext = oEvent.getSource().getBindingContext(),
-			oModel = oContext.getModel(),
+			let oContext = oEvent.getSource().getBindingContext(),
 			oObject = oContext.getObject(),
-			sCodPlanta = oObject["CDPTA"],
-			sTipoPesca;
+			sCodPlanta = oObject["CDPTA"];
 
-			if(sKey==="DPT"){
-				sTipoPesca="P"
-			}else{
-				sTipoPesca = "T"
-			}
-
-			this._applyPlantaFilters(sCodPlanta,sTipoPesca);
+			this._applyPlantaFilters(sCodPlanta);
 		},
 
 		/**
@@ -169,32 +191,6 @@ sap.ui.define([
 				
 			// }.bind(this));
 		},
-		_getDetailData: async function(sDate){
-			let sUrl = HOST+"/api/sistemainformacionflota/PescaDeclaradaDife",
-			oModel = this.getModel(),
-			sDateParam = formatter.formatDateInverse(sDate),
-			sRangeDate = oModel.getProperty("/rangeDate"),
-			sStartDate = sRangeDate.split("-")[0].trim(),
-			sEndDate = sRangeDate.split("-")[1].trim(),
-			sStartDateParam = formatter.formatDateInverse(sStartDate),
-			sEndDateParam = formatter.formatDateInverse(sEndDate),
-			param = {
-				fieldstr_emd: [],
-				fieldstr_emr: [],
-				fieldstr_ptd: [],
-				fieldstr_ptr: [],
-				p_fecha: sDateParam,
-				p_ffdes: sEndDateParam,
-				p_fides: sStartDateParam,
-				p_user: "FGARCIA"
-			},
-
-			oPescaDetail = await this.getDataService(sUrl, param);
-			
-			if(oPescaDetail){
-				oModel.setProperty("/pescaDetail", oPescaDetail);
-			}
-		},
 
 		/**
 		 * Binds the view to the object path.
@@ -203,107 +199,248 @@ sap.ui.define([
 		 * @private
 		 */
 		_bindView : function (sObjectPath) {
-			console.log(sObjectPath);
 			var oViewModel = this.getModel("objectView"),
-			oDataModel = this.getModel(),
-			oObject =  oDataModel.getProperty(sObjectPath);
-			console.log(oObject);
-			this._getDetailData(oObject.FECCONMOV);
-			this._applyBindTable(oObject,"D");
+			oModel = this.getModel(),
+			oObject =  oModel.getProperty(sObjectPath),
+			aDiasData=oModel.getProperty("/pescaDetail/str_ptd"),
+			aRangoData = oModel.getProperty("/pescaDetail/str_ptr"),
+			sDate = oObject["FECCONMOV"],
+			aDiaData = aDiasData.filter(dia => {
+				if(dia.FIDES === sDate){
+					dia = { ...oObject}
+					return dia;
+				}
+			});
+			aDiaData = this._calcularTotals(aDiaData);
+			aRangoData = this._calcularTotals(aRangoData);
+			oModel.setProperty("/dias",aDiaData);
+			this._applyDiasBindTable(oObject,"D");
 			this.getView().bindElement({
 				path: sObjectPath
 			});
 			oViewModel.setProperty("/selectedKey", "D");
 			oViewModel.setProperty("/busy", false);
-
-			
-			
+			oModel.setProperty("/detailVisibleRowCount",10);
 		},
 
-		_applyBindTable:function(oObject,sKey){
-			console.log(oObject);
-
+		/**
+		 * Filtro para icon tab bar
+		 * @param {object} oObject 
+		 * @param {string} sKey 
+		 */
+		_applyDiasBindTable:function(oObject,sKey){
 			let oTable = this.getView().byId("detailTableId"),
-			oLinktCol = this.getView().byId("linkTable"),
+			// oLinktCol = this.getView().byId("linkTable"),
 			oModel = this.getModel(),
-			sDate,sTitleTable, sBinding;
+			oViewModel = this.getModel("objectView"),
+			sDate,sTitleTable, sBinding,that = this;
+			
 			if(sKey==="D"){
-
-				var array=oModel.getProperty("/pescaDetail/str_ptd");
-				console.log(array);
-				sDate = oObject["FECCONMOV"];
+				oViewModel.setProperty("/statePlanta","Information");
+				oViewModel.setProperty("/activePlanta",true);
 				sTitleTable = "Día seleccionado";
-				sBinding = "/pescaDetail/str_ptd";
-				oLinktCol.setEnabled(true);
+				sBinding = "/dias";
+				sDate = oObject["FECCONMOV"];
+				// oLinktCol.setEnabled(true);
 			}else{
 				sDate = oModel.getProperty("/rangeDate");
-				sTitleTable = "Rango de fechas";
+				oViewModel.setProperty("/statePlanta","None");
+				oViewModel.setProperty("/activePlanta",false);
 				sBinding = "/pescaDetail/str_ptr";
-				oLinktCol.setEnabled(false);
+				sTitleTable = "Rango de fechas";
+				// oLinktCol.setEnabled(false);
 			}
-			
-			console.log(sDate);
 			oModel.setProperty("/dateType", sDate);
 			oModel.setProperty("/titleTable", sTitleTable);
+			oModel.setProperty("/detailVisibleRowCount",10)
 			
-			oTable.bindAggregation("rows",{path:sBinding})
+			oTable.bindAggregation("rows",{path:sBinding});
+		},
+
+		_calcularTotals:function(aData){
+			let aKeys = Object.keys(aData[0]),
+			oRow = {},iTotal; 
+			aKeys.forEach(key => {
+				iTotal = aData.reduce( (acc , obj) => {
+					if(!isNaN(obj[key])){
+						return acc + obj[key]
+					}
+				},0);
+				oRow[key] = iTotal;
+			});
+			oRow.WERKS = "Total";
+			aData.push(oRow);
+			aData.forEach(row => {
+				row.PDLTO = row.PDLPR + row.PDLTR;
+				row.PDSTO = row.PDSPR + row.PDSTR;
+				// Dife total
+				if( row.PDLTO > 0) {
+					row.PORC_DIFER = ((row.PDLTO - row.PDSTO)*100)/row.PDLTO;
+				}else{
+					row.PORC_DIFER = 0;
+				}
+
+				// Dife propios
+				if( row.PDLPR > 0) {
+					row.PORC_DIFER_PR = ((row.PDLPR - row.PDSPR)*100)/row.PDLPR;
+				}else{
+					row.PORC_DIFER_PR = 0;
+				}
+
+				// Dife terceros
+				if( row.PDLTR > 0) {
+					row.PORC_DIFER_TR = ((row.PDLTR - row.PDSTR)*100)/row.PDLTR;
+				}else{
+					row.PORC_DIFER_TR = 0;
+				}
+			});
+			return aData;
 		},
 
 		/**
 		 * Metodos internos para Dialogo Planta, filtrar por planta
 		 * @param {string} sCodPlanta 
 		 */
-		_applyPlantaFilters:function(sCodPlanta,sTipoPesca){
-			let oTable = sap.ui.getCore().byId("plantaTableId"),
+		_applyPlantaFilters:function(sCodPlanta){
+			let oTable = this.getView().byId("plantaTableId"),
 			oBindingTable = oTable.getBinding("items"),
+			oModel = this.getModel(),
+			oViewModel = this.getModel("objectView"),
+			sPlantaIndPropKey = oViewModel.getProperty("/plantaIndPropKey"),
+			sPlantaSelectedKey = oViewModel.getProperty("/plantaSelectedKey"),
 			aFilters = [],
-			oFilter = {};
+			oFilter = {},
+			sIndProp,
+			sDate,sStartDate,sEndDate,
+			itemCountProp = 0,
+			itemCountTerc = 0;
 
-			oFilter = new Filter([new Filter("CDPTA","EQ",sCodPlanta),new Filter("INPRP","EQ",sTipoPesca)],true);
+			if(sPlantaSelectedKey === "DP"){
+				sDate = oModel.getProperty("/date");
+				if(sPlantaIndPropKey === "DPT"){
+					sIndProp = "P"
+				}else{
+					sIndProp = "T"
+				}
+				oFilter = new Filter([
+					new Filter("CDPTA","EQ",sCodPlanta),
+					new Filter("INPRP","EQ",sIndProp),
+					new Filter("FIDES","EQ",sDate)
+				],true);
+			}else{
+				sDate = oModel.getProperty("/rangeDate");
+				sStartDate = sDate.split("-")[0].trim();
+				sEndDate = sDate.split("-")[1].trim();
+				if(sPlantaIndPropKey === "DPT"){
+					sIndProp = "P"
+				}else{
+					sIndProp = "T"
+				}	
+				oFilter = new Filter([
+					// new Filter("CDPTA","EQ",sCodPlanta),
+					new Filter("INPRP","EQ",sIndProp)
+				],true);
+			}
 			aFilters.push(oFilter);
-			oBindingTable.filter(aFilters);
+			if(oBindingTable){
+				oBindingTable.filter(aFilters);
+				if(sPlantaIndPropKey === "DPT"){
+					itemCountProp = oBindingTable.iLength
+					oModel.setProperty("/itemCountProp",itemCountProp);
+				}else{
+					itemCountTerc = oBindingTable.iLength
+					oModel.setProperty("/itemCountTerc",itemCountTerc);
+				}
+				this._getTotales(oBindingTable.aIndices,oBindingTable.oList);
+			}
 		},
 
+		/**
+		 * Bindeo dinamico de tabla de plantas
+		 * @param {*} oObject 
+		 * @param {*} sKeyDateRange 
+		 */
 		_applyPlantaBindTable:function(oObject,sKeyDateRange){
-			let oTable = sap.ui.getCore().byId("plantaTableId"),
+			let oTable = this.getView().byId("plantaTableId"),
 			oModel = this.getModel(),
-			oTemplate = this._itemsTable(),
+			oViewModel = this.getModel("objectView"),
+			oTemplate = this.getView().byId("templatePlantas"),
+			sCodPlanta = oObject["CDPTA"],
 			sDate,sTitleTable, sBinding;
+
 			oTable.unbindAggregation("items");
 			if(sKeyDateRange==="DP"){
 				sDate = oObject["FIDES"];
 				sTitleTable = "Día seleccionado";
 				sBinding = "/pescaDetail/str_emd";
+				oModel.setProperty("/date", sDate);
+				
 			}else if(sKeyDateRange==="RP"){
 				sDate = oModel.getProperty("/rangeDate");
 				sTitleTable = "Rango de fechas";
 				sBinding = "/pescaDetail/str_emr";
 			}
+			
+			oViewModel.setProperty("/plantaIndPropKey","DPT");
+			oViewModel.setProperty("/plantaSelectedKey",sKeyDateRange)
 			oModel.setProperty("/plantaTextTitle", sDate);
 			oModel.setProperty("/plantaTableTitle", sTitleTable);
+
+			oModel.setProperty("/itemCountProp",0);
+			oModel.setProperty("/itemCountTerc",0);
 			
 			oTable.bindAggregation("items",{
 				path:sBinding,
-				template: oTemplate,
-				templateShareable: false
+				template:oTemplate
 			});
-			
-			// if(sKeyDateRange==="DP") this._applyPlantaFilters(sCodPlanta,sTipoPesca);
-			// if(sKeyDateRange==="RP") this._applyPlantaFilters(null,sTipoPesca);
+
+			this._applyPlantaFilters(sCodPlanta);
 		},
 
-		_itemsTable:function(){
-			let aCells = [];
-			return new sap.m.ColumnListItem({
-				cells:[
-					new sap.m.Text({text:"{NMEMB}"}),
-					new sap.m.Text({text:"{CPPMS}"}),
-					new sap.m.Text({text:"{CNPCM}"}),
-					new sap.m.Text({text:"{CNPDS}"}),
-					new sap.m.Text({text:"{}"}),
-				]
-			})
+		/**
+		 * Totales para plantas
+		 * @param {*} aIndices 
+		 * @param {*} aData 
+		 */
+		_getTotales:function(aIndices,aData){
+			let oModel = this.getModel(), 
+			oItem,iTotCNPCM,iTotCNPDS,iTotPORC_DIFER,
+			aSelectedData = [];
+			aIndices.forEach(indice => {
+				oItem = aData[indice];
+				aSelectedData.push(oItem)
+			});
+			aSelectedData.forEach(item => {
+				if(item.CNPCM > 0){
+					item.PORC_DIFER = ((item.CNPCM - item.CNPDS)*100)/item.CNPCM
+				}else{
+					item.PORC_DIFER = "";
+				}
+			});
+			iTotCNPCM =  aSelectedData.reduce((acc, obj) => { return acc + obj.CNPCM; }, 0);
+			iTotCNPDS =  aSelectedData.reduce((acc, obj) => { return acc + obj.CNPDS; }, 0);
+			if(iTotCNPCM > 0) {
+				iTotPORC_DIFER = ((iTotCNPCM - iTotCNPDS)*100)/iTotCNPCM;
+			}else{
+				iTotPORC_DIFER = 0;
+			}
+			oModel.setProperty("/totCNPCM",iTotCNPCM);
+			oModel.setProperty("/totCNPDS",iTotCNPDS);
+			oModel.setProperty("/totPORC_DIFER",iTotPORC_DIFER)
 		}
+
+		// _itemsTable:function(){
+		// 	let aCells = [];
+		// 	return new sap.m.ColumnListItem({
+		// 		cells:[
+		// 			new sap.m.Text({text:"{NMEMB}"}),
+		// 			new sap.m.Text({text:"{CPPMS}"}),
+		// 			new sap.m.Text({text:"{CNPCM}"}),
+		// 			new sap.m.Text({text:"{CNPDS}"}),
+		// 			new sap.m.Text({text:"{}"}),
+		// 		]
+		// 	})
+		// }
 
 	});
 

@@ -77,6 +77,9 @@ sap.ui.define([
 			// variable global para configuracion de totales
 			this.iLastStartIndex=0;
 
+			this.Count = 0;
+			this.CountService = 1;
+
 			this._getDataMainTable(oModel,oParam);
 		
 		},
@@ -178,7 +181,11 @@ sap.ui.define([
 
 		onClearFilters:function(){
 			let oModel = this.getModel();
-			oModel.setProperty("/rangeDate", "")
+			oModel.setProperty("/rangeDate","");
+			oModel.setProperty("/STR_DL",[]);
+			oModel.setProperty("/dataViz",[]);
+			oModel.setProperty("/dataGraficPorc",[]);
+			oModel.setProperty("/visibleRowCount",10);
 		},
 
 		/**
@@ -190,10 +197,10 @@ sap.ui.define([
 			sRangeDate = oModel.getProperty("/rangeDate"),
 			sStartDate = sRangeDate.split("-")[0].trim(),
 			sEndDate = sRangeDate.split("-")[1].trim(),
-			oParam = new Object;
+			oParam = {};
 			
-			sStartDate = formatter.formatDateInverse(sStartDate);
-			sEndDate = formatter.formatDateInverse(sEndDate);
+			sStartDate = formatter.formatDateInverse2(sStartDate);
+			sEndDate = formatter.formatDateInverse2(sEndDate);
 			oParam.sStartDate = sStartDate;
 			oParam.sEndDate = sEndDate;
 
@@ -216,11 +223,8 @@ sap.ui.define([
 		_showObject: function (oItem) {
 			let oObject = oItem.getBindingContext().getObject(),
 			sDate = oObject["FECCONMOV"];
-			this.getRouter().navTo("object", {
-				objectId: oItem.getBindingContext().getPath().split("/")[2]
-			});
 			
-			this._getDetailData(sDate);
+			this._getDetailData(sDate,oItem);
 		},
 
 		/**
@@ -238,18 +242,27 @@ sap.ui.define([
 			}
 		},
 		_getDataMainTable: async function(oModel,oParam){
-			const sUrl = HOST + '/api/sistemainformacionflota/PescaDeclaradaDiara',
-			param = new Object;
+			this.Count = 0;
+			this.CountService = 1;
 
-			param.fieldstr_dl= [];
-			param.p_fefin= oParam.sEndDate;
-			param.p_feini= oParam.sStartDate;
-			param.p_user="";
-			let oPescaData = await this.getDataService(sUrl, param),
+			let sUrl = this.getHostService() + '/api/sistemainformacionflota/PescaDeclaradaDiara',
+			param = {
+				fieldstr_dl : [],
+				p_fefin : oParam.sEndDate,
+				p_feini : oParam.sStartDate,
+				p_user : ""
+			},
+			oService = {
+				url: sUrl,
+				param: param
+			},
+			oPescaData = await this.getDataService(oService),
 			aData;
 			if(oPescaData){
 				aData = oPescaData["str_dl"];
 				if(aData.length>0){
+					let iDataLength = aData.length;
+					oModel.setProperty("/visibleRowCount",iDataLength);
 					oModel.setProperty(`/STR_DL`,aData);
 					
 				}else{
@@ -279,8 +292,8 @@ sap.ui.define([
 
 			// columna total
 			oFechaCell.setText("Total");
-			oFechaCell.setEnabled(false);
-			oFechaCell.setEmphasized(true);
+			oFechaCell.setState("Error");
+			oFechaCell.setActive(false);
 
 			// % Pesca propios
 			let sValTnProp = oTnProp.getText().split(",").join(""),
@@ -346,38 +359,36 @@ sap.ui.define([
 			aGraphData=[
 				{
 					descripcion:"Propios",
-					value:iValueProp,
-					porcentaje:iValueProp+"%"
-				},
-				{
-					descripcion:"Terceros",
-					value:iValueTerc,
-					porcentaje:iValueTerc+"%"
-
+					propios:iValueProp,
+					terceros:iValueTerc
 				}
-			];
+			],
+			fecha;
 
 			aDataRows.forEach(oRow=>{ 
-				let fecha = formatter.formatDateYYYYMMDDstr(oRow.FECCONMOV);
+				fecha = formatter.formatDateYYYYMMDDstr(oRow.FECCONMOV);
 				aDataViz.push({
-					fecha:fecha,
-					propio:oRow.EFIC_PROP,
-					tercero:oRow.EFIC_TERC
+					fecha,
+					propio:oRow.EFIC_PROP > 1000000 ? 0 : oRow.EFIC_PROP,
+					tercero:oRow.EFIC_TERC > 1000000 ? 0 : oRow.EFIC_TERC
 				})
 			});
 			oModel.setProperty("/dataGraficPorc", aGraphData);
 			oModel.setProperty("/dataViz", aDataViz);
 		},
 		
-		_getDetailData: async function(sDate){
-			let sUrl = HOST+"/api/sistemainformacionflota/PescaDeclaradaDife",
+		_getDetailData: async function(sDate,oItem){
+			this.Count = 0;
+			this.CountService = 1;
+			let sUrl = this.getHostService()+"/api/sistemainformacionflota/PescaDeclaradaDife",
 			oModel = this.getModel(),
-			sDateParam = formatter.formatDateInverse(sDate),
+			sDateParam = formatter.formatDateInverse2(sDate),
 			sRangeDate = oModel.getProperty("/rangeDate"),
 			sStartDate = sRangeDate.split("-")[0].trim(),
 			sEndDate = sRangeDate.split("-")[1].trim(),
 			sStartDateParam = formatter.formatDateInverse(sStartDate),
 			sEndDateParam = formatter.formatDateInverse(sEndDate),
+			oUser = oModel.getProperty("/user"),
 			param = {
 				fieldstr_emd: [],
 				fieldstr_emr: [],
@@ -386,13 +397,20 @@ sap.ui.define([
 				p_fecha: sDateParam,
 				p_ffdes: sEndDateParam,
 				p_fides: sStartDateParam,
-				p_user: "FGARCIA"
+				p_user: oUser.name
+			},
+			oService = {
+				url: sUrl,
+				param: param
 			},
 
-			oPescaDetail = await this.getDataService(sUrl, param);
+			oPescaDetail = await this.getDataService(oService);
 			
 			if(oPescaDetail){
 				oModel.setProperty("/pescaDetail", oPescaDetail);
+				this.getRouter().navTo("object", {
+					objectId: oItem.getBindingContext().getPath().split("/")[2]
+				});
 			}
 		}
 	});

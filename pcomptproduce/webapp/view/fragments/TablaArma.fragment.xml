@@ -5,7 +5,7 @@
     <Table
         id="tableArmad"
         selectionMode="None"
-        visibleRowCount="8"
+       visibleRowCount="{/visibleRowCount}"
         fixedColumnCount="1"
         fixedBottomRowCount="3"
         class="classPrincipalTable">
@@ -73,9 +73,9 @@
                     <template>
                         <m:Text text="{
                                 parts:[
-                                    {path:'pescaTotalD'},
-                                    {path:'pescaTotalP'},
-                                    {path:'pescaTotalT'}
+                                    {path:'CNPDS'},
+                                    {path:'CNDPR'},
+                                    {path:'CPDTR'}
                                 ],
                                 formatter:'.formatter.setTotalCol'
                             }"
@@ -84,7 +84,7 @@
                     </template>
                 </Column>
 
-                <Column width="4rem"
+                <Column width="5.5rem"
                         hAlign="End">
                     <multiLabels>
                         <m:Label text="TOTALES" />
@@ -94,9 +94,9 @@
                         <m:Text text="{
                             parts:[
                                 {path:'CDTAS'},
-                                {path: 'nDesTotalD'}
+                                {path: 'CNPDS'}
                             ],
-                            formatter:'.formatter.setDivision'
+                            formatter:'.formatter.setDivisionTasa'
                         }"
                         textAlign="End"
                         class="classDsTasa" />
@@ -132,9 +132,9 @@
                     <template>
                         <m:Text text="{
                                 parts:[
-                                    {path:'nDesTotalD'},
-                                    {path:'nDesTotalP'},
-                                    {path:'nDesTotalT'}
+                                    {path:'CNDSH'},
+                                    {path:'DSHPR'},
+                                    {path:'DSHTR'}
                                 ],
                                 formatter: '.formatter.setTotalCol'
                             }" 
