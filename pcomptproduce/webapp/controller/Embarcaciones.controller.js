@@ -61,13 +61,20 @@ sap.ui.define([
 			}
 		},
 
+		onRowsUpdatedTable:function(oEvent){
+			let oTable = oEvent.getSource(),
+			aRows = oTable.getAggregation("rows");
+			aRows.forEach(row => {
+				row.addStyleClass("classRow");
+			});
+		},
+
 		onPress: async function(oEvent){
 			let oContext = oEvent.getSource().getBindingContext(),
 			oModel = oContext.getModel(),
 			aDiasEmba = oModel.getProperty("/embarcaciones/str_ped"),
 			oObject = oContext.getObject(),
 			sCodEmba = oObject.CDEMB;
-
 			
 			aDiasEmba = this._calcularFilasTotales(aDiasEmba);
 			let oDiasEmbaDialog = await this.loadFragment({name:"com.tasa.pcomptproduce.view.fragments.DiasEmba"});

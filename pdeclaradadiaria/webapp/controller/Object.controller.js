@@ -199,9 +199,25 @@ sap.ui.define([
 		 * @private
 		 */
 		_bindView : function (sObjectPath) {
-			var oViewModel = this.getModel("objectView"),
-			oModel = this.getModel(),
-			oObject =  oModel.getProperty(sObjectPath),
+			this.getView().bindElement({
+				path: sObjectPath,
+				events:{
+					change: this._onBindingChange.bind(this)
+				}
+			});
+		},
+
+		_onBindingChange:function(oEvent){
+			let oElementBinding = oEvent.getSource(),
+			oObject = oElementBinding.getBoundContext().getObject(),
+			oViewModel = this.getModel("objectView");
+			// No data for the binding
+			if (!oObject) {
+				oViewModel.setProperty("/busy", false);
+				this.getRouter().getTargets().display("objectNotFound");
+				return;
+			}
+			let oModel = this.getModel(),
 			aDiasData=oModel.getProperty("/pescaDetail/str_ptd"),
 			aRangoData = oModel.getProperty("/pescaDetail/str_ptr"),
 			sDate = oObject["FECCONMOV"],
@@ -211,16 +227,15 @@ sap.ui.define([
 					return dia;
 				}
 			});
+
 			aDiaData = this._calcularTotals(aDiaData);
 			aRangoData = this._calcularTotals(aRangoData);
 			oModel.setProperty("/dias",aDiaData);
 			this._applyDiasBindTable(oObject,"D");
-			this.getView().bindElement({
-				path: sObjectPath
-			});
 			oViewModel.setProperty("/selectedKey", "D");
 			oViewModel.setProperty("/busy", false);
 			oModel.setProperty("/detailVisibleRowCount",10);
+
 		},
 
 		/**

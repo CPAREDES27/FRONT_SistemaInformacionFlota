@@ -124,7 +124,7 @@ sap.ui.define([
 				aRows = oTable.getRows(),
 				iFixedRowCount = oTable.getVisibleRowCount(),
 				oRowLast = aRows[iFixedRowCount-1];
-				this._setTotals(oRowLast,aDataRows);
+				this._formatRowLast(oRowLast,aDataRows);
 				this._setDataGraphics(oRowLast,aDataRows);
 			}
 		},
@@ -260,6 +260,7 @@ sap.ui.define([
 			aData;
 			if(oPescaData){
 				aData = oPescaData["str_dl"];
+				aData = this._calcularTotales(aData);
 				if(aData.length>0){
 					let iDataLength = aData.length;
 					oModel.setProperty("/visibleRowCount",iDataLength);
@@ -274,78 +275,70 @@ sap.ui.define([
 			
 		},
 
-		_setTotals:function(oRowLast,aDataRows){
-			let oModel = this.getModel(),
-			aCells = oRowLast.getCells(),
-			oFechaCell = aCells[0],
-			oHarCell = aCells[1],
-			oTnProp = aCells[3],
-			oPorcProp = aCells[4],
-			oTnTerc = aCells[5],
-			oPorcTerc = aCells[6],
-			oTnEpProp = aCells[7],
-			oTnEpTerc = aCells[8],
-			oEpProp = aCells[9],
-			oEpTerc = aCells[10],
-			oTotalPesca = aCells[13],
-			oDifer = aCells[16];
+		_calcularTotales:function(aData){
+			let oRowLast = aData[aData.length - 1];
+			if(!oRowLast.FECCONMOV){
+				oRowLast.FECCONMOV = "Total";
+				if(oRowLast.PESC_DECL_CHI > 0){
+					// % Pesca propios
+					oRowLast.PORC_DECL_CHI_PROP = (oRowLast.PPCHI/oRowLast.PESC_DECL_CHI)*100;
+					// % Pesca Terceros
+					oRowLast.PORC_DECL_CHI_TERC = (oRowLast.PTCHI/oRowLast.PESC_DECL_CHI)*100;
+					// Dif
+					oRowLast.PORC_DIFER = (oRowLast.PESC_DECL_CHI - oRowLast.PESC_DESC_CHI)*100/oRowLast.PESC_DECL_CHI; 
+				}else{
+					oRowLast.PORC_DECL_CHI_PROP = 0;
+					oRowLast.PORC_DECL_CHI_TERC = 0;
+					oRowLast.PORC_DIFER = 0;
+				}
 
-			// columna total
-			oFechaCell.setText("Total");
-			oFechaCell.setState("Error");
-			oFechaCell.setActive(false);
+				let iCountHar = 0;
+				aData.forEach(oRow => {
+					if(oRow["PESC_DECL_CHI"]>0) iCountHar++;
+				});
+				iCountHar--;
 
-			// % Pesca propios
-			let sValTnProp = oTnProp.getText().split(",").join(""),
-			sValHar = oHarCell.getText().split(",").join(""),
-			iValueProp = parseFloat(sValHar)>0 ? parseFloat(sValTnProp)/parseFloat(sValHar):0;
-			oPorcProp.setText((iValueProp*100).toFixed(0));
+				// Tn/Ep Propio
+				let sValTnEpProp = 0;
+				aData.forEach(oRow => {
+					if(oRow["EFIC_PROP"]>0 && oRow["EFIC_PROP"]<1000000) sValTnEpProp += oRow["EFIC_PROP"];
+				});
+				oRowLast.EFIC_PROP = sValTnEpProp/iCountHar;
 
-			// % Pesca Terceros
-			let sValTnTerc = oTnTerc.getText().split(",").join(""),
-			iValueTerc = parseFloat(sValHar)>0 ? parseFloat(sValTnTerc)/parseFloat(sValHar):0;
-			oPorcTerc.setText((iValueTerc*100).toFixed(0));
+				// Tn/Ep Tercero
+				let sValTnEpTerc = 0;
+				aData.forEach(oRow=>{
+					if(oRow["EFIC_TERC"]>0 && oRow["EFIC_TERC"]<1000000) sValTnEpTerc += oRow["EFIC_TERC"];
+				});
+				oRowLast.EFIC_TERC =  sValTnEpTerc/iCountHar;
 
-			let iCountHar = 0;
-			aDataRows.forEach(oRow => {
-				if(oRow["PESC_DECL_CHI"]>0) iCountHar++;
-			});
+				// Ep Propio
+				let sValEpProp = 0;
+				aData.forEach((row)=>{
+					if(row.EFIC_PROP > 0) 
+						sValEpProp += row.PESC_DECL_CHI;
+				});
+				oRowLast.CNEMP = sValEpProp/sValTnEpProp
+				// oRowLast.CNEMP = sValEpProp/iCountHar;
+				// oEpProp.setText(Math.trunc(sTotalValEpProp));
 
-			// Tn/Ep Propio
-			let sValTnEpProp = 0;
-			aDataRows.forEach(oRow => {
-				if(oRow["EFIC_PROP"]>0 && oRow["EFIC_PROP"]<10000) sValTnEpProp += oRow["EFIC_PROP"];
-			});
-			let sTotalTnEpProp = (sValTnEpProp/iCountHar);
-			oTnEpProp.setText(sTotalTnEpProp.toFixed(0));
+				// Ep Tercero
+				let sValEpTerc = 0;
+				aData.forEach(row=>{
+					// if(row.CNEMT > 0) 
+					sValEpTerc += row.PESC_DECL_CHI;
+				});
+				oRowLast.CNEMT = sValEpTerc/sValTnEpTerc;
+				// oEpTerc.setText(Math.trunc(sTotalValEpTerc));
+				
+			}
+			return aData;
+		},
 
-			// Tn/Ep Tercero
-			let sValTnEpTerc = 0;
-			aDataRows.forEach(oRow=>{
-				if(oRow["EFIC_TERC"]>0 && oRow["EFIC_TERC"]<10000) sValTnEpTerc += oRow["EFIC_TERC"];
-			});
-			let sTotalTnEpTerc = (sValTnEpTerc/iCountHar);
-			oTnEpTerc.setText(sTotalTnEpTerc.toFixed(0));
-
-			// Ep Propio
-			let sValEpProp = aDataRows.reduce((acc,obj)=>{
-				return acc + obj.CNEMP;
-			},0),
-			sTotalValEpProp = (sValEpProp/iCountHar);
-			oEpProp.setText(Math.trunc(sTotalValEpProp));
-
-			// Ep Tercero
-			let sValEpTerc = aDataRows.reduce((acc,obj)=>{
-				return acc + obj.CNEMT;
-			},0),
-			sTotalValEpTerc = (sValEpTerc/iCountHar);
-			oEpTerc.setText(Math.trunc(sTotalValEpTerc));
-
-			// Difer
-			let sValPesca = oTotalPesca.getText().split(",").join(""),
-			sValTotalDifer = parseFloat(sValHar)>0 ? ((parseFloat(sValHar) - parseFloat(sValPesca))*100)/parseFloat(sValHar):0;
-			oDifer.setText(sValTotalDifer.toFixed(0));
-			
+		_formatRowLast:function(oRowLast){
+			let oControl = oRowLast.getCells()[0];
+			oControl.setActive(false);
+			oControl.setState("Error");
 		},
 		
 		_setDataGraphics:function(oRowLast,aDataRows){

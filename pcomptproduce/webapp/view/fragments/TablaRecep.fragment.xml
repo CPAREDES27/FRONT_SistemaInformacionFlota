@@ -4,10 +4,12 @@
     xmlns="sap.ui.table">
     <Table
         id="tableRecep"
+        rowsUpdated="onRowsUpdatedTable"
         selectionMode="None"
         visibleRowCount="{/visibleRowCount}"
         fixedColumnCount="1"
         fixedBottomRowCount="3"
+        visibleRowCountMode="Interactive"
         class="classPrincipalTable">
         <extension>
             <m:OverflowToolbar >
@@ -119,9 +121,9 @@
                     <template>
                         <m:Text text="{
 							parts:[
-								{path: 'nCocPescaNdesD'},
-                                {path: 'nCocPescaNdesP'},
-                                {path: 'nCocPescaNdesT'}
+								{path: 'CocTNDesD'},
+                                {path: 'CocTNDesP'},
+                                {path: 'CocTNDesT'}
 							],
                             formatter: '.formatter.setTotalCoc'
 						}"

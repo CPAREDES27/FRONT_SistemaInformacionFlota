@@ -68,9 +68,9 @@ sap.ui.define([
             } else if (urlIntance.indexOf('tasaprd') !== -1) {
                 servicioNode = 'prd'; // apuntando a PRD
             }else if(urlIntance.indexOf('localhost') !== -1){
-				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+				servicioNode = 'qas'; // apuntando a DEV
 			}else{
-				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+				servicioNode = 'qas'; // apuntando a DEV
 			}
             return `https://cf-nodejs-${servicioNode}.cfapps.us10.hana.ondemand.com`;
         },

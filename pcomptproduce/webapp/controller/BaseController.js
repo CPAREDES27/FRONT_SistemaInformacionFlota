@@ -102,9 +102,9 @@ sap.ui.define([
             } else if (urlIntance.indexOf('tasaprd') !== -1) {
                 servicioNode = 'prd'; // apuntando a PRD
             }else if(urlIntance.indexOf('localhost') !== -1){
-				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+				servicioNode = 'qas'; // apuntando a DEV
 			}else{
-				servicioNode = 'cheerful-bat-js'; // apuntando a DEV
+				servicioNode = 'qas'; // apuntando a DEV
 			}
 
             return `https://cf-nodejs-${servicioNode}.cfapps.us10.hana.ondemand.com`;
@@ -227,18 +227,21 @@ sap.ui.define([
 		},
 
 		_setPathIndPropiedad:function(sKey){
-			let sPath1, sPath2;
-			if(sKey === "D"){
-				sPath1 = "CNPDS";
-				sPath2 = "CNDSH";
-			}else if(sKey === "P"){
+			let sPath1, sPath2,sPath3;
+			if(sKey === "P"){
 				sPath1 = "CNDPR";
 				sPath2 = "DSHPR";
-			}else{
+				sPath3 = "CocTNDesP";
+			}else if(sKey === "T"){
 				sPath1 = "CPDTR";
 				sPath2 = "DSHTR";
+				sPath3 = "CocTNDesT";
+			}else{
+				sPath1 = "CNPDS";
+				sPath2 = "CNDSH";
+				sPath3 = "CocTNDesD";
 			}
-			return {sPath1,sPath2}
+			return {sPath1,sPath2,sPath3}
 		},
 
 		/**
@@ -249,14 +252,15 @@ sap.ui.define([
 		 * @param {*} sPathNdes 
 		 * @returns 
 		 */
-		 getTableColumn:function(sLabel,sCod,sPathPesca,sPathNdes){
+		 getTableColumn:function(sLabel,sCod,sPathPesca,sPathNdes,sPathCoc){
 			let aLabels = ["Pesca","NDes","t/NDes"],
 			aColumns = [],
 			sHAlign,
 			oText,
 			sPath,
 			sWidth,
-			sId;
+			sId,
+			that = this;
 
 			aLabels.forEach(label=>{
 				sId = label;
@@ -277,11 +281,11 @@ sap.ui.define([
 						textAlign: sap.ui.core.TextAlign.End,
 						text: {
 							parts:[
-								{path: `${sCod}/${sPathPesca}`},
-								{path: `${sCod}/${sPathNdes}`}
+								{path: `${sCod}/${sPathCoc}`}
 							],
-							formatter: function(sText1,sText2){
-								return formatter.setDivision(sText1,sText2);
+							formatter: function(sText){
+								// return that._setTotalCoc(sText);
+								return formatter.setFormatFloat(sText);
 							}
 						}
 					});
@@ -336,6 +340,7 @@ sap.ui.define([
 					sHAlign = sap.ui.core.HorizontalAlign.Center;
 					oControl =  new sap.m.ObjectStatus({
 						active:true,
+						state:"Information",
 						text: {
 							path: `${sCodZona}/${sCodPuerto}/${label.sPath}`,
 							formatter: function(sValue){

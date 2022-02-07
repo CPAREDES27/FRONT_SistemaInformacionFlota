@@ -5,7 +5,8 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/core/Fragment",
-	"sap/ui/core/BusyIndicator"
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/format/NumberFormat"
 ], function (
 	BaseController,
 	JSONModel,
@@ -13,7 +14,8 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	Fragment,
-	BusyIndicator) {
+	BusyIndicator,
+	NumberFormat) {
 	"use strict";
 
 	return BaseController.extend("com.tasa.pcomptproduce.controller.Worklist", {
@@ -138,11 +140,20 @@ sap.ui.define([
 				oViewModel.setProperty("/indicadorPropiedad","D")
 				oModel.setProperty("/selectedCodZona",undefined);
 				this._buildZonasColumns(aZonas,bIsPort);
-				// this._formatTotales(iTotalRows);
 			} else {
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
 			oViewModel.setProperty("/worklistTableTitle", sTitle);
+		},
+
+		onRowsUpdatedTable:function(oEvent){
+			let oTable = oEvent.getSource(),
+			oRowBinding = oTable.getBinding(),
+			iLength =  oRowBinding.iLength;
+			if(iLength>0){
+				let aRows = oTable.getRows();
+				this._formatTotales(aRows,iLength);
+			} 
 		},
 
 		onSort:function(oEvent){
@@ -726,13 +737,14 @@ sap.ui.define([
 			sIndPropSelected = oViewModel.getProperty("/indicadorPropiedad"),
 			sPath1 = this._setPathIndPropiedad(sIndPropSelected).sPath1,
 			sPath2 = this._setPathIndPropiedad(sIndPropSelected).sPath2,
+			sPath3 = this._setPathIndPropiedad(sIndPropSelected).sPath3,
 			iEmpresaIndex = oModel.getProperty("/empresaIndex"),
 			aColumnHeader;
 
 			if(iEmpresaIndex === 0) oTable = this.getView().byId("tableArmad");
 			
 			aColumnZonas.forEach(oCol => {
-				aColumnHeader = this.getTableColumn(oCol.DSZLT,oCol.CDZLT,sPath1,sPath2);
+				aColumnHeader = this.getTableColumn(oCol.DSZLT,oCol.CDZLT,sPath1,sPath2,sPath3);
 				aColumnHeader.forEach(oColHeader => {
 					oTable.addColumn(oColHeader);
 				});
@@ -847,6 +859,7 @@ sap.ui.define([
 			aKeys = ["D","P","T"],
 			sPath1,
 			sPath2,
+			sPath3,
 			iPescaTotal,
 			iNDesTotal,
 			iCocPescaNdes;
@@ -857,7 +870,7 @@ sap.ui.define([
 				iCocPescaNdes = 0;
 				sPath1 = this._setPathIndPropiedad(key).sPath1;
 				sPath2 = this._setPathIndPropiedad(key).sPath2;
-				
+				sPath3 = this._setPathIndPropiedad(key).sPath3;				
 				aTableRows.forEach(row => {
 					iPescaTotal = 0;
 					iNDesTotal = 0;
@@ -866,12 +879,16 @@ sap.ui.define([
 						if(row[zona.CDZLT]){
 							iPescaTotal += row[zona.CDZLT][sPath1];
 							iNDesTotal += row[zona.CDZLT][sPath2];
+							// calculo de t/NDes por zona
+							if(row[zona.CDZLT][sPath2] > 0){
+								row[zona.CDZLT][sPath3] = row[zona.CDZLT][sPath1] / row[zona.CDZLT][sPath2]
+							}
 						}
 					});
 					row[this._setPathIndPropiedad(key).sPath1] = iPescaTotal;
 					row[this._setPathIndPropiedad(key).sPath2] = iNDesTotal;
 					if(iNDesTotal>0) iCocPescaNdes = iPescaTotal/iNDesTotal;
-					row["nCocPescaNdes"+key] = iCocPescaNdes;
+					row[sPath3] = iCocPescaNdes;
 				});
 			});
 			return aTableRows;
@@ -881,13 +898,17 @@ sap.ui.define([
 			let oModel = this.getModel(),
 			aStrZlt = oModel.getProperty("/oDataApp/str_zlt"),
 			aPuertos = oModel.getProperty("/oDataApp/str_pto"),
-			oTotals={},
+			oTotals = {},
 			oPorcDisNac = {},
 			oPorcTasa = {};
 			if(aTableRows.length > 0){
 				// calculamos totales
 				let aKeys = Object.keys(aTableRows[0]),
-				sTotal,
+				// let aKeys = ["","","",""],
+				iTotal,
+				iTotalCocD,
+				iTotalCocP,
+				iTotalCocT,
 				iTotCNPDS,
 				iTotNDes,
 				iTotCNDPR,
@@ -900,18 +921,20 @@ sap.ui.define([
 
 				// totales columnas fijas
 				aKeys.forEach(key => {
-					sTotal = 0;
-					iTotCNPDS = 0;
-					iTotNDes = 0;
-					iPescaZonaD = 0;
-					iPescaZonaP = 0;
-					iPescaZonaT = 0;
-					if(key !== "DSGRE") {
-						 sTotal = aTableRows.reduce((acc,obj)=>{
+					iTotal = 0;
+					// iTotalCocD = 0;
+					// iTotalCocP = 0;
+					// iTotalCocT = 0;
+					// iPescaZonaP = 0;
+					// iPescaZonaT = 0;
+					if(key !== "DSGRE" && key !== "CDTAS") {
+						 iTotal = aTableRows.reduce((acc,obj)=>{
 							 if(!isNaN(obj[key])) return acc + obj[key];
 						 },0);
 					}
-					oTotals[key] = sTotal;
+					oTotals[key] = iTotal;
+					// calculo de cociente
+					// iTotalCoc = 
 				});
 
 				// totales zonas
@@ -945,12 +968,15 @@ sap.ui.define([
 					oTotals[zona.CDZLT] = {}
 					oTotals[zona.CDZLT].CNPDS = iTotCNPDS;
 					oTotals[zona.CDZLT].CNDSH = iTotNDes;
+					if(iTotNDes>0) oTotals[zona.CDZLT].CocTNDesD = iTotCNPDS/iTotNDes;
 
 					oTotals[zona.CDZLT].CNDPR = iTotCNDPR;
 					oTotals[zona.CDZLT].DSHPR = iTotDSHPR;
+					if(iTotDSHPR>0) oTotals[zona.CDZLT].CocTNDesP = iTotCNDPR/iTotDSHPR;
 
 					oTotals[zona.CDZLT].CPDTR = iTotCPDTR;
 					oTotals[zona.CDZLT].DSHTR = iTotDSHTR;
+					if(iTotDSHTR>0) oTotals[zona.CDZLT].CocTNDesT = iTotCPDTR/iTotDSHTR;
 
 					// % Dis Nac
 					oPorcDisNac[zona.CDZLT] = {};
@@ -1015,65 +1041,36 @@ sap.ui.define([
 						oPorcDisNac[port.CDZLT][port.CDPTO].CNPDS = iTotCNPDS;
 					});
 				});
-				oTotals.DSGRE = "Total"
+				oTotals.DSGRE = "Total";
 				aTableRows.push(oTotals);
+
 				oPorcDisNac.DSGRE = "Distr. Nacional (%)"
 				aTableRows.push(oPorcDisNac);
 				
 				oPorcTasa.DSGRE = "DISTR. TASA(%)";
 				aTableRows.push(oPorcTasa);
 			}
-
 			return aTableRows;
 		}, 
 
-		_formatTotales:function(iTotalRows){
-			let oTable = this.getView().byId("tableRecep"),
-			oModel = this.getModel(),
-			iEmpresaIndex = oModel.getProperty("/empresaIndex");
-
-			if(iEmpresaIndex === 0) oTable = this.getView().byId("tableArmad");
-
-			let aRows = oTable.getRows(),
-			iRowsLength = aRows.length,
-			oControl,oControl1,oControl2;
+		_formatTotales:function(aRows,iTotalRows){
+			let oContDistNac,
+			oContDisTasa;
 
 			aRows.forEach(oRow => {
 				oRow.getCells()[0].setActive(true);
 				oRow.getCells()[0].setState("Information");
 			});
-
-			// if(iTotalRows > 0){
-			// 	if(iTotalRows < iRowsLength){
-			// 		oControl = aRows[iTotalRows-1].getCells()[0];
-			// 		oControl1 = aRows[iTotalRows-2].getCells()[0];
-			// 		oControl2 = aRows[iTotalRows-3].getCells()[0];
-			// 	}else{
-			// 		oControl = aRows[iRowsLength-1].getCells()[0];
-			// 		oControl1 = aRows[iRowsLength-2].getCells()[0];
-			// 		oControl2 = aRows[iRowsLength-3].getCells()[0];
-			// 	}
-			// 	oControl.setActive(false);
-			// 	oControl1.setActive(false);
-			// 	oControl2.setActive(false);
-
-			// 	oControl.setState("Error");
-			// 	oControl1.setState("Success");
-			// 	oControl2.setState("None");
-				
-			// 	for (let i = 1; i < 4; i++) {
-			// 		if(iTotalRows < iRowsLength){
-			// 			aRows[iTotalRows-i].getCells().forEach(cell => {
-			// 				cell.addStyleClass("none");
-			// 			});
-			// 		}else{
-			// 			aRows[iRowsLength-i].getCells().forEach(cell => {
-			// 				cell.addStyleClass("none");
-			// 			});
-			// 		}
-					
-			// 	}
-			// }
+			if(aRows.length < iTotalRows) iTotalRows = aRows.length;
+			oContDistNac = aRows[iTotalRows-2].getCells()[0];
+			oContDisTasa = aRows[iTotalRows-1].getCells()[0];
+			
+			for (let i = iTotalRows-1; i > iTotalRows - 4; i--) {
+				aRows[i].getCells()[0].setActive(false);
+				aRows[i].getCells()[0].setState("None");
+			}
+			oContDistNac.setState("Success");
+			oContDisTasa.setState("Error");
 
 		}
 	});

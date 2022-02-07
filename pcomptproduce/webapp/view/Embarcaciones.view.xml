@@ -27,6 +27,7 @@
 			<Table 
 				id = "tableEmbarcaciones"
 				rows = "{/table}"
+				rowsUpdated="onRowsUpdatedTable"
 				sort="onSort"
 				selectionMode="None">
 				<extension>

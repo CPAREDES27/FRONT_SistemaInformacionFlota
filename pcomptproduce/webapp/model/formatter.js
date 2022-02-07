@@ -162,19 +162,20 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
 					switch (sIndicadorPropiedad) {
 						case "P":
 							return oFloatNumber.format(iCant2);
-							break;
+							// break;
 						case "T":
 							return oFloatNumber.format(iCant3);
-							break;
+							// break;
 						default:
 							return oFloatNumber.format(iCant1);
-							break;
+							// break;
 					}
 				}else{
 					return oFloatNumber.format(iCant1);
 				}
 			}
-			return 0.0;
+
+			return "";
 		}
 
 	};

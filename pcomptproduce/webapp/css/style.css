@@ -36,6 +36,10 @@
     background-color: rgba(212, 223, 239, 1);
 }
 
+#container-pcomptproduce---worklist--tableRecep-table tbody>tr:nth-child(6){
+    /* background-color: darkgreen; */
+}
+
 /* Columnas  */
 #container-pcomptproduce---worklist--tableRecep-table td:nth-child(),
 #container-pcomptproduce---worklist--tableRecep-table td:nth-child(){
@@ -59,4 +63,8 @@
 #container-pcomptproduce---worklist--tableArmad-table td:nth-child(6),
 #container-pcomptproduce---worklist--tableArmad-table td:nth-child(7){
     background-color: rgba(212, 223, 239, 1);
+}
+
+.classRow{
+    background-color: darkblue;
 }
